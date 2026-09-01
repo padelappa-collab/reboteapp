@@ -31,10 +31,11 @@ begin
     from public.users u
    where u.id = any (p_jugadores);
 
-  -- users.genero es NOT NULL, así que el único hueco posible es un jugador
-  -- que todavía no tiene perfil creado
+  -- users.genero es NOT NULL, así que el único hueco posible es un jugador sin
+  -- perfil. En el MVP los 4 tienen que estar registrados: no hay jugadores
+  -- invitados ni fantasma. Para conseguir gente nueva está el tablón.
   if v_total <> 4 then
-    raise exception 'No se puede clasificar el partido: falta el género de % jugador(es)',
+    raise exception 'Los 4 jugadores deben estar registrados en la app: faltan % perfil(es)',
       4 - v_total;
   end if;
 
