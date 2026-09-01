@@ -14,7 +14,7 @@ export function AppShell() {
     <div className="min-h-dvh bg-background">
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-md items-center justify-between px-4">
-          <span className="font-semibold">Pádel Cartagena</span>
+          <span className="font-semibold tracking-tight">REBOTEAPP</span>
           {perfil && (
             <Button
               variant="ghost"

@@ -7,8 +7,8 @@ import type { CapacitorConfig } from '@capacitor/cli'
  * se generan en una fase posterior, cuando el producto este validado.
  */
 const config: CapacitorConfig = {
-  appId: 'co.padel.app',
-  appName: 'Padel',
+  appId: 'co.reboteapp.app',
+  appName: 'REBOTEAPP',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

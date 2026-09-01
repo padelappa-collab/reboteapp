@@ -1,4 +1,4 @@
-# Padel App — piloto Cartagena
+# REBOTEAPP — piloto Cartagena
 
 App de ranking y partidos para jugadores amateur de padel. El piloto se prueba
 como **web app** desde el navegador del celular; las apps nativas vienen despues.
