@@ -8,10 +8,15 @@
  * dentro de una pareja. Por eso existen exactamente dos fuentes de asimetría
  * entre compañeros, y ninguna más:
  *
- *  1. Reparto inverso dentro de la pareja. Si tu compañero tiene más ELO que
- *     tú, se asume que cargó más el partido: gana menos puntos si ganan y
- *     pierde menos si pierden. Es una suposición sobre el nivel previo, no una
- *     medición de ese partido.
+ *  1. Reparto asimétrico dentro de la pareja, según el nivel previo y el
+ *     resultado. El peso amplificado (>1) cambia de dueño:
+ *       - Al GANAR lo recibe el más débil: se lleva más crédito por un
+ *         resultado que estaba por encima de su nivel.
+ *       - Al PERDER lo recibe el más fuerte: era el favorito de la pareja y
+ *         absorbe la mayor parte de la caída.
+ *     El efecto neto es que el jugador más débil queda protegido en la derrota
+ *     y beneficiado en la victoria. Es una suposición sobre el nivel previo, no
+ *     una medición de ese partido.
  *
  *  2. K individual por experiencia. Cuánto pesa el resultado según la etapa de
  *     calibración de cada jugador (45 / 30 / 20). Es una capa ortogonal a la
@@ -33,8 +38,9 @@ export const PARTIDOS_INTERMEDIO = 40
 
 /**
  * Referencia del reparto dentro de la pareja: una categoría completa.
- * Con 350 puntos de diferencia entre compañeros (una categoría), el más fuerte
- * se lleva la mitad del cambio y el más débil una vez y media.
+ * Con 350 puntos de diferencia entre compañeros (una categoría), uno se lleva
+ * la mitad del cambio y el otro una vez y media. Cuál de los dos depende del
+ * resultado (ver `pesosDeReparto`).
  */
 export const REFERENCIA_REPARTO = SALTO_CATEGORIA
 export const PESO_MIN = 0.25
@@ -83,13 +89,25 @@ export function puntajeEsperado(eloPropio: number, eloRival: number): number {
 }
 
 /**
- * Reparto dentro de la pareja: pesos que suman 2 (uno por jugador), donde el
- * más fuerte queda por debajo de 1 y el más débil por encima.
+ * Reparto dentro de la pareja: pesos que suman 2, uno por jugador.
+ *
+ * La magnitud sale siempre de la misma fórmula anclada al salto de categoría;
+ * lo que cambia con el resultado es a quién le toca el peso amplificado:
+ *
+ *   ganando  -> peso > 1 para el más débil  (más crédito)
+ *   perdiendo-> peso > 1 para el más fuerte (más responsabilidad)
+ *
+ * Así el jugador más débil no queda con volatilidad simétrica: sube más rápido
+ * cuando gana y cae más lento cuando pierde.
  */
-function pesosDeReparto(pareja: Pareja): [number, number] {
+function pesosDeReparto(pareja: Pareja, gano: boolean): [number, number] {
   const media = eloPareja(pareja)
+  const signo = gano ? -1 : 1
   const crudos = pareja.map((j) =>
-    Math.min(PESO_MAX, Math.max(PESO_MIN, 1 - (j.elo - media) / REFERENCIA_REPARTO)),
+    Math.min(
+      PESO_MAX,
+      Math.max(PESO_MIN, 1 + (signo * (j.elo - media)) / REFERENCIA_REPARTO),
+    ),
   ) as [number, number]
 
   // Sin recortes la suma ya es 2; con recortes hay que renormalizar para que el
@@ -117,13 +135,13 @@ export function calcularCambiosElo(
   const realB = 1 - realA
 
   return [
-    ...cambiosDePareja(parejaA, realA - esperadoA),
-    ...cambiosDePareja(parejaB, realB - esperadoB),
+    ...cambiosDePareja(parejaA, realA - esperadoA, ganador === 'a'),
+    ...cambiosDePareja(parejaB, realB - esperadoB, ganador === 'b'),
   ]
 }
 
-function cambiosDePareja(pareja: Pareja, diferencia: number): CambioElo[] {
-  const pesos = pesosDeReparto(pareja)
+function cambiosDePareja(pareja: Pareja, diferencia: number, gano: boolean): CambioElo[] {
+  const pesos = pesosDeReparto(pareja, gano)
 
   return pareja.map((jugador, i) => {
     const k = kFactor(jugador.partidosJugados)

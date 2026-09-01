@@ -129,7 +129,7 @@ describe('calcularCambiosElo — la única asimetría entre compañeros', () => 
     expect(debil.peso).toBeGreaterThan(1)
   })
 
-  it('dentro de la pareja, el más fuerte también pierde menos', () => {
+  it('al perder, el más fuerte de la pareja absorbe más de la caída', () => {
     const [fuerte, debil] = calcularCambiosElo(
       pareja(jugador('fuerte', 1750), jugador('debil', 1050)),
       pareja(jugador('b1', 1400), jugador('b2', 1400)),
@@ -137,10 +137,37 @@ describe('calcularCambiosElo — la única asimetría entre compañeros', () => 
     )
 
     expect(fuerte.delta).toBeLessThan(0)
-    expect(Math.abs(fuerte.delta)).toBeLessThan(Math.abs(debil.delta))
+    expect(debil.delta).toBeLessThan(0)
+    // el fuerte era el favorito de la pareja: le toca la mayor parte
+    expect(Math.abs(fuerte.delta)).toBeGreaterThan(Math.abs(debil.delta))
+    expect(fuerte.peso).toBeGreaterThan(1)
+    expect(debil.peso).toBeLessThan(1)
   })
 
-  it('los pesos del reparto siempre suman 2, por dispareja que sea la pareja', () => {
+  it('el peso amplificado cambia de dueño según el resultado', () => {
+    const local = pareja(jugador('fuerte', 1750), jugador('debil', 1050))
+    const rival = pareja(jugador('b1', 1400), jugador('b2', 1400))
+
+    const [fuerteGana, debilGana] = calcularCambiosElo(local, rival, 'a')
+    const [fuertePierde, debilPierde] = calcularCambiosElo(local, rival, 'b')
+
+    // ganando el crédito va al débil; perdiendo la responsabilidad va al fuerte
+    expect(debilGana.peso).toBeCloseTo(fuertePierde.peso)
+    expect(fuerteGana.peso).toBeCloseTo(debilPierde.peso)
+  })
+
+  it('el jugador débil es el menos volátil de los dos', () => {
+    const local = pareja(jugador('fuerte', 1750), jugador('debil', 1050))
+    const rival = pareja(jugador('b1', 1400), jugador('b2', 1400))
+
+    const [, debilGana] = calcularCambiosElo(local, rival, 'a')
+    const [, debilPierde] = calcularCambiosElo(local, rival, 'b')
+
+    // sube más de lo que baja: el reparto lo protege en la derrota
+    expect(debilGana.delta).toBeGreaterThan(Math.abs(debilPierde.delta))
+  })
+
+  it('los pesos del reparto siempre suman 2, gane o pierda la pareja', () => {
     const casos: Array<[number, number]> = [
       [1400, 1400],
       [1750, 1050],
@@ -148,12 +175,14 @@ describe('calcularCambiosElo — la única asimetría entre compañeros', () => 
     ]
 
     for (const [eloUno, eloDos] of casos) {
-      const [uno, dos] = calcularCambiosElo(
-        pareja(jugador('a1', eloUno), jugador('a2', eloDos)),
-        pareja(jugador('b1', 1400), jugador('b2', 1400)),
-        'a',
-      )
-      expect(uno.peso + dos.peso).toBeCloseTo(2)
+      for (const ganador of ['a', 'b'] as const) {
+        const [uno, dos] = calcularCambiosElo(
+          pareja(jugador('a1', eloUno), jugador('a2', eloDos)),
+          pareja(jugador('b1', 1400), jugador('b2', 1400)),
+          ganador,
+        )
+        expect(uno.peso + dos.peso).toBeCloseTo(2)
+      }
     }
   })
 })
