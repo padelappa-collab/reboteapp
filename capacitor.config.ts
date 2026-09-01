@@ -7,7 +7,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
  * se generan en una fase posterior, cuando el producto este validado.
  */
 const config: CapacitorConfig = {
-  appId: 'co.reboteapp.app',
+  appId: 'app.reboteapp.online',
   appName: 'REBOTEAPP',
   webDir: 'dist',
   server: {

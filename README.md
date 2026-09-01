@@ -54,6 +54,16 @@ npx supabase gen types typescript --project-id <id> > src/types/database.ts
 
 ## Despliegue
 
-Vercel, con `vercel.json` ya configurado para SPA (todas las rutas a
-`index.html`). Variables de entorno: `VITE_SUPABASE_URL` y
+Produccion: **https://online.reboteapp.app** (Vercel, con `vercel.json` ya
+configurado para SPA: todas las rutas a `index.html`).
+
+Variables de entorno del proyecto en Vercel: `VITE_SUPABASE_URL` y
 `VITE_SUPABASE_ANON_KEY`.
+
+El dominio tiene que estar tambien en tres sitios mas, o el login se rompe:
+
+| Donde | Que agregar |
+| --- | --- |
+| Supabase > Authentication > URL Configuration | Site URL `https://online.reboteapp.app` y Redirect URL `https://online.reboteapp.app/**` |
+| Google Cloud > Credentials > origenes de JavaScript | `https://online.reboteapp.app` |
+| Capacitor (`capacitor.config.ts`) | `appId` derivado del dominio: `app.reboteapp.online` |
