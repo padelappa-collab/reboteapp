@@ -54,16 +54,20 @@ npx supabase gen types typescript --project-id <id> > src/types/database.ts
 
 ## Despliegue
 
-Produccion: **https://online.reboteapp.app** (Vercel, con `vercel.json` ya
-configurado para SPA: todas las rutas a `index.html`).
-
-Variables de entorno del proyecto en Vercel: `VITE_SUPABASE_URL` y
+Vercel, con `vercel.json` ya configurado para SPA (todas las rutas a
+`index.html`). Variables de entorno del proyecto: `VITE_SUPABASE_URL` y
 `VITE_SUPABASE_ANON_KEY`.
 
-El dominio tiene que estar tambien en tres sitios mas, o el login se rompe:
+**Dominio**: `rebote.online`, pendiente de comprar. Mientras tanto el piloto
+corre en la URL que asigna Vercel. El `appId` de Capacitor ya quedo derivado del
+dominio invertido (`online.rebote`) porque en las tiendas no se puede cambiar
+despues de publicar.
+
+Cuando el dominio este activo hay que registrarlo en tres sitios o el login se
+rompe:
 
 | Donde | Que agregar |
 | --- | --- |
-| Supabase > Authentication > URL Configuration | Site URL `https://online.reboteapp.app` y Redirect URL `https://online.reboteapp.app/**` |
-| Google Cloud > Credentials > origenes de JavaScript | `https://online.reboteapp.app` |
-| Capacitor (`capacitor.config.ts`) | `appId` derivado del dominio: `app.reboteapp.online` |
+| Supabase > Authentication > URL Configuration | Site URL `https://rebote.online` y Redirect URL `https://rebote.online/**` |
+| Google Cloud > Credentials > origenes de JavaScript | `https://rebote.online` |
+| Vercel > Settings > Domains | `rebote.online` |
