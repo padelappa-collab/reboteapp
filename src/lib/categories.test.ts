@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { CASOS_CATEGORIA } from './__fixtures__/categorias.cases'
 import {
   categoriaDesdeElo,
   eloInicial,
@@ -6,6 +7,16 @@ import {
   resumenCategoria,
   umbralCategoria,
 } from './categories'
+
+describe('tabla de casos compartida con el test de paridad SQL', () => {
+  it.each(CASOS_CATEGORIA)(
+    '$descripcion (elo $elo, $ranking, pico $peak)',
+    ({ elo, ranking, peak, categoria, estrellas }) => {
+      expect(categoriaDesdeElo(elo, ranking, peak)).toBe(categoria)
+      expect(nivelEstrella(elo, ranking, peak)).toBe(estrellas)
+    },
+  )
+})
 
 describe('eloInicial', () => {
   it('mapea la escala masculina completa', () => {
