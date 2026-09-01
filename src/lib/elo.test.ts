@@ -12,16 +12,17 @@ import {
   type Pareja,
 } from './elo'
 
-function jugador(
-  userId: string,
-  elo: number,
-  partidosJugados = 20,
-): JugadorEnPartido {
+function jugador(userId: string, elo: number, partidosJugados = 20): JugadorEnPartido {
   return { userId, elo, partidosJugados }
 }
 
 function pareja(a: JugadorEnPartido, b: JugadorEnPartido): Pareja {
   return [a, b] as const
+}
+
+/** Un jugador ya establecido: 40+ partidos, K estable. */
+function establecido(userId: string, elo: number): JugadorEnPartido {
+  return jugador(userId, elo, 80)
 }
 
 describe('kFactor', () => {
@@ -59,6 +60,65 @@ describe('eloPareja', () => {
   })
 })
 
+describe('calcularCambiosElo — el nivel dentro de la pareja no reparte nada', () => {
+  it('mismo ELO y mismo K: delta idéntico', () => {
+    const [uno, dos] = calcularCambiosElo(
+      pareja(establecido('a1', 1400), establecido('a2', 1400)),
+      pareja(establecido('b1', 1600), establecido('b2', 1600)),
+      'a',
+    )
+    expect(uno.delta).toBe(dos.delta)
+  })
+
+  it('ELO muy distinto pero mismo K: delta idéntico igual', () => {
+    const [fuerte, debil] = calcularCambiosElo(
+      pareja(establecido('fuerte', 2100), establecido('debil', 700)),
+      pareja(establecido('b1', 1400), establecido('b2', 1400)),
+      'a',
+    )
+    expect(fuerte.delta).toBe(debil.delta)
+    expect(fuerte.k).toBe(debil.k)
+  })
+
+  it('lo mismo al perder: la derrota tampoco se reparte por nivel', () => {
+    const [fuerte, debil] = calcularCambiosElo(
+      pareja(establecido('fuerte', 2100), establecido('debil', 700)),
+      pareja(establecido('b1', 1400), establecido('b2', 1400)),
+      'b',
+    )
+    expect(fuerte.delta).toBe(debil.delta)
+    expect(fuerte.delta).toBeLessThan(0)
+  })
+
+  it('la diferencia entre compañeros se explica solo por el K', () => {
+    const [novato, veterano] = calcularCambiosElo(
+      pareja(jugador('novato', 700, 2), establecido('veterano', 2100)),
+      pareja(establecido('b1', 1400), establecido('b2', 1400)),
+      'a',
+    )
+
+    expect(novato.k).toBe(K_CALIBRACION)
+    expect(veterano.k).toBe(K_ESTABLE)
+    // idéntico (real − esperado): la razón de los deltas es la razón de los K
+    expect(novato.delta / veterano.delta).toBeCloseTo(K_CALIBRACION / K_ESTABLE, 1)
+  })
+
+  it('intercambiar los ELO dentro de la pareja no cambia nada', () => {
+    const rival = pareja(establecido('b1', 1400), establecido('b2', 1400))
+    const [x, y] = calcularCambiosElo(
+      pareja(establecido('a1', 2100), establecido('a2', 700)),
+      rival,
+      'a',
+    )
+    const [z, w] = calcularCambiosElo(
+      pareja(establecido('a1', 700), establecido('a2', 2100)),
+      rival,
+      'a',
+    )
+    expect([x.delta, y.delta]).toEqual([z.delta, w.delta])
+  })
+})
+
 describe('calcularCambiosElo — suma y simetría', () => {
   it('con todo igual, el intercambio es de suma cero', () => {
     const cambios = calcularCambiosElo(
@@ -67,8 +127,7 @@ describe('calcularCambiosElo — suma y simetría', () => {
       'a',
     )
 
-    const total = cambios.reduce((suma, c) => suma + c.delta, 0)
-    expect(total).toBe(0)
+    expect(cambios.reduce((suma, c) => suma + c.delta, 0)).toBe(0)
     expect(cambios.map((c) => c.delta)).toEqual([15, 15, -15, -15])
   })
 
@@ -91,102 +150,6 @@ describe('calcularCambiosElo — suma y simetría', () => {
   })
 })
 
-describe('calcularCambiosElo — la única asimetría entre compañeros', () => {
-  it('dos compañeros con el mismo ELO y la misma experiencia cambian igual', () => {
-    const [uno, dos] = calcularCambiosElo(
-      pareja(jugador('a1', 1400, 25), jugador('a2', 1400, 25)),
-      pareja(jugador('b1', 1600), jugador('b2', 1600)),
-      'a',
-    )
-    expect(uno.delta).toBe(dos.delta)
-    expect(uno.peso).toBeCloseTo(dos.peso)
-  })
-
-  it('con el mismo ELO, la única diferencia entre compañeros es su K', () => {
-    const [novato, veterano] = calcularCambiosElo(
-      pareja(jugador('novato', 1400, 3), jugador('veterano', 1400, 90)),
-      pareja(jugador('b1', 1400), jugador('b2', 1400)),
-      'a',
-    )
-
-    expect(novato.k).toBe(K_CALIBRACION)
-    expect(veterano.k).toBe(K_ESTABLE)
-    expect(novato.peso).toBeCloseTo(veterano.peso)
-    // mismo peso, misma diferencia esperado/real: la razón es exactamente la de los K
-    expect(novato.delta / veterano.delta).toBeCloseTo(K_CALIBRACION / K_ESTABLE, 1)
-  })
-
-  it('dentro de la pareja, el más fuerte gana menos puntos', () => {
-    const [fuerte, debil] = calcularCambiosElo(
-      pareja(jugador('fuerte', 1750), jugador('debil', 1050)),
-      pareja(jugador('b1', 1400), jugador('b2', 1400)),
-      'a',
-    )
-
-    expect(fuerte.delta).toBeGreaterThan(0)
-    expect(debil.delta).toBeGreaterThan(fuerte.delta)
-    expect(fuerte.peso).toBeLessThan(1)
-    expect(debil.peso).toBeGreaterThan(1)
-  })
-
-  it('al perder, el más fuerte de la pareja absorbe más de la caída', () => {
-    const [fuerte, debil] = calcularCambiosElo(
-      pareja(jugador('fuerte', 1750), jugador('debil', 1050)),
-      pareja(jugador('b1', 1400), jugador('b2', 1400)),
-      'b',
-    )
-
-    expect(fuerte.delta).toBeLessThan(0)
-    expect(debil.delta).toBeLessThan(0)
-    // el fuerte era el favorito de la pareja: le toca la mayor parte
-    expect(Math.abs(fuerte.delta)).toBeGreaterThan(Math.abs(debil.delta))
-    expect(fuerte.peso).toBeGreaterThan(1)
-    expect(debil.peso).toBeLessThan(1)
-  })
-
-  it('el peso amplificado cambia de dueño según el resultado', () => {
-    const local = pareja(jugador('fuerte', 1750), jugador('debil', 1050))
-    const rival = pareja(jugador('b1', 1400), jugador('b2', 1400))
-
-    const [fuerteGana, debilGana] = calcularCambiosElo(local, rival, 'a')
-    const [fuertePierde, debilPierde] = calcularCambiosElo(local, rival, 'b')
-
-    // ganando el crédito va al débil; perdiendo la responsabilidad va al fuerte
-    expect(debilGana.peso).toBeCloseTo(fuertePierde.peso)
-    expect(fuerteGana.peso).toBeCloseTo(debilPierde.peso)
-  })
-
-  it('el jugador débil es el menos volátil de los dos', () => {
-    const local = pareja(jugador('fuerte', 1750), jugador('debil', 1050))
-    const rival = pareja(jugador('b1', 1400), jugador('b2', 1400))
-
-    const [, debilGana] = calcularCambiosElo(local, rival, 'a')
-    const [, debilPierde] = calcularCambiosElo(local, rival, 'b')
-
-    // sube más de lo que baja: el reparto lo protege en la derrota
-    expect(debilGana.delta).toBeGreaterThan(Math.abs(debilPierde.delta))
-  })
-
-  it('los pesos del reparto siempre suman 2, gane o pierda la pareja', () => {
-    const casos: Array<[number, number]> = [
-      [1400, 1400],
-      [1750, 1050],
-      [2800, 700],
-    ]
-
-    for (const [eloUno, eloDos] of casos) {
-      for (const ganador of ['a', 'b'] as const) {
-        const [uno, dos] = calcularCambiosElo(
-          pareja(jugador('a1', eloUno), jugador('a2', eloDos)),
-          pareja(jugador('b1', 1400), jugador('b2', 1400)),
-          ganador,
-        )
-        expect(uno.peso + dos.peso).toBeCloseTo(2)
-      }
-    }
-  })
-})
-
 describe('calcularCambiosElo — expectativa', () => {
   it('al favorito claro ganar le deja casi nada', () => {
     const cambios = calcularCambiosElo(
@@ -199,18 +162,29 @@ describe('calcularCambiosElo — expectativa', () => {
   })
 
   it('la sorpresa mueve mucho más que el resultado esperado', () => {
-    const esperado = calcularCambiosElo(
-      pareja(jugador('a1', 2100), jugador('a2', 2100)),
-      pareja(jugador('b1', 1400), jugador('b2', 1400)),
-      'a',
-    )
-    const sorpresa = calcularCambiosElo(
-      pareja(jugador('a1', 2100), jugador('a2', 2100)),
-      pareja(jugador('b1', 1400), jugador('b2', 1400)),
-      'b',
-    )
+    const rival = pareja(jugador('b1', 1400), jugador('b2', 1400))
+    const local = pareja(jugador('a1', 2100), jugador('a2', 2100))
+
+    const esperado = calcularCambiosElo(local, rival, 'a')
+    const sorpresa = calcularCambiosElo(local, rival, 'b')
 
     expect(Math.abs(sorpresa[0].delta)).toBeGreaterThan(Math.abs(esperado[0].delta) * 10)
+  })
+
+  it('el esperado sale del promedio de la pareja, no de cada jugador', () => {
+    const rival = pareja(establecido('b1', 1400), establecido('b2', 1400))
+    // 2100+700 y 1400+1400 promedian igual: el partido es parejo en ambos casos
+    const dispareja = calcularCambiosElo(
+      pareja(establecido('a1', 2100), establecido('a2', 700)),
+      rival,
+      'a',
+    )
+    const pareja1400 = calcularCambiosElo(
+      pareja(establecido('a1', 1400), establecido('a2', 1400)),
+      rival,
+      'a',
+    )
+    expect(dispareja[0].delta).toBe(pareja1400[0].delta)
   })
 })
 

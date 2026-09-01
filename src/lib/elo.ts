@@ -4,29 +4,22 @@
  * Qué mide el sistema y qué NO mide
  * ---------------------------------
  * Lo único que se registra de un partido es el marcador. No hay estadísticas
- * individuales, así que el sistema no sabe —ni puede saber— quién jugó mejor
- * dentro de una pareja. Por eso existen exactamente dos fuentes de asimetría
- * entre compañeros, y ninguna más:
+ * individuales, así que el sistema no sabe —ni puede saber— quién aportó más
+ * dentro de una pareja. Por eso NO existe ningún reparto por nivel relativo
+ * entre compañeros: intentar aproximarlo con una fórmula siempre produce algún
+ * caso que se siente injusto en una dirección o en la otra.
  *
- *  1. Reparto asimétrico dentro de la pareja, según el nivel previo y el
- *     resultado. El peso amplificado (>1) cambia de dueño:
- *       - Al GANAR lo recibe el más débil: se lleva más crédito por un
- *         resultado que estaba por encima de su nivel.
- *       - Al PERDER lo recibe el más fuerte: era el favorito de la pareja y
- *         absorbe la mayor parte de la caída.
- *     El efecto neto es que el jugador más débil queda protegido en la derrota
- *     y beneficiado en la victoria. Es una suposición sobre el nivel previo, no
- *     una medición de ese partido.
+ * El cálculo es:
  *
- *  2. K individual por experiencia. Cuánto pesa el resultado según la etapa de
- *     calibración de cada jugador (45 / 30 / 20). Es una capa ortogonal a la
- *     anterior: ajusta la confianza en el ELO de esa persona, no su desempeño.
+ *   1. Un solo resultado esperado, a nivel de pareja, con el promedio de ELO de
+ *      cada lado.
+ *   2. Los dos compañeros comparten exactamente el mismo (real − esperado). Lo
+ *      único que puede hacer que sus deltas difieran es su propio K, es decir,
+ *      su etapa de calibración.
  *
- * Dos compañeros con el mismo ELO y la misma experiencia reciben exactamente el
- * mismo cambio. Siempre.
+ * Dos jugadores de la misma pareja con 40+ partidos cada uno reciben siempre el
+ * mismo delta, tengan el nivel que tengan.
  */
-
-import { SALTO_CATEGORIA } from './categories'
 
 /** K por etapa de calibración, según el total de partidos del jugador. */
 export const K_CALIBRACION = 45
@@ -35,16 +28,6 @@ export const K_ESTABLE = 20
 
 export const PARTIDOS_CALIBRACION = 10
 export const PARTIDOS_INTERMEDIO = 40
-
-/**
- * Referencia del reparto dentro de la pareja: una categoría completa.
- * Con 350 puntos de diferencia entre compañeros (una categoría), uno se lleva
- * la mitad del cambio y el otro una vez y media. Cuál de los dos depende del
- * resultado (ver `pesosDeReparto`).
- */
-export const REFERENCIA_REPARTO = SALTO_CATEGORIA
-export const PESO_MIN = 0.25
-export const PESO_MAX = 1.75
 
 /** Suelo del ELO: por debajo de esto el número deja de significar algo. */
 export const ELO_MINIMO = 100
@@ -65,8 +48,6 @@ export interface CambioElo {
   eloDespues: number
   delta: number
   k: number
-  /** Peso del reparto dentro de la pareja. 1 = ambos compañeros al mismo nivel. */
-  peso: number
 }
 
 export type Pareja = readonly [JugadorEnPartido, JugadorEnPartido]
@@ -89,34 +70,6 @@ export function puntajeEsperado(eloPropio: number, eloRival: number): number {
 }
 
 /**
- * Reparto dentro de la pareja: pesos que suman 2, uno por jugador.
- *
- * La magnitud sale siempre de la misma fórmula anclada al salto de categoría;
- * lo que cambia con el resultado es a quién le toca el peso amplificado:
- *
- *   ganando  -> peso > 1 para el más débil  (más crédito)
- *   perdiendo-> peso > 1 para el más fuerte (más responsabilidad)
- *
- * Así el jugador más débil no queda con volatilidad simétrica: sube más rápido
- * cuando gana y cae más lento cuando pierde.
- */
-function pesosDeReparto(pareja: Pareja, gano: boolean): [number, number] {
-  const media = eloPareja(pareja)
-  const signo = gano ? -1 : 1
-  const crudos = pareja.map((j) =>
-    Math.min(
-      PESO_MAX,
-      Math.max(PESO_MIN, 1 + (signo * (j.elo - media)) / REFERENCIA_REPARTO),
-    ),
-  ) as [number, number]
-
-  // Sin recortes la suma ya es 2; con recortes hay que renormalizar para que el
-  // cambio total de la pareja no dependa de cuán dispareja sea.
-  const suma = crudos[0] + crudos[1]
-  return [(crudos[0] * 2) / suma, (crudos[1] * 2) / suma]
-}
-
-/**
  * Calcula el cambio de ELO de los 4 jugadores de un partido confirmado.
  * Devuelve una entrada por jugador, en orden: pareja A y luego pareja B.
  */
@@ -125,27 +78,23 @@ export function calcularCambiosElo(
   parejaB: Pareja,
   ganador: Lado,
 ): CambioElo[] {
-  const eloA = eloPareja(parejaA)
-  const eloB = eloPareja(parejaB)
-
-  const esperadoA = puntajeEsperado(eloA, eloB)
+  const esperadoA = puntajeEsperado(eloPareja(parejaA), eloPareja(parejaB))
   const esperadoB = 1 - esperadoA
 
   const realA = ganador === 'a' ? 1 : 0
   const realB = 1 - realA
 
   return [
-    ...cambiosDePareja(parejaA, realA - esperadoA, ganador === 'a'),
-    ...cambiosDePareja(parejaB, realB - esperadoB, ganador === 'b'),
+    ...cambiosDePareja(parejaA, realA - esperadoA),
+    ...cambiosDePareja(parejaB, realB - esperadoB),
   ]
 }
 
-function cambiosDePareja(pareja: Pareja, diferencia: number, gano: boolean): CambioElo[] {
-  const pesos = pesosDeReparto(pareja, gano)
-
-  return pareja.map((jugador, i) => {
+/** `diferencia` es (real − esperado) de la pareja: idéntica para sus dos jugadores. */
+function cambiosDePareja(pareja: Pareja, diferencia: number): CambioElo[] {
+  return pareja.map((jugador) => {
     const k = kFactor(jugador.partidosJugados)
-    const delta = Math.round(pesos[i] * k * diferencia)
+    const delta = Math.round(k * diferencia)
     const eloDespues = Math.max(ELO_MINIMO, jugador.elo + delta)
 
     return {
@@ -155,7 +104,6 @@ function cambiosDePareja(pareja: Pareja, diferencia: number, gano: boolean): Cam
       delta: eloDespues - jugador.elo,
       eloDespues,
       k,
-      peso: pesos[i],
     }
   })
 }
