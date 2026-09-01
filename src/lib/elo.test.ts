@@ -1,16 +1,27 @@
 import { describe, expect, it } from 'vitest'
+import { CASOS_ELO } from './__fixtures__/elo.cases'
 import {
   ELO_MINIMO,
   K_CALIBRACION,
   K_ESTABLE,
   K_INTERMEDIO,
   calcularCambiosElo,
+  deltaJugador,
   eloPareja,
   kFactor,
   puntajeEsperado,
   type JugadorEnPartido,
   type Pareja,
 } from './elo'
+
+describe('tabla de casos compartida con el test de paridad SQL', () => {
+  it.each(CASOS_ELO)(
+    '$descripcion (pareja $eloPareja vs $eloRival, $partidos partidos)',
+    ({ eloPareja: propio, eloRival, gano, partidos, delta }) => {
+      expect(deltaJugador(propio, eloRival, gano, partidos)).toBe(delta)
+    },
+  )
+})
 
 function jugador(userId: string, elo: number, partidosJugados = 20): JugadorEnPartido {
   return { userId, elo, partidosJugados }

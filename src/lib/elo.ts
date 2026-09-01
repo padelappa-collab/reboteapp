@@ -90,11 +90,27 @@ export function calcularCambiosElo(
   ]
 }
 
+/**
+ * Cambio de ELO de un jugador suelto, a partir de los promedios de las dos
+ * parejas. Es el equivalente exacto de la función SQL `delta_elo`, y el test de
+ * paridad compara las dos sobre la misma tabla de casos.
+ */
+export function deltaJugador(
+  eloParejaPropia: number,
+  eloParejaRival: number,
+  gano: boolean,
+  partidosJugados: number,
+): number {
+  const esperado = puntajeEsperado(eloParejaPropia, eloParejaRival)
+  // `|| 0` normaliza el -0 que devuelve Math.round con negativos muy pequeños
+  return Math.round(kFactor(partidosJugados) * ((gano ? 1 : 0) - esperado)) || 0
+}
+
 /** `diferencia` es (real − esperado) de la pareja: idéntica para sus dos jugadores. */
 function cambiosDePareja(pareja: Pareja, diferencia: number): CambioElo[] {
   return pareja.map((jugador) => {
     const k = kFactor(jugador.partidosJugados)
-    const delta = Math.round(k * diferencia)
+    const delta = Math.round(k * diferencia) || 0
     const eloDespues = Math.max(ELO_MINIMO, jugador.elo + delta)
 
     return {

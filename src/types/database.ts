@@ -176,6 +176,31 @@ export type Database = {
         Args: { p_categoria: string; p_genero: Genero }
         Returns: number
       }
+      k_factor: {
+        Args: { p_partidos: number }
+        Returns: number
+      }
+      puntaje_esperado: {
+        Args: { p_propio: number; p_rival: number }
+        Returns: number
+      }
+      delta_elo: {
+        Args: {
+          p_elo_pareja: number
+          p_elo_rival: number
+          p_gano: boolean
+          p_partidos: number
+        }
+        Returns: number
+      }
+      confirm_match: {
+        Args: { p_match_id: string }
+        Returns: MatchRow
+      }
+      dispute_match: {
+        Args: { p_match_id: string }
+        Returns: MatchRow
+      }
     }
     Enums: {
       genero: Genero
