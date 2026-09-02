@@ -95,6 +95,18 @@ export default function SignUpPage() {
 
           <OAuthButtons deshabilitado={enviando} />
 
+
+          <p className="text-center text-xs text-muted-foreground">
+            Al continuar aceptas los{' '}
+            <Link to="/terminos" className="underline underline-offset-4">
+              términos
+            </Link>{' '}
+            y la{' '}
+            <Link to="/privacidad" className="underline underline-offset-4">
+              política de privacidad
+            </Link>
+            .
+          </p>
           <p className="text-center text-sm text-muted-foreground">
             ¿Ya tienes cuenta?{' '}
             <Link to="/entrar" className="font-medium text-primary underline-offset-4 hover:underline">

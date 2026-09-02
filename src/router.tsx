@@ -7,10 +7,15 @@ import SignUpPage from '@/features/auth/SignUpPage'
 import CreateMatchPage from '@/features/matches/CreateMatchPage'
 import MatchDetailPage from '@/features/matches/MatchDetailPage'
 import MatchesListPage from '@/features/matches/MatchesListPage'
+import PrivacyPage from '@/features/legal/PrivacyPage'
+import TermsPage from '@/features/legal/TermsPage'
 import ProfilePage from '@/features/profile/ProfilePage'
 import RankingPage from '@/features/ranking/RankingPage'
 
 export const router = createBrowserRouter([
+  // públicas: Google y las tiendas las exigen accesibles sin sesión
+  { path: '/privacidad', element: <PrivacyPage /> },
+  { path: '/terminos', element: <TermsPage /> },
   {
     element: <GuestRoute />,
     children: [
