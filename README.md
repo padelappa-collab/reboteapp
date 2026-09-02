@@ -54,9 +54,20 @@ npx supabase gen types typescript --project-id <id> > src/types/database.ts
 
 ## Despliegue
 
-Vercel, con `vercel.json` ya configurado para SPA (todas las rutas a
-`index.html`). Variables de entorno del proyecto: `VITE_SUPABASE_URL` y
-`VITE_SUPABASE_ANON_KEY`.
+La app es una SPA estatica: `npm run build` produce `dist/` y cualquier hosting
+estatico la sirve. Estan configuradas las dos reescrituras necesarias para que
+las rutas internas no den 404 al recargar:
+
+| Hosting | Archivo |
+| --- | --- |
+| Vercel | `vercel.json` |
+| Cloudflare Pages | `public/_redirects` |
+
+Comando de build: `npm run build`. Carpeta de salida: `dist`.
+
+Variables de entorno del proyecto: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+y `VITE_APPLE_SIGN_IN`. Son de tiempo de compilacion (prefijo `VITE_`), asi que
+al cambiarlas hay que volver a desplegar.
 
 **Dominio**: `reboteapp.online`, pendiente de comprar. Mientras tanto el piloto
 corre en la URL que asigna Vercel. El `appId` de Capacitor ya quedo derivado del
