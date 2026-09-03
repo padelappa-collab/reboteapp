@@ -1,0 +1,145 @@
+import { CalendarDays, Check, MapPin, Users } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import type { BoardTipo } from '@/types/database'
+import { apuntarse, cambiarEstado, desapuntarse, type PublicacionConDatos } from './board.api'
+
+const ETIQUETA_TIPO: Record<BoardTipo, string> = {
+  busco_pareja: 'Busco pareja',
+  busco_cuarto: 'Busco cuarto',
+}
+
+function fechaLarga(iso: string) {
+  return new Date(iso).toLocaleString('es-CO', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+export function PostCard({
+  publicacion,
+  usuarioId,
+  onCambio,
+}: {
+  publicacion: PublicacionConDatos
+  usuarioId: string
+  onCambio: () => void
+}) {
+  const [enviando, setEnviando] = useState(false)
+
+  const esMio = publicacion.user_id === usuarioId
+  const yaApuntado = publicacion.apuntados.some((a) => a.id === usuarioId)
+  const cerrado = publicacion.estado !== 'abierto'
+
+  async function alternar() {
+    setEnviando(true)
+    try {
+      if (yaApuntado) {
+        await desapuntarse(publicacion.id, usuarioId)
+      } else {
+        await apuntarse(publicacion.id, usuarioId)
+        toast.success('Te apuntaste. Ponte de acuerdo con quien publicó.')
+      }
+      onCambio()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo completar')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  async function cerrar() {
+    setEnviando(true)
+    try {
+      await cambiarEstado(publicacion.id, 'completo')
+      toast.success('Publicación cerrada')
+      onCambio()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo cerrar')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  return (
+    <Card>
+      <CardContent className="space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate font-medium">{publicacion.autor?.nombre ?? '…'}</p>
+            <Badge variant="secondary" className="mt-1">
+              {ETIQUETA_TIPO[publicacion.tipo]}
+            </Badge>
+          </div>
+          {cerrado && <Badge variant="outline">Cerrada</Badge>}
+        </div>
+
+        <div className="space-y-1 text-sm text-muted-foreground">
+          <p className="flex items-center gap-2">
+            <CalendarDays className="size-4 shrink-0" />
+            {fechaLarga(publicacion.fecha_partido)}
+          </p>
+          {publicacion.cancha && (
+            <p className="flex items-center gap-2">
+              <MapPin className="size-4 shrink-0" />
+              {publicacion.cancha.nombre}
+            </p>
+          )}
+          {publicacion.nivel_buscado && (
+            <p className="flex items-center gap-2">
+              <Users className="size-4 shrink-0" />
+              Nivel buscado: {publicacion.nivel_buscado}
+            </p>
+          )}
+        </div>
+
+        {publicacion.nota && <p className="text-sm">{publicacion.nota}</p>}
+
+        {publicacion.apuntados.length > 0 && (
+          <div className="rounded-lg bg-muted p-2 text-sm">
+            <span className="text-muted-foreground">Apuntados: </span>
+            {publicacion.apuntados.map((a) => a.nombre).join(', ')}
+          </div>
+        )}
+
+        {!cerrado && (
+          <div className="flex gap-2">
+            {!esMio && (
+              <Button
+                className="h-10 flex-1"
+                variant={yaApuntado ? 'outline' : 'default'}
+                disabled={enviando}
+                onClick={alternar}
+              >
+                {yaApuntado ? (
+                  <>
+                    <Check className="size-4" />
+                    Apuntado
+                  </>
+                ) : (
+                  'Me apunto'
+                )}
+              </Button>
+            )}
+            {esMio && (
+              <Button
+                variant="outline"
+                className="h-10 flex-1"
+                disabled={enviando}
+                onClick={cerrar}
+              >
+                Ya completé el cupo
+              </Button>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}

@@ -132,6 +132,20 @@ export type BoardPostInsert = {
   nota?: string | null
 }
 
+/** El estado lo cambia el autor: cerrar el cupo o cancelar. */
+export type BoardPostUpdate = {
+  estado?: BoardEstado
+  nivel_buscado?: string | null
+  nota?: string | null
+  fecha_partido?: string
+  cancha_id?: string | null
+}
+
+export type BoardPostSignupInsert = {
+  post_id: string
+  user_id: string
+}
+
 export type BoardPostSignupRow = {
   post_id: string
   user_id: string
@@ -159,8 +173,8 @@ export type Database = {
       courts: Tabla<CourtRow, NoEscribible, NoEscribible>
       matches: Tabla<MatchRow, MatchInsert, NoEscribible>
       elo_history: Tabla<EloHistoryRow, NoEscribible, NoEscribible>
-      board_posts: Tabla<BoardPostRow, BoardPostInsert>
-      board_post_signups: Tabla<BoardPostSignupRow, BoardPostSignupRow, NoEscribible>
+      board_posts: Tabla<BoardPostRow, BoardPostInsert, BoardPostUpdate>
+      board_post_signups: Tabla<BoardPostSignupRow, BoardPostSignupInsert, NoEscribible>
     }
     Views: Record<never, never>
     Functions: {

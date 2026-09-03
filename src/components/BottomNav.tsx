@@ -1,10 +1,12 @@
-import { ListOrdered, Swords, User } from 'lucide-react'
+import { ListOrdered, MapPin, Megaphone, Swords, User } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
 const ENLACES = [
   { a: '/partidos', icono: Swords, texto: 'Partidos' },
   { a: '/ranking', icono: ListOrdered, texto: 'Ranking' },
+  { a: '/tablon', icono: Megaphone, texto: 'Tablón' },
+  { a: '/canchas', icono: MapPin, texto: 'Canchas' },
   { a: '/perfil', icono: User, texto: 'Perfil' },
 ]
 
