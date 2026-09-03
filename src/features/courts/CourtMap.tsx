@@ -1,7 +1,7 @@
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { Maximize2 } from 'lucide-react'
-import { useEffect } from 'react'
+import { LocateFixed, Maximize2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import { Button } from '@/components/ui/button'
 import type { CourtRow } from '@/types/database'
@@ -76,6 +76,39 @@ function Encuadre({
   return null
 }
 
+/** Centra el mapa en dónde está el jugador, para ver qué club le queda cerca. */
+function BotonMiUbicacion() {
+  const mapa = useMap()
+  const [buscando, setBuscando] = useState(false)
+
+  function ubicar() {
+    if (!navigator.geolocation) return
+    setBuscando(true)
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        mapa.flyTo([coords.latitude, coords.longitude], 14, { duration: 0.7 })
+        setBuscando(false)
+      },
+      () => setBuscando(false),
+      { enableHighAccuracy: true, timeout: 8000 },
+    )
+  }
+
+  return (
+    <Button
+      type="button"
+      size="icon"
+      variant="secondary"
+      aria-label="Centrar en mi ubicación"
+      className="absolute bottom-3 right-3 z-[1000] size-10 rounded-full shadow-md"
+      disabled={buscando}
+      onClick={ubicar}
+    >
+      <LocateFixed className="size-4" />
+    </Button>
+  )
+}
+
 /** Botón para volver a ver todas las canchas después de acercarse a una. */
 function BotonVerTodas({ canchas }: { canchas: CanchaUbicada[] }) {
   const mapa = useMap()
@@ -124,15 +157,25 @@ export function CourtMap({
           zoom={12}
           scrollWheelZoom
           zoomControl={false}
+          attributionControl
           style={{ height: '100%', width: '100%' }}
         >
+          {/*
+            Teselas de CARTO Voyager en vez de las estándar de OpenStreetMap:
+            se ven mucho más cerca de un mapa moderno y, sobre todo, tienen
+            versión @2x, que es lo que las hacía verse borrosas en el celular.
+          */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            subdomains="abcd"
+            maxZoom={20}
+            detectRetina
           />
 
           <Encuadre canchas={ubicadas} seleccionada={seleccionada} />
           <BotonVerTodas canchas={ubicadas} />
+          <BotonMiUbicacion />
 
           {ubicadas.map((c) => (
             <Marker
