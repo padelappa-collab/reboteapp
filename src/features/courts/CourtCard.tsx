@@ -44,6 +44,8 @@ export function CourtCard({
           )}
         </div>
 
+        {cancha.nota && <p className="text-sm">{cancha.nota}</p>}
+
         {!cancha.verificado && (
           <p className="text-xs text-amber-700 dark:text-amber-500">
             Datos por confirmar con el club.

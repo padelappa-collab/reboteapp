@@ -67,6 +67,7 @@ export type CourtRow = {
   telefono: string | null
   lat: number | null
   lng: number | null
+  nota: string | null
   verificado: boolean
   created_at: string
   updated_at: string
