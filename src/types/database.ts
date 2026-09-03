@@ -64,6 +64,7 @@ export type CourtRow = {
   direccion: string | null
   cantidad_canchas: number | null
   booking_url: string | null
+  whatsapp: string | null
   telefono: string | null
   lat: number | null
   lng: number | null

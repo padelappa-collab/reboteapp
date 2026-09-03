@@ -1,4 +1,4 @@
-import { Crosshair, ExternalLink, MapPin, Phone } from 'lucide-react'
+import { Crosshair, ExternalLink, MapPin, MessageCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -8,8 +8,9 @@ import type { CourtRow } from '@/types/database'
 /**
  * Ficha informativa de una cancha.
  *
- * REBOTEAPP no gestiona reservas: los clubes ya usan Playtomic. El botón
- * "Reservar" abre el enlace externo del club y ahí termina nuestra parte.
+ * REBOTEAPP no gestiona reservas: los clubes ya usan Playtomic, EasyCancha o
+ * simplemente WhatsApp. El boton principal abre el enlace externo del club y
+ * ahi termina nuestra parte.
  */
 export function CourtCard({
   cancha,
@@ -21,10 +22,14 @@ export function CourtCard({
   onVerEnMapa?: () => void
 }) {
   const tieneUbicacion = cancha.lat !== null && cancha.lng !== null
-  const mapa =
-    cancha.lat !== null && cancha.lng !== null
-      ? `https://www.google.com/maps/search/?api=1&query=${cancha.lat},${cancha.lng}`
-      : null
+  const mapa = tieneUbicacion
+    ? `https://www.google.com/maps/search/?api=1&query=${cancha.lat},${cancha.lng}`
+    : null
+
+  // si no hay reserva en linea, el WhatsApp pasa a ser la via principal
+  const reservaEnLinea = cancha.booking_url
+  const chat = cancha.whatsapp
+  const sinReserva = !reservaEnLinea && !chat
 
   return (
     <Card className={cn('transition-shadow', destacada && 'ring-2 ring-primary')}>
@@ -53,20 +58,36 @@ export function CourtCard({
         )}
 
         <div className="flex flex-wrap gap-2">
-          {cancha.booking_url && (
+          {reservaEnLinea && (
             <Button asChild size="sm" className="h-10">
-              <a href={cancha.booking_url} target="_blank" rel="noreferrer noopener">
+              <a href={reservaEnLinea} target="_blank" rel="noreferrer noopener">
                 Reservar
                 <ExternalLink className="size-4" />
               </a>
             </Button>
           )}
+
+          {chat && (
+            <Button
+              asChild
+              size="sm"
+              variant={reservaEnLinea ? 'outline' : 'default'}
+              className="h-10"
+            >
+              <a href={chat} target="_blank" rel="noreferrer noopener">
+                <MessageCircle className="size-4" />
+                {reservaEnLinea ? 'WhatsApp' : 'Reservar por WhatsApp'}
+              </a>
+            </Button>
+          )}
+
           {tieneUbicacion && onVerEnMapa && (
             <Button size="sm" variant="outline" className="h-10" onClick={onVerEnMapa}>
               <Crosshair className="size-4" />
               Ver en el mapa
             </Button>
           )}
+
           {mapa && (
             <Button asChild size="sm" variant="outline" className="h-10">
               <a href={mapa} target="_blank" rel="noreferrer noopener">
@@ -75,19 +96,11 @@ export function CourtCard({
               </a>
             </Button>
           )}
-          {cancha.telefono && (
-            <Button asChild size="sm" variant="outline" className="h-10">
-              <a href={`tel:${cancha.telefono}`}>
-                <Phone className="size-4" />
-                Llamar
-              </a>
-            </Button>
-          )}
         </div>
 
-        {!cancha.booking_url && (
+        {sinReserva && (
           <p className="text-xs text-muted-foreground">
-            Este club todavía no tiene enlace de reserva. Escríbeles directamente.
+            Este club todavía no tiene enlace de reserva.
           </p>
         )}
       </CardContent>
