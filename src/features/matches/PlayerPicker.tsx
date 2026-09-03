@@ -60,6 +60,14 @@ export function PlayerPicker({
     }
   }, [texto, abierto, yaElegidos])
 
+  // Filtrar tambien al pintar, no solo al buscar: cada buscador guarda sus
+  // propios resultados, y los del otro pueden haber quedado desactualizados
+  // justo despues de elegir a alguien. Sin esto se podia añadir dos veces al
+  // mismo jugador aprovechando ese instante.
+  const visibles = resultados.filter(
+    (j) => !yaElegidos.includes(j.id) && !seleccionados.some((s) => s.id === j.id),
+  )
+
   const lleno = seleccionados.length >= maximo
 
   return (
@@ -107,15 +115,15 @@ export function PlayerPicker({
 
           {abierto && (
             <div className="max-h-56 overflow-y-auto rounded-lg border">
-              {buscando && resultados.length === 0 && (
+              {buscando && visibles.length === 0 && (
                 <p className="p-3 text-sm text-muted-foreground">Buscando…</p>
               )}
-              {!buscando && resultados.length === 0 && (
+              {!buscando && visibles.length === 0 && (
                 <p className="p-3 text-sm text-muted-foreground">
                   Nadie con ese nombre. Los 4 jugadores tienen que estar registrados.
                 </p>
               )}
-              {resultados.map((j) => (
+              {visibles.map((j) => (
                 <button
                   key={j.id}
                   type="button"
@@ -124,6 +132,8 @@ export function PlayerPicker({
                     'hover:bg-accent',
                   )}
                   onClick={() => {
+                    // ultimo cinturon: nunca dos veces el mismo jugador
+                    if (seleccionados.some((s) => s.id === j.id)) return
                     onChange([...seleccionados, j])
                     setTexto('')
                     setAbierto(false)

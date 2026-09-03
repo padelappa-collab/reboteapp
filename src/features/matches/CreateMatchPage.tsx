@@ -107,6 +107,18 @@ export default function CreateMatchPage() {
 
   const elegidos = [...parejaA, ...parejaB]
   const ids = elegidos.map((j) => j.id)
+
+  // Elegir en una pareja saca al jugador de la otra: nadie puede estar dos
+  // veces en el mismo partido, y la base lo rechazaria de todas formas.
+  function elegirParejaA(nuevos: JugadorResumen[]) {
+    setParejaA(nuevos)
+    setParejaB((otros) => otros.filter((j) => !nuevos.some((n) => n.id === j.id)))
+  }
+
+  function elegirParejaB(nuevos: JugadorResumen[]) {
+    setParejaB(nuevos)
+    setParejaA((otros) => otros.filter((j) => !nuevos.some((n) => n.id === j.id)))
+  }
   const completo = parejaA.length === 2 && parejaB.length === 2
 
   const tipo = useMemo(() => {
@@ -202,13 +214,13 @@ export default function CreateMatchPage() {
             etiqueta="Tu pareja"
             seleccionados={parejaA}
             yaElegidos={ids}
-            onChange={setParejaA}
+            onChange={elegirParejaA}
           />
           <PlayerPicker
             etiqueta="Pareja rival"
             seleccionados={parejaB}
             yaElegidos={ids}
-            onChange={setParejaB}
+            onChange={elegirParejaB}
           />
 
           {tipo && (
