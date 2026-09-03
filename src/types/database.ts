@@ -120,6 +120,8 @@ export type BoardPostRow = {
   acompanantes: string[]
   /** Derivada en la base: 3 menos los acompañantes. */
   faltan: 1 | 2 | 3
+  /** El partido que salió de esta publicación, si ya se registró. */
+  match_id: string | null
   fecha_partido: string
   nivel_buscado: string | null
   cancha_id: string | null
@@ -228,6 +230,10 @@ export type Database = {
       }
       salir_publicacion: {
         Args: { p_post_id: string }
+        Returns: undefined
+      }
+      vincular_partido: {
+        Args: { p_post_id: string; p_match_id: string }
         Returns: undefined
       }
     }

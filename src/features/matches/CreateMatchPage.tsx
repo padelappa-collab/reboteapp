@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAuth } from '@/features/auth/useAuth'
+import { vincularPartido } from '@/features/board/board.api'
 import { useCourts } from '@/features/courts/useCourts'
 import { ETIQUETA_RANKING, inferirMatchType } from '@/lib/matchType'
 import type { SetMarcador } from '@/types/database'
@@ -41,6 +42,7 @@ interface DesdeTablon {
   jugadores?: string[]
   canchaId?: string | null
   fecha?: string
+  postId?: string
 }
 
 export default function CreateMatchPage() {
@@ -153,6 +155,16 @@ export default function CreateMatchPage() {
         parejaB: [parejaB[0].id, parejaB[1].id],
         sets,
       })
+      // dejar constancia de que salió de esa publicación; si falla, el partido
+      // ya quedó registrado y eso es lo que importa
+      if (desdeTablon.postId) {
+        try {
+          await vincularPartido(desdeTablon.postId, partido.id)
+        } catch (error) {
+          console.error('No se pudo enlazar la publicación con el partido', error)
+        }
+      }
+
       toast.success('Partido registrado. Faltan las confirmaciones de los otros 3.')
       navegar(`/partidos/${partido.id}`, { replace: true })
     } catch (error) {

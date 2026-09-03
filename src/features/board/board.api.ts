@@ -103,6 +103,15 @@ export async function cambiarEstado(postId: string, estado: BoardEstado) {
   if (error) throw new Error(error.message)
 }
 
+/** Deja constancia de que este partido salió de esta publicación. */
+export async function vincularPartido(postId: string, matchId: string) {
+  const { error } = await supabase.rpc('vincular_partido', {
+    p_post_id: postId,
+    p_match_id: matchId,
+  })
+  if (error) throw new Error(error.message)
+}
+
 /** Los cuatro jugadores del partido, si la publicación ya está completa. */
 export function cuartetoDe(p: PublicacionConDatos): string[] {
   // sin repetidos: una publicación vieja puede traer a alguien dos veces, y un

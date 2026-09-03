@@ -135,7 +135,18 @@ export function PostCard({
           )}
         </div>
 
-        {libres === 0 && voy && (
+        {publicacion.match_id ? (
+          <Button
+            variant="secondary"
+            className="h-10 w-full"
+            onClick={() => navegar(`/partidos/${publicacion.match_id}`)}
+          >
+            <Swords className="size-4" />
+            Ver el partido registrado
+          </Button>
+        ) : (
+          libres === 0 &&
+          voy && (
           <Button
             variant="secondary"
             className="h-10 w-full"
@@ -145,18 +156,25 @@ export function PostCard({
                   jugadores: cuartetoDe(publicacion),
                   canchaId: publicacion.cancha_id,
                   fecha: publicacion.fecha_partido,
+                  postId: publicacion.id,
                 },
               })
             }
           >
             <Swords className="size-4" />
-            Registrar el partido
-          </Button>
+              Registrar el partido
+            </Button>
+          )
         )}
 
         {/* Una sola acción, y dice lo que hace. Quien va se sale solo: la
             publicación sigue para los demás con un cupo más libre. */}
-        {voy ? (
+        {publicacion.match_id ? (
+          <p className="text-center text-xs text-muted-foreground">
+            El resultado ya está registrado. Si necesitas salirte, hazlo desde la
+            ficha del partido.
+          </p>
+        ) : voy ? (
           <Button
             variant="ghost"
             className="h-10 w-full text-destructive"
