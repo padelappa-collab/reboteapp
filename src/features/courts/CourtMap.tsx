@@ -1,7 +1,7 @@
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { Maximize2 } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { Maximize2, TriangleAlert } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { CourtRow } from '@/types/database'
 
@@ -72,6 +72,7 @@ export function CourtMap({
   const contenedor = useRef<HTMLDivElement>(null)
   const mapa = useRef<maplibregl.Map | null>(null)
   const marcadores = useRef<Record<string, maplibregl.Marker>>({})
+  const [fallo, setFallo] = useState<string | null>(null)
 
   const ubicadas = canchas.filter(
     (c): c is CanchaUbicada => c.lat !== null && c.lng !== null,
@@ -80,13 +81,30 @@ export function CourtMap({
   useEffect(() => {
     if (!contenedor.current || mapa.current || ubicadas.length === 0) return
 
-    const m = new maplibregl.Map({
-      container: contenedor.current,
-      style: ESTILO,
-      center: [ubicadas[0].lng, ubicadas[0].lat],
-      zoom: 11,
-      attributionControl: { compact: true },
-    })
+    // MapLibre 6 necesita WebGL2. Es raro que falte, pero si falta hay que
+    // decirlo en vez de dejar un recuadro vacío sin explicación.
+    const lienzo = document.createElement('canvas')
+    if (!lienzo.getContext('webgl2')) {
+      setFallo('Este navegador no puede dibujar el mapa.')
+      return
+    }
+
+    let m: maplibregl.Map
+    try {
+      m = new maplibregl.Map({
+        container: contenedor.current,
+        style: ESTILO,
+        center: [ubicadas[0].lng, ubicadas[0].lat],
+        zoom: 11,
+        attributionControl: { compact: true },
+      })
+    } catch (error) {
+      console.error('No se pudo iniciar el mapa', error)
+      setFallo('No se pudo cargar el mapa.')
+      return
+    }
+
+    m.on('error', (e) => console.error('Error del mapa', e.error))
 
     m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right')
     m.addControl(
@@ -142,6 +160,20 @@ export function CourtMap({
   if (ubicadas.length === 0) return null
 
   const sinUbicar = canchas.length - ubicadas.length
+
+  // Sin mapa, el directorio sigue sirviendo: cada ficha lleva su enlace de
+  // "Cómo llegar", que abre la app de mapas del teléfono.
+  if (fallo) {
+    return (
+      <div className="flex items-start gap-2 rounded-xl border border-dashed p-4">
+        <TriangleAlert className="mt-0.5 size-4 shrink-0 text-amber-600" />
+        <p className="text-sm text-muted-foreground">
+          {fallo} Usa el botón <span className="font-medium">Cómo llegar</span> de cada
+          club para abrirlo en tu app de mapas.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-1.5">
