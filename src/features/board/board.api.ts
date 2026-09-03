@@ -1,15 +1,26 @@
+import { perfilesDe } from '@/features/matches/matches.api'
 import { supabase } from '@/lib/supabase'
 import type { BoardEstado, BoardPostRow } from '@/types/database'
+
+export interface Jugador {
+  id: string
+  nombre: string
+}
 
 export interface PublicacionConDatos extends BoardPostRow {
   autor: { id: string; nombre: string; ciudad: string } | null
   cancha: { id: string; nombre: string } | null
-  apuntados: Array<{ id: string; nombre: string }>
+  /** Quienes ya iban con el autor, con nombre. */
+  acompanantesJugadores: Jugador[]
+  /** Quienes se apuntaron desde el tablón. */
+  apuntados: Jugador[]
 }
 
 /**
- * Publicaciones abiertas, de la fecha de hoy en adelante.
- * Las pasadas dejan de tener sentido, así que no se listan.
+ * Publicaciones de hoy en adelante. Las pasadas dejan de tener sentido.
+ *
+ * Los acompañantes se guardan como un arreglo de ids, no como una relación, así
+ * que sus nombres se traen en una segunda consulta.
  */
 export async function publicacionesAbiertas(
   ciudad?: string,
@@ -30,22 +41,31 @@ export async function publicacionesAbiertas(
   type Fila = BoardPostRow & {
     autor: { id: string; nombre: string; ciudad: string } | null
     cancha: { id: string; nombre: string } | null
-    signups: Array<{ user: { id: string; nombre: string } | null }> | null
+    signups: Array<{ user: Jugador | null }> | null
   }
 
-  return (data as unknown as Fila[])
-    .filter((p) => !ciudad || p.autor?.ciudad === ciudad)
-    .map((p) => ({
-      ...p,
-      apuntados: (p.signups ?? [])
-        .map((s) => s.user)
-        .filter((u): u is { id: string; nombre: string } => u !== null),
-    }))
+  const filas = (data as unknown as Fila[]).filter(
+    (p) => !ciudad || p.autor?.ciudad === ciudad,
+  )
+
+  const idsAcompanantes = [...new Set(filas.flatMap((p) => p.acompanantes ?? []))]
+  const perfiles = await perfilesDe(idsAcompanantes)
+
+  return filas.map((p) => ({
+    ...p,
+    acompanantesJugadores: (p.acompanantes ?? [])
+      .map((id) => perfiles.get(id))
+      .filter((j): j is NonNullable<typeof j> => Boolean(j))
+      .map((j) => ({ id: j.id, nombre: j.nombre })),
+    apuntados: (p.signups ?? [])
+      .map((s) => s.user)
+      .filter((u): u is Jugador => u !== null),
+  }))
 }
 
 export async function crearPublicacion(datos: {
   userId: string
-  faltan: 1 | 2 | 3
+  acompanantes: string[]
   fechaPartido: string
   nivelBuscado: string | null
   canchaId: string | null
@@ -53,7 +73,7 @@ export async function crearPublicacion(datos: {
 }) {
   const { error } = await supabase.from('board_posts').insert({
     user_id: datos.userId,
-    faltan: datos.faltan,
+    acompanantes: datos.acompanantes,
     fecha_partido: datos.fechaPartido,
     nivel_buscado: datos.nivelBuscado,
     cancha_id: datos.canchaId,
@@ -81,4 +101,13 @@ export async function desapuntarse(postId: string, userId: string) {
 export async function cambiarEstado(postId: string, estado: BoardEstado) {
   const { error } = await supabase.from('board_posts').update({ estado }).eq('id', postId)
   if (error) throw new Error(error.message)
+}
+
+/** Los cuatro jugadores del partido, si la publicación ya está completa. */
+export function cuartetoDe(p: PublicacionConDatos): string[] {
+  return [
+    p.user_id,
+    ...p.acompanantesJugadores.map((j) => j.id),
+    ...p.apuntados.map((j) => j.id),
+  ].slice(0, 4)
 }

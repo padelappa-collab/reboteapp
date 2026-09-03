@@ -1,5 +1,5 @@
-import { useMemo, useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,11 +17,18 @@ import { useAuth } from '@/features/auth/useAuth'
 import { useCourts } from '@/features/courts/useCourts'
 import { ETIQUETA_RANKING, inferirMatchType } from '@/lib/matchType'
 import type { SetMarcador } from '@/types/database'
-import { crearPartido, type JugadorResumen } from './matches.api'
+import { crearPartido, perfilesDe, type JugadorResumen } from './matches.api'
 import { PlayerPicker } from './PlayerPicker'
 import { marcadorValido, setsGanados, SetsInput } from './SetsInput'
 
 const SIN_CANCHA = 'sin-cancha'
+
+/** Un ISO de la base al formato que espera un input datetime-local. */
+function paraInput(iso: string) {
+  const d = new Date(iso)
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+  return d.toISOString().slice(0, 16)
+}
 
 function fechaLocalAhora() {
   const ahora = new Date()
@@ -29,10 +36,18 @@ function fechaLocalAhora() {
   return ahora.toISOString().slice(0, 16)
 }
 
+/** Lo que manda el tablón cuando se completa un cupo. */
+interface DesdeTablon {
+  jugadores?: string[]
+  canchaId?: string | null
+  fecha?: string
+}
+
 export default function CreateMatchPage() {
   const { perfil } = useAuth()
   const navegar = useNavigate()
   const { canchas } = useCourts(perfil?.ciudad)
+  const desdeTablon = (useLocation().state ?? {}) as DesdeTablon
 
   // quien registra el partido siempre juega: la RLS lo exige
   const yo: JugadorResumen | null = perfil
@@ -51,8 +66,10 @@ export default function CreateMatchPage() {
       }
     : null
 
-  const [fecha, setFecha] = useState(fechaLocalAhora())
-  const [canchaId, setCanchaId] = useState<string>(SIN_CANCHA)
+  const [fecha, setFecha] = useState(
+    desdeTablon.fecha ? paraInput(desdeTablon.fecha) : fechaLocalAhora(),
+  )
+  const [canchaId, setCanchaId] = useState<string>(desdeTablon.canchaId ?? SIN_CANCHA)
   const [parejaA, setParejaA] = useState<JugadorResumen[]>(yo ? [yo] : [])
   const [parejaB, setParejaB] = useState<JugadorResumen[]>([])
   const [sets, setSets] = useState<SetMarcador[]>([
@@ -60,6 +77,33 @@ export default function CreateMatchPage() {
     { a: 6, b: 4 },
   ])
   const [enviando, setEnviando] = useState(false)
+
+  // el tablón manda los cuatro ids; hay que traer sus perfiles y repartirlos
+  useEffect(() => {
+    const ids = desdeTablon.jugadores
+    if (!ids || ids.length !== 4 || !perfil) return
+
+    let vigente = true
+    perfilesDe(ids).then((perfiles) => {
+      if (!vigente) return
+      const jugadores = ids
+        .map((id) => perfiles.get(id))
+        .filter((j): j is JugadorResumen => Boolean(j))
+      if (jugadores.length !== 4) return
+
+      // quien registra va siempre en la pareja A
+      const yoPrimero = [
+        ...jugadores.filter((j) => j.id === perfil.id),
+        ...jugadores.filter((j) => j.id !== perfil.id),
+      ]
+      setParejaA(yoPrimero.slice(0, 2))
+      setParejaB(yoPrimero.slice(2, 4))
+    })
+
+    return () => {
+      vigente = false
+    }
+  }, [desdeTablon.jugadores, perfil])
 
   const elegidos = [...parejaA, ...parejaB]
   const ids = elegidos.map((j) => j.id)
@@ -103,6 +147,12 @@ export default function CreateMatchPage() {
   return (
     <form onSubmit={enviar} className="space-y-4 pb-4">
       <h1 className="text-xl font-semibold">Registrar partido</h1>
+
+      {desdeTablon.jugadores && (
+        <p className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
+          Vienen del tablón. Acomoda las parejas si no quedaron como jugaron.
+        </p>
+      )}
 
       <Card>
         <CardContent className="space-y-4">

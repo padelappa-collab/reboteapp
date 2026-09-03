@@ -22,6 +22,8 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth/useAuth'
 import { useCourts } from '@/features/courts/useCourts'
+import { PlayerPicker } from '@/features/matches/PlayerPicker'
+import type { JugadorResumen } from '@/features/matches/matches.api'
 import { CATEGORIAS_FEMENINO, CATEGORIAS_MASCULINO } from '@/lib/categories'
 import { crearPublicacion } from './board.api'
 
@@ -40,7 +42,7 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
   const { canchas } = useCourts(perfil?.ciudad)
 
   const [abierto, setAbierto] = useState(false)
-  const [faltan, setFaltan] = useState<1 | 2 | 3>(1)
+  const [acompanantes, setAcompanantes] = useState<JugadorResumen[]>([])
   const [fecha, setFecha] = useState(enUnaHora())
   const [nivel, setNivel] = useState(CUALQUIER_NIVEL)
   const [canchaId, setCanchaId] = useState(SIN_CANCHA)
@@ -50,6 +52,8 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
   const categorias =
     perfil?.genero === 'femenino' ? CATEGORIAS_FEMENINO : CATEGORIAS_MASCULINO
 
+  const faltan = 3 - acompanantes.length
+
   async function enviar(e: FormEvent) {
     e.preventDefault()
     if (!perfil) return
@@ -58,7 +62,7 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
     try {
       await crearPublicacion({
         userId: perfil.id,
-        faltan,
+        acompanantes: acompanantes.map((j) => j.id),
         fechaPartido: new Date(fecha).toISOString(),
         nivelBuscado: nivel === CUALQUIER_NIVEL ? null : nivel,
         canchaId: canchaId === SIN_CANCHA ? null : canchaId,
@@ -67,6 +71,7 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
       toast.success('Publicado en el tablón')
       setAbierto(false)
       setNota('')
+      setAcompanantes([])
       onCreada()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo publicar')
@@ -94,34 +99,22 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
 
         <form onSubmit={enviar} className="grid gap-4 px-4 pb-6">
           <div className="grid gap-2">
-            <Label>¿Cuántos jugadores faltan?</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {(
-                [
-                  [1, '1', 'Ya son 3'],
-                  [2, '2', 'Ya son 2'],
-                  [3, '3', 'Vas solo'],
-                ] as const
-              ).map(([valor, numero, ayuda]) => (
-                <button
-                  key={valor}
-                  type="button"
-                  onClick={() => setFaltan(valor)}
-                  className={
-                    faltan === valor
-                      ? 'rounded-lg border border-primary bg-primary/10 px-2 py-3 text-center text-primary'
-                      : 'rounded-lg border px-2 py-3 text-center hover:bg-accent'
-                  }
-                >
-                  <span className="block text-lg font-semibold">{numero}</span>
-                  <span className="block text-xs text-muted-foreground">{ayuda}</span>
-                </button>
-              ))}
+            <PlayerPicker
+              etiqueta="¿Quién más va contigo?"
+              seleccionados={acompanantes}
+              yaElegidos={[perfil?.id ?? '', ...acompanantes.map((j) => j.id)]}
+              onChange={setAcompanantes}
+              maximo={2}
+            />
+            <div className="rounded-lg bg-muted p-3 text-sm">
+              <span className="font-medium">
+                {faltan === 1 ? 'Falta 1 jugador' : `Faltan ${faltan} jugadores`}
+              </span>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Si vas solo, déjalo vacío. Quienes ya van contigo tienen que estar
+                registrados para que después el partido cuente para el ranking.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Cuenta solo los que faltan. Los que ya van contigo no tienen que
-              apuntarse.
-            </p>
           </div>
 
           <div className="grid gap-2">

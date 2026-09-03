@@ -1,10 +1,17 @@
-import { CalendarDays, Check, MapPin, Users } from 'lucide-react'
+import { CalendarDays, Check, MapPin, Swords, Users } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { apuntarse, cambiarEstado, desapuntarse, type PublicacionConDatos } from './board.api'
+import {
+  apuntarse,
+  cambiarEstado,
+  cuartetoDe,
+  desapuntarse,
+  type PublicacionConDatos,
+} from './board.api'
 
 function fechaLarga(iso: string) {
   return new Date(iso).toLocaleString('es-CO', {
@@ -26,6 +33,7 @@ export function PostCard({
   onCambio: () => void
 }) {
   const [enviando, setEnviando] = useState(false)
+  const navegar = useNavigate()
 
   const libres = Math.max(0, publicacion.faltan - publicacion.apuntados.length)
   const esMio = publicacion.user_id === usuarioId
@@ -98,11 +106,38 @@ export function PostCard({
 
         {publicacion.nota && <p className="text-sm">{publicacion.nota}</p>}
 
-        {publicacion.apuntados.length > 0 && (
-          <div className="rounded-lg bg-muted p-2 text-sm">
-            <span className="text-muted-foreground">Apuntados: </span>
-            {publicacion.apuntados.map((a) => a.nombre).join(', ')}
-          </div>
+        <div className="rounded-lg bg-muted p-2 text-sm">
+          <span className="text-muted-foreground">Van: </span>
+          {[
+            publicacion.autor?.nombre ?? '…',
+            ...publicacion.acompanantesJugadores.map((j) => j.nombre),
+            ...publicacion.apuntados.map((j) => j.nombre),
+          ].join(', ')}
+          {libres > 0 && (
+            <span className="text-muted-foreground">
+              {' '}
+              + {libres} por definir
+            </span>
+          )}
+        </div>
+
+        {libres === 0 && (
+          <Button
+            variant="secondary"
+            className="h-10 w-full"
+            onClick={() =>
+              navegar('/partidos/nuevo', {
+                state: {
+                  jugadores: cuartetoDe(publicacion),
+                  canchaId: publicacion.cancha_id,
+                  fecha: publicacion.fecha_partido,
+                },
+              })
+            }
+          >
+            <Swords className="size-4" />
+            Registrar el partido
+          </Button>
         )}
 
         {!cerrado && (

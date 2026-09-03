@@ -114,7 +114,9 @@ export type EloHistoryRow = {
 export type BoardPostRow = {
   id: string
   user_id: string
-  /** Cuántos jugadores faltan: 1, 2 o 3. */
+  /** Quienes ya van con el autor, sin contarlo a él. */
+  acompanantes: string[]
+  /** Derivada en la base: 3 menos los acompañantes. */
   faltan: 1 | 2 | 3
   fecha_partido: string
   nivel_buscado: string | null
@@ -127,7 +129,7 @@ export type BoardPostRow = {
 
 export type BoardPostInsert = {
   user_id: string
-  faltan: 1 | 2 | 3
+  acompanantes: string[]
   fecha_partido: string
   nivel_buscado?: string | null
   cancha_id?: string | null
@@ -137,6 +139,7 @@ export type BoardPostInsert = {
 /** El estado lo cambia el autor: cerrar el cupo o cancelar. */
 export type BoardPostUpdate = {
   estado?: BoardEstado
+  acompanantes?: string[]
   nivel_buscado?: string | null
   nota?: string | null
   fecha_partido?: string
