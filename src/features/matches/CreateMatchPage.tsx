@@ -121,6 +121,12 @@ export default function CreateMatchPage() {
   const errorMarcador = marcadorValido(sets)
   const ganados = setsGanados(sets)
 
+  // los nombres reales encima de cada columna del marcador
+  const nombresDe = (pareja: JugadorResumen[], porDefecto: string) =>
+    pareja.length === 0
+      ? porDefecto
+      : pareja.map((j) => j.nombre.replace(' (tú)', '')).join(' y ')
+
   async function enviar(e: FormEvent) {
     e.preventDefault()
     if (!perfil || !completo || errorMarcador) return
@@ -216,14 +222,25 @@ export default function CreateMatchPage() {
 
       <Card>
         <CardContent className="space-y-3">
-          <SetsInput sets={sets} onChange={setSets} />
+          <SetsInput
+            sets={sets}
+            onChange={setSets}
+            etiquetaA={nombresDe(parejaA, 'Tu pareja')}
+            etiquetaB={nombresDe(parejaB, 'Pareja rival')}
+          />
 
           {errorMarcador ? (
             <p className="text-sm text-destructive">{errorMarcador}</p>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Ganan {ganados.a > ganados.b ? 'tú y tu pareja' : 'los rivales'} por{' '}
-              {Math.max(ganados.a, ganados.b)}–{Math.min(ganados.a, ganados.b)} en sets.
+              Ganan{' '}
+              <span className="font-medium text-foreground">
+                {ganados.a > ganados.b
+                  ? nombresDe(parejaA, 'tú y tu pareja')
+                  : nombresDe(parejaB, 'los rivales')}
+              </span>{' '}
+              por {Math.max(ganados.a, ganados.b)}–{Math.min(ganados.a, ganados.b)} en
+              sets.
             </p>
           )}
         </CardContent>

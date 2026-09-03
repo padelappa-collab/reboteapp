@@ -26,9 +26,14 @@ export function marcadorValido(sets: SetMarcador[]): string | null {
 export function SetsInput({
   sets,
   onChange,
+  etiquetaA = 'Tu pareja',
+  etiquetaB = 'Pareja rival',
 }: {
   sets: SetMarcador[]
   onChange: (sets: SetMarcador[]) => void
+  /** Quién es cada columna. Sin esto no se sabe de quién es cada número. */
+  etiquetaA?: string
+  etiquetaB?: string
 }) {
   function editar(indice: number, lado: 'a' | 'b', valor: string) {
     const numero = Math.max(0, Math.min(20, Number(valor) || 0))
@@ -39,27 +44,39 @@ export function SetsInput({
     <div className="grid gap-3">
       <Label>Marcador</Label>
 
+      {/* encabezado: deja claro qué columna es de quién */}
+      <div className="flex items-end gap-3">
+        <span className="w-12 shrink-0" />
+        <span className="flex-1 text-center text-xs font-medium leading-tight">
+          {etiquetaA}
+        </span>
+        <span className="w-3 shrink-0" />
+        <span className="flex-1 text-center text-xs font-medium leading-tight text-muted-foreground">
+          {etiquetaB}
+        </span>
+      </div>
+
       {sets.map((set, i) => (
         <div key={i} className="flex items-center gap-3">
-          <span className="w-12 text-sm text-muted-foreground">Set {i + 1}</span>
+          <span className="w-12 shrink-0 text-sm text-muted-foreground">Set {i + 1}</span>
           <Input
             type="number"
             inputMode="numeric"
             min={0}
             max={20}
             className="h-11 text-center"
-            aria-label={`Juegos de la pareja A en el set ${i + 1}`}
+            aria-label={`Juegos de ${etiquetaA} en el set ${i + 1}`}
             value={set.a}
             onChange={(e) => editar(i, 'a', e.target.value)}
           />
-          <span className="text-muted-foreground">–</span>
+          <span className="w-3 shrink-0 text-center text-muted-foreground">–</span>
           <Input
             type="number"
             inputMode="numeric"
             min={0}
             max={20}
             className="h-11 text-center"
-            aria-label={`Juegos de la pareja B en el set ${i + 1}`}
+            aria-label={`Juegos de ${etiquetaB} en el set ${i + 1}`}
             value={set.b}
             onChange={(e) => editar(i, 'b', e.target.value)}
           />
