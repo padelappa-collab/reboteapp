@@ -1,38 +1,53 @@
 import L from 'leaflet'
-import icono2x from 'leaflet/dist/images/marker-icon-2x.png'
-import iconoUrl from 'leaflet/dist/images/marker-icon.png'
-import iconoSombra from 'leaflet/dist/images/marker-shadow.png'
 import 'leaflet/dist/leaflet.css'
+import { Maximize2 } from 'lucide-react'
 import { useEffect } from 'react'
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
+import { Button } from '@/components/ui/button'
 import type { CourtRow } from '@/types/database'
-
-// Leaflet arma las rutas de sus iconos a mano y con un bundler quedan rotas.
-// Hay que apuntarlas a los archivos que Vite sí procesa.
-L.Icon.Default.mergeOptions({
-  iconUrl: iconoUrl,
-  iconRetinaUrl: icono2x,
-  shadowUrl: iconoSombra,
-})
 
 type CanchaUbicada = CourtRow & { lat: number; lng: number }
 
-/** Marcador más grande y con el color de la app para la cancha seleccionada. */
-const ICONO_ACTIVO = L.divIcon({
-  className: '',
-  html: `<div style="
-    width:22px;height:22px;border-radius:9999px;
-    background:oklch(0.58 0.15 155);border:3px solid white;
-    box-shadow:0 0 0 2px oklch(0.58 0.15 155), 0 2px 6px rgba(0,0,0,.4);
-  "></div>`,
-  iconSize: [22, 22],
-  iconAnchor: [11, 11],
-})
+const VERDE = '#1f7a53'
 
 /**
- * Encuadra el mapa para que se vean todas las canchas, o centra en una cuando
- * el jugador la selecciona desde la lista.
+ * Pin en forma de gota con una pelota de pádel dentro, al estilo de los mapas
+ * de siempre. Se dibuja en SVG para que se vea nítido en cualquier pantalla y
+ * no dependa de las imágenes que Leaflet trae por defecto.
  */
+function pin(activo: boolean, etiqueta: string) {
+  const alto = activo ? 52 : 40
+  const ancho = Math.round(alto * 0.72)
+  const relleno = activo ? VERDE : '#2f9a6b'
+
+  return L.divIcon({
+    className: '',
+    html: `
+      <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+        <svg width="${ancho}" height="${alto}" viewBox="0 0 24 34" fill="none">
+          <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
+                fill="${relleno}" stroke="white" stroke-width="1.6"/>
+          <circle cx="12" cy="11.6" r="5.4" fill="white"/>
+          <path d="M12 6.2c1.5 1.5 1.5 9.3 0 10.8M6.6 11.6c1.9-1.4 8.9-1.4 10.8 0"
+                stroke="${relleno}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+        </svg>
+        ${
+          activo
+            ? `<span style="
+                 position:absolute;top:${alto + 2}px;white-space:nowrap;
+                 background:white;color:#111;border:1px solid rgba(0,0,0,.12);
+                 border-radius:6px;padding:2px 6px;font-size:11px;font-weight:600;
+                 box-shadow:0 1px 4px rgba(0,0,0,.18);
+               ">${etiqueta}</span>`
+            : ''
+        }
+      </div>`,
+    iconSize: [ancho, alto],
+    iconAnchor: [ancho / 2, alto],
+  })
+}
+
+/** Encuadra todas las canchas, o vuela hasta la que el jugador seleccionó. */
 function Encuadre({
   canchas,
   seleccionada,
@@ -45,22 +60,43 @@ function Encuadre({
   useEffect(() => {
     const activa = canchas.find((c) => c.id === seleccionada)
     if (activa) {
-      mapa.flyTo([activa.lat, activa.lng], 16, { duration: 0.6 })
+      mapa.flyTo([activa.lat, activa.lng], 15, { duration: 0.7 })
       return
     }
     if (canchas.length === 1) {
       mapa.setView([canchas[0].lat, canchas[0].lng], 14)
       return
     }
-    if (canchas.length > 1) {
-      mapa.fitBounds(
-        L.latLngBounds(canchas.map((c) => [c.lat, c.lng] as [number, number])),
-        { padding: [40, 40], maxZoom: 15 },
-      )
-    }
+    mapa.fitBounds(L.latLngBounds(canchas.map((c) => [c.lat, c.lng] as [number, number])), {
+      padding: [45, 45],
+      maxZoom: 14,
+    })
   }, [canchas, seleccionada, mapa])
 
   return null
+}
+
+/** Botón para volver a ver todas las canchas después de acercarse a una. */
+function BotonVerTodas({ canchas }: { canchas: CanchaUbicada[] }) {
+  const mapa = useMap()
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="secondary"
+      className="absolute right-3 top-3 z-[1000] h-9 shadow-md"
+      onClick={() =>
+        mapa.fitBounds(
+          L.latLngBounds(canchas.map((c) => [c.lat, c.lng] as [number, number])),
+          { padding: [45, 45], maxZoom: 14 },
+        )
+      }
+    >
+      <Maximize2 className="size-4" />
+      Ver todas
+    </Button>
+  )
 }
 
 export function CourtMap({
@@ -82,11 +118,12 @@ export function CourtMap({
 
   return (
     <div className="space-y-1.5">
-      <div className="h-80 overflow-hidden rounded-xl border shadow-sm sm:h-96">
+      <div className="relative h-[60vh] min-h-80 overflow-hidden rounded-xl border shadow-sm">
         <MapContainer
           center={[ubicadas[0].lat, ubicadas[0].lng]}
-          zoom={13}
-          scrollWheelZoom={false}
+          zoom={12}
+          scrollWheelZoom
+          zoomControl={false}
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
@@ -95,47 +132,22 @@ export function CourtMap({
           />
 
           <Encuadre canchas={ubicadas} seleccionada={seleccionada} />
+          <BotonVerTodas canchas={ubicadas} />
 
           {ubicadas.map((c) => (
             <Marker
               key={c.id}
               position={[c.lat, c.lng]}
-              icon={c.id === seleccionada ? ICONO_ACTIVO : new L.Icon.Default()}
+              icon={pin(c.id === seleccionada, c.nombre)}
+              zIndexOffset={c.id === seleccionada ? 1000 : 0}
               eventHandlers={{ click: () => onSeleccionar(c.id) }}
-            >
-              <Popup>
-                <span className="text-sm font-medium">{c.nombre}</span>
-                {c.direccion && (
-                  <>
-                    <br />
-                    <span className="text-xs">{c.direccion}</span>
-                  </>
-                )}
-                {c.cantidad_canchas !== null && (
-                  <>
-                    <br />
-                    <span className="text-xs">
-                      {c.cantidad_canchas}{' '}
-                      {c.cantidad_canchas === 1 ? 'cancha' : 'canchas'}
-                    </span>
-                  </>
-                )}
-                {c.booking_url && (
-                  <>
-                    <br />
-                    <a href={c.booking_url} target="_blank" rel="noreferrer noopener">
-                      Reservar
-                    </a>
-                  </>
-                )}
-              </Popup>
-            </Marker>
+            />
           ))}
         </MapContainer>
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Toca un punto para ver el club. Pellizca para acercar.
+        Toca un pin para ver el club abajo.
         {sinUbicar > 0 &&
           ` ${sinUbicar} ${sinUbicar === 1 ? 'club no tiene' : 'clubes no tienen'} ubicación todavía.`}
       </p>

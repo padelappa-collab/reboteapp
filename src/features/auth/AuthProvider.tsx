@@ -4,7 +4,15 @@ import { supabase } from '@/lib/supabase'
 import type { UserRow } from '@/types/database'
 import { AuthContext } from './auth-context'
 
-async function traerPerfil(userId: string): Promise<UserRow | null> {
+/**
+ * Devuelve el perfil, `null` si el jugador todavía no lo creó, o `undefined` si
+ * la consulta falló.
+ *
+ * La diferencia entre null y undefined no es cosmética: `null` manda al
+ * onboarding, así que un fallo de red no puede confundirse con "no tiene
+ * perfil" o el jugador terminaría llenando el formulario otra vez.
+ */
+async function traerPerfil(userId: string): Promise<UserRow | null | undefined> {
   const { data, error } = await supabase
     .from('users')
     .select('*')
@@ -13,7 +21,7 @@ async function traerPerfil(userId: string): Promise<UserRow | null> {
 
   if (error) {
     console.error('No se pudo cargar el perfil', error)
-    return null
+    return undefined
   }
   return data
 }
@@ -37,7 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!vigente) return
       setSession(data.session)
       if (data.session) {
-        setPerfil(await traerPerfil(data.session.user.id))
+        const encontrado = await traerPerfil(data.session.user.id)
+        if (vigente && encontrado !== undefined) setPerfil(encontrado)
       }
       if (vigente) setCargando(false)
     })
@@ -45,8 +54,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange(async (_evento, nuevaSesion) => {
       if (!vigente) return
       setSession(nuevaSesion)
-      setPerfil(nuevaSesion ? await traerPerfil(nuevaSesion.user.id) : null)
-      setCargando(false)
+
+      if (!nuevaSesion) {
+        setPerfil(null)
+        setCargando(false)
+        return
+      }
+
+      // si la consulta falla, conservamos el perfil que ya teníamos en vez de
+      // mandar al jugador al onboarding por un corte de red
+      const encontrado = await traerPerfil(nuevaSesion.user.id)
+      if (vigente && encontrado !== undefined) setPerfil(encontrado)
+      if (vigente) setCargando(false)
     })
 
     return () => {
@@ -57,7 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refrescarPerfil = useCallback(async () => {
     if (!session) return
-    setPerfil(await traerPerfil(session.user.id))
+    const encontrado = await traerPerfil(session.user.id)
+    if (encontrado !== undefined) setPerfil(encontrado)
   }, [session])
 
   const cerrarSesion = useCallback(async () => {

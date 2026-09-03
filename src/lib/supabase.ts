@@ -10,10 +10,24 @@ if (!url || !anonKey) {
   )
 }
 
+/**
+ * La sesión se guarda en localStorage con una clave propia y estable.
+ *
+ * La clave fija importa: la que Supabase genera por defecto lleva dentro el id
+ * del proyecto, así que si algún día se migra el backend todo el mundo
+ * aparecería deslogueado de golpe.
+ *
+ * `flowType: 'pkce'` es el flujo recomendado para apps que corren en el
+ * navegador: el código de autorización solo se puede canjear desde el mismo
+ * dispositivo que lo pidió.
+ */
 export const supabase = createClient<Database>(url, anonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    flowType: 'pkce',
+    storage: window.localStorage,
+    storageKey: 'reboteapp-auth',
   },
 })
