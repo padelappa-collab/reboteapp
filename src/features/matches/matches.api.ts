@@ -120,5 +120,22 @@ export async function cancelarPartido(id: string): Promise<MatchRow> {
   return data as MatchRow
 }
 
+/**
+ * Arregla el marcador de un partido en disputa y vuelve a pedir las
+ * confirmaciones. Quien corrige queda confirmado; los otros tres no, porque el
+ * resultado que habían aprobado ya no es el mismo.
+ */
+export async function corregirMarcador(
+  id: string,
+  sets: SetMarcador[],
+): Promise<MatchRow> {
+  const { data, error } = await supabase.rpc('corregir_marcador', {
+    p_match_id: id,
+    p_sets: sets,
+  })
+  if (error) throw new Error(error.message)
+  return data as MatchRow
+}
+
 // No hay borrarPartido a propósito: un partido tambien es de los otros tres
 // jugadores, así que nadie lo elimina. La salida es cancelarPartido().

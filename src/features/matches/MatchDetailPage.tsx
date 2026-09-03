@@ -12,9 +12,15 @@ import { useAuth } from '@/features/auth/useAuth'
 import { useCourts } from '@/features/courts/useCourts'
 import { ETIQUETA_RANKING } from '@/lib/matchType'
 import { cn } from '@/lib/utils'
-import type { MatchEstado, MatchRow, RankingTipo } from '@/types/database'
-import { cancelarPartido, confirmarPartido, disputarPartido } from './matches.api'
+import type { MatchEstado, MatchRow, RankingTipo, SetMarcador } from '@/types/database'
+import {
+  cancelarPartido,
+  confirmarPartido,
+  corregirMarcador,
+  disputarPartido,
+} from './matches.api'
 import type { JugadorResumen } from './matches.api'
+import { marcadorValido, SetsInput } from './SetsInput'
 import { usePartido } from './useMatches'
 
 const ESTADO: Record<MatchEstado, { texto: string; clase: string }> = {
@@ -152,6 +158,8 @@ export default function MatchDetailPage() {
   const { partido, jugadores, cargando, setPartido } = usePartido(id)
   const { canchas } = useCourts()
   const [enviando, setEnviando] = useState(false)
+  const [corrigiendo, setCorrigiendo] = useState(false)
+  const [setsNuevos, setSetsNuevos] = useState<SetMarcador[] | null>(null)
 
   if (cargando) return <Skeleton className="h-96 w-full" />
   if (!partido) {
@@ -187,9 +195,23 @@ export default function MatchDetailPage() {
     setEnviando(true)
     try {
       setPartido(await disputarPartido(partido!.id))
-      toast.info('Marcado en disputa. Hay que registrarlo de nuevo con el marcador bueno.')
+      toast.info('Marcado en disputa. Cualquiera de los cuatro puede corregir el marcador.')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo disputar')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  async function guardarCorreccion() {
+    if (!setsNuevos) return
+    setEnviando(true)
+    try {
+      setPartido(await corregirMarcador(partido!.id, setsNuevos))
+      setCorrigiendo(false)
+      toast.success('Marcador corregido. Los otros tres tienen que confirmar de nuevo.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo corregir')
     } finally {
       setEnviando(false)
     }
@@ -266,12 +288,86 @@ export default function MatchDetailPage() {
           {partido.estado === 'disputado' && (
             <p className="flex items-start gap-2 text-xs text-destructive">
               <CircleAlert className="mt-0.5 size-4 shrink-0" />
-              Alguien no está de acuerdo con el marcador. Este partido no cuenta: hay
-              que registrarlo de nuevo con el resultado correcto.
+              Alguien no está de acuerdo con el marcador. Cualquiera de los cuatro
+              puede corregirlo; al hacerlo, los demás tienen que confirmar de nuevo.
             </p>
           )}
         </CardContent>
       </Card>
+
+      {soyJugador && partido.estado === 'disputado' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Corregir el marcador</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {corrigiendo ? (
+              <>
+                <SetsInput
+                  sets={setsNuevos ?? partido.sets}
+                  onChange={setSetsNuevos}
+                  etiquetaA={partido.pareja_a
+                    .map((id) => jugadores.get(id)?.nombre ?? '…')
+                    .join(' y ')}
+                  etiquetaB={partido.pareja_b
+                    .map((id) => jugadores.get(id)?.nombre ?? '…')
+                    .join(' y ')}
+                />
+
+                {marcadorValido(setsNuevos ?? partido.sets) && (
+                  <p className="text-sm text-destructive">
+                    {marcadorValido(setsNuevos ?? partido.sets)}
+                  </p>
+                )}
+
+                <div className="flex gap-2">
+                  <Button
+                    className="h-11 flex-1"
+                    disabled={
+                      enviando || Boolean(marcadorValido(setsNuevos ?? partido.sets))
+                    }
+                    onClick={guardarCorreccion}
+                  >
+                    Guardar marcador
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-11"
+                    disabled={enviando}
+                    onClick={() => {
+                      setCorrigiendo(false)
+                      setSetsNuevos(null)
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                className="h-11 w-full"
+                onClick={() => {
+                  setSetsNuevos(partido.sets)
+                  setCorrigiendo(true)
+                }}
+              >
+                Corregir el marcador
+              </Button>
+            )}
+
+            <Button
+              variant="ghost"
+              className="h-11 w-full text-destructive"
+              disabled={enviando}
+              onClick={salirme}
+            >
+              <LogOut className="size-4" />
+              Salir del partido
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {soyJugador && partido.estado === 'pendiente' && (
         <div className="grid gap-2">

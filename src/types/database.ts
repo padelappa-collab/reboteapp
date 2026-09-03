@@ -232,6 +232,10 @@ export type Database = {
         Args: { p_post_id: string }
         Returns: undefined
       }
+      corregir_marcador: {
+        Args: { p_match_id: string; p_sets: SetMarcador[] }
+        Returns: MatchRow
+      }
       vincular_partido: {
         Args: { p_post_id: string; p_match_id: string }
         Returns: undefined
