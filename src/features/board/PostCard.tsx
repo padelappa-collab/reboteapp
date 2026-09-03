@@ -38,8 +38,8 @@ export function PostCard({
   const libres = Math.max(0, publicacion.faltan - publicacion.apuntados.length)
   const esMio = publicacion.user_id === usuarioId
   const yaApuntado = publicacion.apuntados.some((a) => a.id === usuarioId)
-  const participo =
-    esMio || yaApuntado || publicacion.acompanantes.includes(usuarioId)
+  const esAcompanante = publicacion.acompanantes.includes(usuarioId)
+  const participo = esMio || yaApuntado || esAcompanante
   const cerrado = publicacion.estado !== 'abierto'
 
   async function alternar() {
@@ -149,7 +149,8 @@ export function PostCard({
           <div className="flex gap-2">
             {/* con el cupo lleno ya no se puede entrar, pero quien está
                 apuntado tiene que poder bajarse */}
-            {!esMio && (libres > 0 || yaApuntado) && (
+            {/* quien ya va —autor o acompañante— no puede ocupar un cupo */}
+            {!esMio && !esAcompanante && (libres > 0 || yaApuntado) && (
               <Button
                 className="h-10 flex-1"
                 variant={yaApuntado ? 'outline' : 'default'}
