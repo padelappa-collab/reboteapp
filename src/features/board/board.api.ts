@@ -105,9 +105,13 @@ export async function cambiarEstado(postId: string, estado: BoardEstado) {
 
 /** Los cuatro jugadores del partido, si la publicación ya está completa. */
 export function cuartetoDe(p: PublicacionConDatos): string[] {
+  // sin repetidos: una publicación vieja puede traer a alguien dos veces, y un
+  // partido con jugadores repetidos lo rechaza la base
   return [
-    p.user_id,
-    ...p.acompanantesJugadores.map((j) => j.id),
-    ...p.apuntados.map((j) => j.id),
+    ...new Set([
+      p.user_id,
+      ...p.acompanantesJugadores.map((j) => j.id),
+      ...p.apuntados.map((j) => j.id),
+    ]),
   ].slice(0, 4)
 }

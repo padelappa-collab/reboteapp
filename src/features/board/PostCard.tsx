@@ -59,6 +59,19 @@ export function PostCard({
     }
   }
 
+  async function cancelar() {
+    setEnviando(true)
+    try {
+      await cambiarEstado(publicacion.id, 'cancelado')
+      toast.info('Publicación cancelada')
+      onCambio()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo cancelar')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
   async function cerrar() {
     setEnviando(true)
     try {
@@ -111,9 +124,13 @@ export function PostCard({
         <div className="rounded-lg bg-muted p-2 text-sm">
           <span className="text-muted-foreground">Van: </span>
           {[
-            publicacion.autor?.nombre ?? '…',
-            ...publicacion.acompanantesJugadores.map((j) => j.nombre),
-            ...publicacion.apuntados.map((j) => j.nombre),
+            ...new Map(
+              [
+                { id: publicacion.user_id, nombre: publicacion.autor?.nombre ?? '…' },
+                ...publicacion.acompanantesJugadores,
+                ...publicacion.apuntados,
+              ].map((j) => [j.id, j.nombre]),
+            ).values(),
           ].join(', ')}
           {libres > 0 && (
             <span className="text-muted-foreground">
@@ -145,12 +162,13 @@ export function PostCard({
 
         {/* aunque el cupo este lleno hay que poder bajarse: el cierre es
             automatico y si no, quedarias atrapado en el partido */}
-        {(!cerrado || yaApuntado) && (
+        {(!cerrado || yaApuntado || esMio) && (
           <div className="flex gap-2">
             {/* con el cupo lleno ya no se puede entrar, pero quien está
                 apuntado tiene que poder bajarse */}
-            {/* quien ya va —autor o acompañante— no puede ocupar un cupo */}
-            {!esMio && !esAcompanante && (libres > 0 || yaApuntado) && (
+            {/* quien ya va no puede ocupar un cupo, pero si quedó apuntado
+                por error tiene que poder bajarse siempre */}
+            {!esMio && (yaApuntado || (!esAcompanante && libres > 0)) && (
               <Button
                 className="h-10 flex-1"
                 variant={yaApuntado ? 'outline' : 'default'}
@@ -175,6 +193,16 @@ export function PostCard({
                 onClick={cerrar}
               >
                 Cerrar publicación
+              </Button>
+            )}
+            {esMio && (
+              <Button
+                variant="ghost"
+                className="h-10 flex-1 text-destructive"
+                disabled={enviando}
+                onClick={cancelar}
+              >
+                Cancelar publicación
               </Button>
             )}
           </div>
