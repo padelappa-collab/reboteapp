@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/useAuth'
 import { CourtCard } from './CourtCard'
@@ -7,6 +8,14 @@ import { useCourts } from './useCourts'
 export default function CourtsPage() {
   const { perfil } = useAuth()
   const { canchas, cargando } = useCourts(perfil?.ciudad)
+  const [seleccionada, setSeleccionada] = useState<string | null>(null)
+  const fichas = useRef<Record<string, HTMLDivElement | null>>({})
+
+  // al tocar un punto del mapa, traer su ficha a la vista
+  useEffect(() => {
+    if (!seleccionada) return
+    fichas.current[seleccionada]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [seleccionada])
 
   return (
     <div className="space-y-4 pb-4">
@@ -17,7 +26,7 @@ export default function CourtsPage() {
 
       {cargando && (
         <div className="space-y-3">
-          <Skeleton className="h-56 w-full" />
+          <Skeleton className="h-80 w-full" />
           <Skeleton className="h-32 w-full" />
         </div>
       )}
@@ -32,10 +41,26 @@ export default function CourtsPage() {
 
       {!cargando && canchas.length > 0 && (
         <>
-          <CourtMap canchas={canchas} />
+          <CourtMap
+            canchas={canchas}
+            seleccionada={seleccionada}
+            onSeleccionar={setSeleccionada}
+          />
+
           <div className="space-y-3">
             {canchas.map((c) => (
-              <CourtCard key={c.id} cancha={c} />
+              <div
+                key={c.id}
+                ref={(el) => {
+                  fichas.current[c.id] = el
+                }}
+              >
+                <CourtCard
+                  cancha={c}
+                  destacada={c.id === seleccionada}
+                  onVerEnMapa={() => setSeleccionada(c.id)}
+                />
+              </div>
             ))}
           </div>
         </>

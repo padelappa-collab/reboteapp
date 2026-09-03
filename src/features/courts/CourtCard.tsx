@@ -1,7 +1,8 @@
-import { ExternalLink, MapPin, Phone } from 'lucide-react'
+import { Crosshair, ExternalLink, MapPin, Phone } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import type { CourtRow } from '@/types/database'
 
 /**
@@ -10,14 +11,23 @@ import type { CourtRow } from '@/types/database'
  * REBOTEAPP no gestiona reservas: los clubes ya usan Playtomic. El botón
  * "Reservar" abre el enlace externo del club y ahí termina nuestra parte.
  */
-export function CourtCard({ cancha }: { cancha: CourtRow }) {
+export function CourtCard({
+  cancha,
+  destacada,
+  onVerEnMapa,
+}: {
+  cancha: CourtRow
+  destacada?: boolean
+  onVerEnMapa?: () => void
+}) {
+  const tieneUbicacion = cancha.lat !== null && cancha.lng !== null
   const mapa =
     cancha.lat !== null && cancha.lng !== null
       ? `https://www.google.com/maps/search/?api=1&query=${cancha.lat},${cancha.lng}`
       : null
 
   return (
-    <Card>
+    <Card className={cn('transition-shadow', destacada && 'ring-2 ring-primary')}>
       <CardContent className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -47,6 +57,12 @@ export function CourtCard({ cancha }: { cancha: CourtRow }) {
                 Reservar
                 <ExternalLink className="size-4" />
               </a>
+            </Button>
+          )}
+          {tieneUbicacion && onVerEnMapa && (
+            <Button size="sm" variant="outline" className="h-10" onClick={onVerEnMapa}>
+              <Crosshair className="size-4" />
+              Ver en el mapa
             </Button>
           )}
           {mapa && (
