@@ -4,6 +4,7 @@ import { LocateFixed, Maximize2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { MapContainer, Marker, TileLayer, useMap, ZoomControl } from 'react-leaflet'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import type { CourtRow } from '@/types/database'
 
 type CanchaUbicada = CourtRow & { lat: number; lng: number }
@@ -11,13 +12,25 @@ type CanchaUbicada = CourtRow & { lat: number; lng: number }
 /**
  * Mapa de imágenes (raster) con Leaflet sobre las teselas de Esri.
  *
- * La elección es a propósito: los mapas vectoriales se ven mejor, pero exigen
- * WebGL2 y en las pruebas del piloto hubo dispositivos donde no dibujaban nada.
- * Un mapa de imágenes funciona en cualquier navegador. Las teselas de Esri son
- * gratuitas, no piden API key y no ponen marca de agua encima.
+ * La elección de raster es a propósito: los mapas vectoriales se ven mejor pero
+ * exigen WebGL2, y en las pruebas del piloto hubo un dispositivo donde no
+ * dibujaban nada. Un mapa de imágenes funciona en cualquier navegador. Las
+ * teselas de Esri son gratuitas, no piden API key y no ponen marca de agua.
+ *
+ * Dos vistas, como en cualquier mapa conocido: satélite (se ven las canchas
+ * desde arriba, que para elegir club dice más que un plano) y un mapa limpio.
+ * En ambas va encima una capa de nombres de calles y barrios.
  */
-const TESELAS =
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services'
+
+const VISTAS = {
+  satelite: `${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
+  mapa: `${ESRI}/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+} as const
+
+const ETIQUETAS = `${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`
+
+type Vista = keyof typeof VISTAS
 
 const VERDE = '#1f7a53'
 const VERDE_CLARO = '#2f9a6b'
@@ -135,6 +148,8 @@ export function CourtMap({
   seleccionada: string | null
   onSeleccionar: (id: string) => void
 }) {
+  const [vista, setVista] = useState<Vista>('satelite')
+
   const ubicadas = canchas.filter(
     (c): c is CanchaUbicada => c.lat !== null && c.lng !== null,
   )
@@ -146,6 +161,30 @@ export function CourtMap({
   return (
     <div className="space-y-1.5">
       <div className="relative h-[55vh] min-h-72 overflow-hidden rounded-xl border shadow-sm">
+        {/* selector de vista, como el de cualquier mapa conocido */}
+        <div className="absolute left-3 top-3 z-[1000] flex overflow-hidden rounded-lg border bg-background shadow-md">
+          {(
+            [
+              ['satelite', 'Satélite'],
+              ['mapa', 'Mapa'],
+            ] as const
+          ).map(([valor, texto]) => (
+            <button
+              key={valor}
+              type="button"
+              onClick={() => setVista(valor)}
+              className={cn(
+                'px-3 py-2 text-xs font-medium transition-colors',
+                vista === valor
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-accent',
+              )}
+            >
+              {texto}
+            </button>
+          ))}
+        </div>
+
         <MapContainer
           center={[ubicadas[0].lat, ubicadas[0].lng]}
           zoom={12}
@@ -154,10 +193,13 @@ export function CourtMap({
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
-            attribution="&copy; Esri, HERE, Garmin, OpenStreetMap"
-            url={TESELAS}
+            key={vista}
+            attribution="&copy; Esri, Maxar, Earthstar Geographics"
+            url={VISTAS[vista]}
             maxZoom={19}
           />
+          {/* nombres de calles y barrios, encima de la vista elegida */}
+          <TileLayer url={ETIQUETAS} maxZoom={19} zIndex={5} />
 
           <ZoomControl position="bottomleft" />
           <Encuadre canchas={ubicadas} seleccionada={seleccionada} />
