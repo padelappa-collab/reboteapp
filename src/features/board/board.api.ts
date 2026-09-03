@@ -89,12 +89,12 @@ export async function apuntarse(postId: string, userId: string) {
   if (error) throw new Error(error.message)
 }
 
-export async function desapuntarse(postId: string, userId: string) {
-  const { error } = await supabase
-    .from('board_post_signups')
-    .delete()
-    .eq('post_id', postId)
-    .eq('user_id', userId)
+/**
+ * Salirse de una publicación, sea uno el autor, un acompañante o alguien
+ * apuntado. La publicación sigue en pie para los demás con un cupo más libre.
+ */
+export async function salirPublicacion(postId: string) {
+  const { error } = await supabase.rpc('salir_publicacion', { p_post_id: postId })
   if (error) throw new Error(error.message)
 }
 
@@ -114,4 +114,42 @@ export function cuartetoDe(p: PublicacionConDatos): string[] {
       ...p.apuntados.map((j) => j.id),
     ]),
   ].slice(0, 4)
+}
+
+/** Una publicación suelta, para su ficha. */
+export async function obtenerPublicacion(
+  id: string,
+): Promise<PublicacionConDatos | null> {
+  const { data, error } = await supabase
+    .from('board_posts')
+    .select(
+      `*,
+       autor:users!board_posts_user_id_fkey (id, nombre, ciudad),
+       cancha:courts (id, nombre),
+       signups:board_post_signups (user:users (id, nombre))`,
+    )
+    .eq('id', id)
+    .maybeSingle()
+
+  if (error) throw new Error(error.message)
+  if (!data) return null
+
+  const fila = data as unknown as BoardPostRow & {
+    autor: { id: string; nombre: string; ciudad: string } | null
+    cancha: { id: string; nombre: string } | null
+    signups: Array<{ user: Jugador | null }> | null
+  }
+
+  const perfiles = await perfilesDe(fila.acompanantes ?? [])
+
+  return {
+    ...fila,
+    acompanantesJugadores: (fila.acompanantes ?? [])
+      .map((uid) => perfiles.get(uid))
+      .filter((j): j is NonNullable<typeof j> => Boolean(j))
+      .map((j) => ({ id: j.id, nombre: j.nombre })),
+    apuntados: (fila.signups ?? [])
+      .map((s) => s.user)
+      .filter((u): u is Jugador => u !== null),
+  }
 }

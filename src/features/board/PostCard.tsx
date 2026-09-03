@@ -1,4 +1,4 @@
-import { CalendarDays, Check, MapPin, Swords, Users } from 'lucide-react'
+import { CalendarDays, ChevronRight, LogOut, MapPin, Swords, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   apuntarse,
-  cambiarEstado,
   cuartetoDe,
-  desapuntarse,
+  salirPublicacion,
   type PublicacionConDatos,
 } from './board.api'
 
@@ -23,63 +22,59 @@ function fechaLarga(iso: string) {
   })
 }
 
+/** Quiénes van, sin repetir a nadie. */
+export function quienesVan(p: PublicacionConDatos) {
+  return [
+    ...new Map(
+      [
+        { id: p.user_id, nombre: p.autor?.nombre ?? '…' },
+        ...p.acompanantesJugadores,
+        ...p.apuntados,
+      ].map((j) => [j.id, j]),
+    ).values(),
+  ]
+}
+
 export function PostCard({
   publicacion,
   usuarioId,
   onCambio,
+  /** En la ficha ya estamos dentro: no hace falta el enlace para entrar. */
+  conEnlace = true,
 }: {
   publicacion: PublicacionConDatos
   usuarioId: string
   onCambio: () => void
+  conEnlace?: boolean
 }) {
   const [enviando, setEnviando] = useState(false)
   const navegar = useNavigate()
 
-  const libres = Math.max(0, publicacion.faltan - publicacion.apuntados.length)
-  const esMio = publicacion.user_id === usuarioId
-  const yaApuntado = publicacion.apuntados.some((a) => a.id === usuarioId)
-  const esAcompanante = publicacion.acompanantes.includes(usuarioId)
-  const participo = esMio || yaApuntado || esAcompanante
-  const cerrado = publicacion.estado !== 'abierto'
+  const van = quienesVan(publicacion)
+  const libres = Math.max(0, 4 - van.length)
+  const voy = van.some((j) => j.id === usuarioId)
 
-  async function alternar() {
+  async function unirme() {
     setEnviando(true)
     try {
-      if (yaApuntado) {
-        await desapuntarse(publicacion.id, usuarioId)
-      } else {
-        await apuntarse(publicacion.id, usuarioId)
-        toast.success('Te apuntaste. Ponte de acuerdo con quien publicó.')
-      }
+      await apuntarse(publicacion.id, usuarioId)
+      toast.success('Te uniste al partido')
       onCambio()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo completar')
+      toast.error(error instanceof Error ? error.message : 'No se pudo unir')
     } finally {
       setEnviando(false)
     }
   }
 
-  async function cancelar() {
+  async function salirme() {
     setEnviando(true)
     try {
-      await cambiarEstado(publicacion.id, 'cancelado')
-      toast.info('Publicación cancelada')
+      await salirPublicacion(publicacion.id)
+      toast.info('Saliste del partido')
       onCambio()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo cancelar')
-    } finally {
-      setEnviando(false)
-    }
-  }
-
-  async function cerrar() {
-    setEnviando(true)
-    try {
-      await cambiarEstado(publicacion.id, 'completo')
-      toast.success('Publicación cerrada')
-      onCambio()
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo cerrar')
+      toast.error(error instanceof Error ? error.message : 'No se pudo salir')
     } finally {
       setEnviando(false)
     }
@@ -93,11 +88,22 @@ export function PostCard({
             <p className="truncate font-medium">{publicacion.autor?.nombre ?? '…'}</p>
             <Badge variant="secondary" className="mt-1">
               {libres > 0
-                ? `${libres === 1 ? 'Falta' : 'Faltan'} ${libres} de ${publicacion.faltan}`
-                : 'Cupo completo'}
+                ? `${libres === 1 ? 'Falta' : 'Faltan'} ${libres}`
+                : 'Ya son cuatro'}
             </Badge>
           </div>
-          {cerrado && <Badge variant="outline">Cerrada</Badge>}
+
+          {conEnlace && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 shrink-0"
+              onClick={() => navegar(`/tablon/${publicacion.id}`)}
+            >
+              Ver ficha
+              <ChevronRight className="size-4" />
+            </Button>
+          )}
         </div>
 
         <div className="space-y-1 text-sm text-muted-foreground">
@@ -123,25 +129,13 @@ export function PostCard({
 
         <div className="rounded-lg bg-muted p-2 text-sm">
           <span className="text-muted-foreground">Van: </span>
-          {[
-            ...new Map(
-              [
-                { id: publicacion.user_id, nombre: publicacion.autor?.nombre ?? '…' },
-                ...publicacion.acompanantesJugadores,
-                ...publicacion.apuntados,
-              ].map((j) => [j.id, j.nombre]),
-            ).values(),
-          ].join(', ')}
+          {van.map((j) => j.nombre).join(', ')}
           {libres > 0 && (
-            <span className="text-muted-foreground">
-              {' '}
-              + {libres} por definir
-            </span>
+            <span className="text-muted-foreground"> + {libres} por definir</span>
           )}
         </div>
 
-        {/* registrar el partido solo tiene sentido para quien va a jugarlo */}
-        {libres === 0 && participo && (
+        {libres === 0 && voy && (
           <Button
             variant="secondary"
             className="h-10 w-full"
@@ -160,52 +154,24 @@ export function PostCard({
           </Button>
         )}
 
-        {/* aunque el cupo este lleno hay que poder bajarse: el cierre es
-            automatico y si no, quedarias atrapado en el partido */}
-        {(!cerrado || yaApuntado || esMio) && (
-          <div className="flex gap-2">
-            {/* con el cupo lleno ya no se puede entrar, pero quien está
-                apuntado tiene que poder bajarse */}
-            {/* quien ya va no puede ocupar un cupo, pero si quedó apuntado
-                por error tiene que poder bajarse siempre */}
-            {!esMio && (yaApuntado || (!esAcompanante && libres > 0)) && (
-              <Button
-                className="h-10 flex-1"
-                variant={yaApuntado ? 'outline' : 'default'}
-                disabled={enviando}
-                onClick={alternar}
-              >
-                {yaApuntado ? (
-                  <>
-                    <Check className="size-4" />
-                    Apuntado
-                  </>
-                ) : (
-                  'Me apunto'
-                )}
-              </Button>
-            )}
-            {esMio && !cerrado && (
-              <Button
-                variant="outline"
-                className="h-10 flex-1"
-                disabled={enviando}
-                onClick={cerrar}
-              >
-                Cerrar publicación
-              </Button>
-            )}
-            {esMio && (
-              <Button
-                variant="ghost"
-                className="h-10 flex-1 text-destructive"
-                disabled={enviando}
-                onClick={cancelar}
-              >
-                Cancelar publicación
-              </Button>
-            )}
-          </div>
+        {/* Una sola acción, y dice lo que hace. Quien va se sale solo: la
+            publicación sigue para los demás con un cupo más libre. */}
+        {voy ? (
+          <Button
+            variant="ghost"
+            className="h-10 w-full text-destructive"
+            disabled={enviando}
+            onClick={salirme}
+          >
+            <LogOut className="size-4" />
+            Salirme del partido
+          </Button>
+        ) : (
+          libres > 0 && (
+            <Button className="h-10 w-full" disabled={enviando} onClick={unirme}>
+              Unirme al partido
+            </Button>
+          )
         )}
       </CardContent>
     </Card>

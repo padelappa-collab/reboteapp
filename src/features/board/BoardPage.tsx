@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/useAuth'
 import type { PublicacionConDatos } from './board.api'
 import { CreatePostSheet } from './CreatePostSheet'
-import { PostCard } from './PostCard'
+import { PostCard, quienesVan } from './PostCard'
 import { useBoard } from './useBoard'
 
 type Pestana = 'abiertas' | 'mias'
@@ -25,7 +25,9 @@ export default function BoardPage() {
   const [pestana, setPestana] = useState<Pestana>('abiertas')
 
   const yo = perfil?.id ?? ''
-  const abiertas = publicaciones.filter((p) => p.estado === 'abierto')
+  const hayCupo = (p: PublicacionConDatos) =>
+    quienesVan(p).length < 4 && p.estado !== 'cancelado'
+  const abiertas = publicaciones.filter(hayCupo)
   // aquí sí entran las cerradas: cuando el cupo se llena hay que poder seguir
   // viendo el partido al que entraste, y registrarlo
   const mias = publicaciones.filter((p) => esMia(p, yo))

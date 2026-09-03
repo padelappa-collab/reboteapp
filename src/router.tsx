@@ -5,6 +5,7 @@ import LoginPage from '@/features/auth/LoginPage'
 import ProfileSetupPage from '@/features/auth/ProfileSetupPage'
 import SignUpPage from '@/features/auth/SignUpPage'
 import BoardPage from '@/features/board/BoardPage'
+import BoardPostPage from '@/features/board/BoardPostPage'
 import CourtsPage from '@/features/courts/CourtsPage'
 import CreateMatchPage from '@/features/matches/CreateMatchPage'
 import MatchDetailPage from '@/features/matches/MatchDetailPage'
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
           { path: '/partidos/:id', element: <MatchDetailPage /> },
           { path: '/ranking', element: <RankingPage /> },
           { path: '/tablon', element: <BoardPage /> },
+          { path: '/tablon/:id', element: <BoardPostPage /> },
           { path: '/canchas', element: <CourtsPage /> },
           { path: '/perfil', element: <ProfilePage /> },
         ],

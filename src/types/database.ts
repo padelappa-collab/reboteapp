@@ -226,6 +226,10 @@ export type Database = {
         Args: { p_match_id: string }
         Returns: MatchRow
       }
+      salir_publicacion: {
+        Args: { p_post_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       genero: Genero
