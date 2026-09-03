@@ -1,4 +1,4 @@
-import { Check, CircleAlert, Trash2 } from 'lucide-react'
+import { Check, CircleAlert, LogOut, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -9,7 +9,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/useAuth'
 import { ETIQUETA_RANKING } from '@/lib/matchType'
 import { cn } from '@/lib/utils'
-import { borrarPartido, confirmarPartido, disputarPartido } from './matches.api'
+import {
+  borrarPartido,
+  cancelarPartido,
+  confirmarPartido,
+  disputarPartido,
+} from './matches.api'
 import { usePartido } from './useMatches'
 
 export default function MatchDetailPage() {
@@ -54,6 +59,18 @@ export default function MatchDetailPage() {
       toast.info('Partido marcado en disputa. Quien lo creó puede borrarlo y registrarlo bien.')
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo disputar')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  async function salirme() {
+    setEnviando(true)
+    try {
+      setPartido(await cancelarPartido(partido!.id))
+      toast.info('Saliste del partido. Queda cancelado para los cuatro.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo cancelar')
     } finally {
       setEnviando(false)
     }
@@ -146,6 +163,15 @@ export default function MatchDetailPage() {
             </p>
           )}
 
+          {partido.estado === 'cancelado' && (
+            <p className="flex items-start gap-2 pt-2 text-xs text-muted-foreground">
+              <CircleAlert className="mt-0.5 size-4 shrink-0" />
+              {partido.cancelado_por === yo
+                ? 'Cancelaste este partido. No cuenta para el ranking.'
+                : `${nombre(partido.cancelado_por ?? '')} se salió del partido. No cuenta para el ranking.`}
+            </p>
+          )}
+
           {partido.estado === 'disputado' && (
             <p className="flex items-start gap-2 pt-2 text-xs text-destructive">
               <CircleAlert className="mt-0.5 size-4 shrink-0" />
@@ -169,8 +195,21 @@ export default function MatchDetailPage() {
             disabled={enviando}
             onClick={disputar}
           >
-            No estoy de acuerdo
+            No estoy de acuerdo con el marcador
           </Button>
+          <Button
+            variant="ghost"
+            className="h-11 w-full text-destructive"
+            disabled={enviando}
+            onClick={salirme}
+          >
+            <LogOut className="size-4" />
+            Salirme del partido
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            Un partido necesita cuatro jugadores: si te sales, queda cancelado para
+            todos.
+          </p>
         </div>
       )}
 

@@ -143,7 +143,9 @@ export function PostCard({
           </Button>
         )}
 
-        {!cerrado && (
+        {/* aunque el cupo este lleno hay que poder bajarse: el cierre es
+            automatico y si no, quedarias atrapado en el partido */}
+        {(!cerrado || yaApuntado) && (
           <div className="flex gap-2">
             {/* con el cupo lleno ya no se puede entrar, pero quien está
                 apuntado tiene que poder bajarse */}
@@ -164,7 +166,7 @@ export function PostCard({
                 )}
               </Button>
             )}
-            {esMio && (
+            {esMio && !cerrado && (
               <Button
                 variant="outline"
                 className="h-10 flex-1"

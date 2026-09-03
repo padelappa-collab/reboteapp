@@ -108,6 +108,18 @@ export async function disputarPartido(id: string): Promise<MatchRow> {
   return data as MatchRow
 }
 
+/**
+ * Cancela el partido para los cuatro.
+ *
+ * No existe "quitarme yo": un partido necesita cuatro jugadores, así que si
+ * alguien se sale, ese partido no va.
+ */
+export async function cancelarPartido(id: string): Promise<MatchRow> {
+  const { data, error } = await supabase.rpc('cancel_match', { p_match_id: id })
+  if (error) throw new Error(error.message)
+  return data as MatchRow
+}
+
 export async function borrarPartido(id: string): Promise<void> {
   const { error } = await supabase.from('matches').delete().eq('id', id)
   if (error) throw new Error(error.message)

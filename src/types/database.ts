@@ -9,7 +9,7 @@
 
 export type Genero = 'masculino' | 'femenino'
 export type RankingTipo = 'masculino' | 'femenino' | 'mixto'
-export type MatchEstado = 'pendiente' | 'confirmado' | 'disputado'
+export type MatchEstado = 'pendiente' | 'confirmado' | 'disputado' | 'cancelado'
 export type BoardEstado = 'abierto' | 'completo' | 'cancelado'
 
 // Todos los tipos de fila son `type` y no `interface` a propósito: postgrest-js
@@ -88,6 +88,8 @@ export type MatchRow = {
   created_at: string
   updated_at: string
   confirmado_at: string | null
+  cancelado_por: string | null
+  cancelado_at: string | null
 }
 
 export type MatchInsert = {
@@ -217,6 +219,10 @@ export type Database = {
         Returns: MatchRow
       }
       dispute_match: {
+        Args: { p_match_id: string }
+        Returns: MatchRow
+      }
+      cancel_match: {
         Args: { p_match_id: string }
         Returns: MatchRow
       }
