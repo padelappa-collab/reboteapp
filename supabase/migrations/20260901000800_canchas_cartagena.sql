@@ -1,13 +1,12 @@
 -- =============================================================================
 -- Clubes reales de Cartagena, en reemplazo de las filas provisionales.
 --
--- Los nombres, direcciones y número de canchas los aportó el dueño del piloto.
--- Las COORDENADAS son aproximaciones a nivel de barrio o de dirección, hechas
--- sin verificar contra el sitio real: por eso todas las filas quedan con
--- verificado = false hasta que alguien las revise en el mapa.
+-- Nombres, direcciones y número de canchas los aportó el dueño del piloto.
+-- Las coordenadas salen de la ficha de Google Maps de cada club, así que son
+-- del sitio exacto y no del centro del barrio.
 --
--- Los enlaces de reserva llegan después; por ahora booking_url va en NULL y la
--- ficha del club lo dice explícitamente en vez de mostrar un botón muerto.
+-- Cada club reserva por donde puede: Playtomic, EasyCancha, web propia o
+-- WhatsApp. Cuando solo hay WhatsApp, ese es el botón principal de la ficha.
 -- =============================================================================
 
 -- Dato suelto que no cabe en las otras columnas (canchas de otro deporte,
@@ -64,13 +63,20 @@ values
    true),
 
   ('Padel House', 'Cartagena',
-   'Barrio Crespo', 3, null, null, null,
-   10.44500, -75.51500, 'Dentro de Sporty Social Club.', false),
+   'Barrio Crespo', 3,
+   'https://padelhousectg.com/reservas.html', null, null,
+   10.4519712, -75.5141911, 'Dentro de Sporty Social Club.', true),
 
   ('Mucho Pádel', 'Cartagena',
-   'Vía Manzanillo, Km 1', 6, null, null, null,
-   10.46500, -75.48700, null, false),
+   'Vía Manzanillo, Km 1', 6,
+   null,
+   'https://wa.me/573181001346?text=Hola%20Mucho%20P%C3%A1del%2C%20quiero%20reservar%20una%20cancha.%20%C2%BFQu%C3%A9%20horarios%20tienen%20disponibles%3F',
+   '+573181001346',
+   10.5186851, -75.4815415,
+   'Queda en la zona norte, saliendo por la Vía al Mar.', true),
 
   ('Padelmania', 'Cartagena',
-   'Estación Puerta de las Américas, zona norte', 2, null, null, null,
-   10.44600, -75.50600, null, false);
+   'Estación Puerta de las Américas, zona norte', 2,
+   'https://playtomic.com/clubs/padelmania-cartagena',
+   'https://api.whatsapp.com/message/GGZ42I2VIXVGC1', null,
+   10.5351115, -75.4601674, null, true);
