@@ -120,7 +120,5 @@ export async function cancelarPartido(id: string): Promise<MatchRow> {
   return data as MatchRow
 }
 
-export async function borrarPartido(id: string): Promise<void> {
-  const { error } = await supabase.from('matches').delete().eq('id', id)
-  if (error) throw new Error(error.message)
-}
+// No hay borrarPartido a propósito: un partido tambien es de los otros tres
+// jugadores, así que nadie lo elimina. La salida es cancelarPartido().

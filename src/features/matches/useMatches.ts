@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { MatchRow } from '@/types/database'
-import { obtenerPartido, partidosDe, perfilesDe } from './matches.api'
+import {
+  obtenerPartido,
+  partidosDe,
+  perfilesDe,
+  type JugadorResumen,
+} from './matches.api'
 
 /** Nombres de los jugadores que aparecen en una lista de partidos. */
 function idsDe(partidos: MatchRow[]): string[] {
@@ -36,9 +41,11 @@ export function useMisPartidos(userId: string | undefined) {
   return { partidos, nombres, cargando, error, recargar }
 }
 
+/** El detalle necesita el perfil completo, no solo el nombre: la ficha muestra
+ *  categoría y estrellas de cada jugador. */
 export function usePartido(id: string | undefined) {
   const [partido, setPartido] = useState<MatchRow | null>(null)
-  const [nombres, setNombres] = useState<Map<string, string>>(new Map())
+  const [jugadores, setJugadores] = useState<Map<string, JugadorResumen>>(new Map())
   const [cargando, setCargando] = useState(true)
 
   const recargar = useCallback(async () => {
@@ -48,8 +55,7 @@ export function usePartido(id: string | undefined) {
       const encontrado = await obtenerPartido(id)
       setPartido(encontrado)
       if (encontrado) {
-        const perfiles = await perfilesDe(idsDe([encontrado]))
-        setNombres(new Map([...perfiles].map(([uid, j]) => [uid, j.nombre])))
+        setJugadores(await perfilesDe(idsDe([encontrado])))
       }
     } finally {
       setCargando(false)
@@ -60,5 +66,5 @@ export function usePartido(id: string | undefined) {
     recargar()
   }, [recargar])
 
-  return { partido, nombres, cargando, setPartido, recargar }
+  return { partido, jugadores, cargando, setPartido, recargar }
 }
