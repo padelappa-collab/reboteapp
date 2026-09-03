@@ -38,6 +38,8 @@ export function PostCard({
   const libres = Math.max(0, publicacion.faltan - publicacion.apuntados.length)
   const esMio = publicacion.user_id === usuarioId
   const yaApuntado = publicacion.apuntados.some((a) => a.id === usuarioId)
+  const participo =
+    esMio || yaApuntado || publicacion.acompanantes.includes(usuarioId)
   const cerrado = publicacion.estado !== 'abierto'
 
   async function alternar() {
@@ -121,7 +123,8 @@ export function PostCard({
           )}
         </div>
 
-        {libres === 0 && (
+        {/* registrar el partido solo tiene sentido para quien va a jugarlo */}
+        {libres === 0 && participo && (
           <Button
             variant="secondary"
             className="h-10 w-full"
