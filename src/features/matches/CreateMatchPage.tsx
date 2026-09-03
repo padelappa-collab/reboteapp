@@ -168,7 +168,9 @@ export default function CreateMatchPage() {
       toast.success('Partido registrado. Faltan las confirmaciones de los otros 3.')
       navegar(`/partidos/${partido.id}`, { replace: true })
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo registrar')
+      const mensaje = error instanceof Error ? error.message : 'No se pudo registrar'
+      // el trigger de la base devuelve el aviso ya redactado para el jugador
+      toast.error(mensaje, { duration: 6000 })
     } finally {
       setEnviando(false)
     }
