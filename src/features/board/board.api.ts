@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { BoardEstado, BoardPostRow, BoardTipo } from '@/types/database'
+import type { BoardEstado, BoardPostRow } from '@/types/database'
 
 export interface PublicacionConDatos extends BoardPostRow {
   autor: { id: string; nombre: string; ciudad: string } | null
@@ -45,7 +45,7 @@ export async function publicacionesAbiertas(
 
 export async function crearPublicacion(datos: {
   userId: string
-  tipo: BoardTipo
+  faltan: 1 | 2 | 3
   fechaPartido: string
   nivelBuscado: string | null
   canchaId: string | null
@@ -53,7 +53,7 @@ export async function crearPublicacion(datos: {
 }) {
   const { error } = await supabase.from('board_posts').insert({
     user_id: datos.userId,
-    tipo: datos.tipo,
+    faltan: datos.faltan,
     fecha_partido: datos.fechaPartido,
     nivel_buscado: datos.nivelBuscado,
     cancha_id: datos.canchaId,

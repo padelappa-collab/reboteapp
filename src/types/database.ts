@@ -10,7 +10,6 @@
 export type Genero = 'masculino' | 'femenino'
 export type RankingTipo = 'masculino' | 'femenino' | 'mixto'
 export type MatchEstado = 'pendiente' | 'confirmado' | 'disputado'
-export type BoardTipo = 'busco_pareja' | 'busco_cuarto'
 export type BoardEstado = 'abierto' | 'completo' | 'cancelado'
 
 // Todos los tipos de fila son `type` y no `interface` a propósito: postgrest-js
@@ -115,7 +114,8 @@ export type EloHistoryRow = {
 export type BoardPostRow = {
   id: string
   user_id: string
-  tipo: BoardTipo
+  /** Cuántos jugadores faltan: 1, 2 o 3. */
+  faltan: 1 | 2 | 3
   fecha_partido: string
   nivel_buscado: string | null
   cancha_id: string | null
@@ -127,7 +127,7 @@ export type BoardPostRow = {
 
 export type BoardPostInsert = {
   user_id: string
-  tipo: BoardTipo
+  faltan: 1 | 2 | 3
   fecha_partido: string
   nivel_buscado?: string | null
   cancha_id?: string | null
@@ -222,7 +222,6 @@ export type Database = {
       genero: Genero
       ranking_tipo: RankingTipo
       match_estado: MatchEstado
-      board_tipo: BoardTipo
       board_estado: BoardEstado
     }
     CompositeTypes: Record<never, never>

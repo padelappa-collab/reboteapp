@@ -23,7 +23,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth/useAuth'
 import { useCourts } from '@/features/courts/useCourts'
 import { CATEGORIAS_FEMENINO, CATEGORIAS_MASCULINO } from '@/lib/categories'
-import type { BoardTipo } from '@/types/database'
 import { crearPublicacion } from './board.api'
 
 const SIN_CANCHA = 'sin-cancha'
@@ -41,7 +40,7 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
   const { canchas } = useCourts(perfil?.ciudad)
 
   const [abierto, setAbierto] = useState(false)
-  const [tipo, setTipo] = useState<BoardTipo>('busco_cuarto')
+  const [faltan, setFaltan] = useState<1 | 2 | 3>(1)
   const [fecha, setFecha] = useState(enUnaHora())
   const [nivel, setNivel] = useState(CUALQUIER_NIVEL)
   const [canchaId, setCanchaId] = useState(SIN_CANCHA)
@@ -59,7 +58,7 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
     try {
       await crearPublicacion({
         userId: perfil.id,
-        tipo,
+        faltan,
         fechaPartido: new Date(fecha).toISOString(),
         nivelBuscado: nivel === CUALQUIER_NIVEL ? null : nivel,
         canchaId: canchaId === SIN_CANCHA ? null : canchaId,
@@ -95,28 +94,34 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
 
         <form onSubmit={enviar} className="grid gap-4 px-4 pb-6">
           <div className="grid gap-2">
-            <Label>Qué buscas</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <Label>¿Cuántos jugadores faltan?</Label>
+            <div className="grid grid-cols-3 gap-2">
               {(
                 [
-                  ['busco_cuarto', 'Un cuarto'],
-                  ['busco_pareja', 'Pareja'],
+                  [1, '1', 'Ya son 3'],
+                  [2, '2', 'Ya son 2'],
+                  [3, '3', 'Vas solo'],
                 ] as const
-              ).map(([valor, texto]) => (
+              ).map(([valor, numero, ayuda]) => (
                 <button
                   key={valor}
                   type="button"
-                  onClick={() => setTipo(valor)}
+                  onClick={() => setFaltan(valor)}
                   className={
-                    tipo === valor
-                      ? 'rounded-lg border border-primary bg-primary/10 px-3 py-3 text-sm font-medium text-primary'
-                      : 'rounded-lg border px-3 py-3 text-sm hover:bg-accent'
+                    faltan === valor
+                      ? 'rounded-lg border border-primary bg-primary/10 px-2 py-3 text-center text-primary'
+                      : 'rounded-lg border px-2 py-3 text-center hover:bg-accent'
                   }
                 >
-                  {texto}
+                  <span className="block text-lg font-semibold">{numero}</span>
+                  <span className="block text-xs text-muted-foreground">{ayuda}</span>
                 </button>
               ))}
             </div>
+            <p className="text-xs text-muted-foreground">
+              Cuenta solo los que faltan. Los que ya van contigo no tienen que
+              apuntarse.
+            </p>
           </div>
 
           <div className="grid gap-2">
@@ -171,7 +176,7 @@ export function CreatePostSheet({ onCreada }: { onCreada: () => void }) {
               id="nota-post"
               rows={3}
               maxLength={280}
-              placeholder="Somos 3, jugamos relajado pero con ganas"
+              placeholder="Jugamos relajado pero con ganas"
               value={nota}
               onChange={(e) => setNota(e.target.value)}
             />

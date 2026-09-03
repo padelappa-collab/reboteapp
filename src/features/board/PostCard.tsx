@@ -4,13 +4,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import type { BoardTipo } from '@/types/database'
 import { apuntarse, cambiarEstado, desapuntarse, type PublicacionConDatos } from './board.api'
-
-const ETIQUETA_TIPO: Record<BoardTipo, string> = {
-  busco_pareja: 'Busco pareja',
-  busco_cuarto: 'Busco cuarto',
-}
 
 function fechaLarga(iso: string) {
   return new Date(iso).toLocaleString('es-CO', {
@@ -33,6 +27,7 @@ export function PostCard({
 }) {
   const [enviando, setEnviando] = useState(false)
 
+  const libres = Math.max(0, publicacion.faltan - publicacion.apuntados.length)
   const esMio = publicacion.user_id === usuarioId
   const yaApuntado = publicacion.apuntados.some((a) => a.id === usuarioId)
   const cerrado = publicacion.estado !== 'abierto'
@@ -74,7 +69,9 @@ export function PostCard({
           <div className="min-w-0">
             <p className="truncate font-medium">{publicacion.autor?.nombre ?? '…'}</p>
             <Badge variant="secondary" className="mt-1">
-              {ETIQUETA_TIPO[publicacion.tipo]}
+              {libres > 0
+                ? `${libres === 1 ? 'Falta' : 'Faltan'} ${libres} de ${publicacion.faltan}`
+                : 'Cupo completo'}
             </Badge>
           </div>
           {cerrado && <Badge variant="outline">Cerrada</Badge>}
@@ -110,7 +107,9 @@ export function PostCard({
 
         {!cerrado && (
           <div className="flex gap-2">
-            {!esMio && (
+            {/* con el cupo lleno ya no se puede entrar, pero quien está
+                apuntado tiene que poder bajarse */}
+            {!esMio && (libres > 0 || yaApuntado) && (
               <Button
                 className="h-10 flex-1"
                 variant={yaApuntado ? 'outline' : 'default'}
@@ -134,7 +133,7 @@ export function PostCard({
                 disabled={enviando}
                 onClick={cerrar}
               >
-                Ya completé el cupo
+                Cerrar publicación
               </Button>
             )}
           </div>
