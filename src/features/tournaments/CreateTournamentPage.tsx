@@ -195,8 +195,8 @@ export default function CreateTournamentPage() {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Se pueden inscribir quienes están en esa categoría y quienes están a
-              punto de subir o bajar a ella (75 puntos de margen).
+              Se pueden inscribir quienes están en esa categoría y quienes andan
+              cerca, con 175 puntos de margen por arriba y por abajo.
               {miCategoria && ` La tuya es ${miCategoria}.`}
             </p>
           </div>

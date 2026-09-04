@@ -316,8 +316,8 @@ export default function TournamentDetailPage() {
             </Button>
             <p className="text-xs text-muted-foreground">
               Tu compañero tiene que aceptar para que la inscripción quede en firme.
-              Los dos tienen que estar en la categoría {torneo.categoria} o a punto de
-              entrar en ella.
+              Los dos tienen que estar en la categoría {torneo.categoria} o cerca de
+              ella, con 175 puntos de margen.
             </p>
           </CardContent>
         </Card>

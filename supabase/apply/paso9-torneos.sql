@@ -180,9 +180,10 @@ $$;
 -- antes de empezar.
 --
 -- Los torneos son POR CATEGORÍA. Se puede inscribir quien está en la categoría
--- del torneo, y también quien está a punto de entrar en ella subiendo o
--- bajando: el margen es el mismo colchón de 75 puntos de la histéresis, así que
--- un jugador al borde no queda fuera por dos partidos de diferencia.
+-- del torneo, y también quien está cerca de ella por arriba o por abajo. El
+-- margen es de 175 puntos, media categoría: lo bastante ancho para que un
+-- torneo de barrio junte gente y no se quede sin parejas, sin llegar a mezclar
+-- niveles que no tienen nada que ver.
 --
 -- Los partidos de torneo cuentan para el ranking igual que cualquier otro, así
 -- que se guardan en `matches` como todos los demás. La diferencia está en cómo
@@ -291,9 +292,21 @@ revoke insert, update, delete on public.tournament_matches from anon, authentica
 -- ---------------------------------------------------------------------------
 -- Quién puede inscribirse.
 --
--- La categoría del torneo, más el colchón de 75 puntos por arriba y por abajo:
--- entra quien ya está en ella y quien está a punto de subir o de bajar a ella.
+-- La categoría del torneo, más 175 puntos por arriba y por abajo: entra quien ya
+-- está en ella y quien anda cerca.
+--
+-- El margen es su propia constante y no el colchón de la histéresis, aunque
+-- empezaron siendo el mismo número: una cosa es cuándo alguien deja de ser de
+-- una categoría, y otra a qué torneos puede meterse.
 -- ---------------------------------------------------------------------------
+create or replace function public.margen_torneo()
+returns integer
+language sql
+immutable
+as $FN$
+  select 175;
+$FN$;
+
 create or replace function public.elegible_en_torneo(
   p_user      uuid,
   p_ranking   ranking_tipo,
@@ -327,14 +340,14 @@ begin
     return false;
   end if;
 
-  v_desde := public.umbral_categoria(v_idx) - 75;
+  v_desde := public.umbral_categoria(v_idx) - public.margen_torneo();
 
   -- la categoría más alta no tiene techo
   if v_idx = cardinality(v_cats) then
     return v_elo >= v_desde;
   end if;
 
-  v_hasta := public.umbral_categoria(v_idx + 1) + 75;
+  v_hasta := public.umbral_categoria(v_idx + 1) + public.margen_torneo();
   return v_elo >= v_desde and v_elo < v_hasta;
 end;
 $FN$;
