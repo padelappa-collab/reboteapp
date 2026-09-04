@@ -227,12 +227,14 @@ export async function esElegible(
 export async function inscribirPareja(
   torneoId: string,
   companeroId: string,
-  jugadorA?: string,
+  jugadorA: string,
 ) {
+  // los tres siempre: omitir el último dejaba la llamada ambigua entre dos
+  // versiones de la función y la base no sabía cuál elegir
   const { error } = await supabase.rpc('inscribir_pareja', {
     p_torneo: torneoId,
     p_companero: companeroId,
-    p_jugador_a: jugadorA ?? undefined,
+    p_jugador_a: jugadorA,
   })
   if (error) throw new Error(error.message)
 }

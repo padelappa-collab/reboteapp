@@ -321,7 +321,7 @@ export default function TournamentDetailPage() {
               disabled={enviando || companero.length !== 1}
               onClick={() =>
                 accion(async () => {
-                  await inscribirPareja(torneo.id, companero[0].id)
+                  await inscribirPareja(torneo.id, companero[0].id, yo)
                   setCompanero([])
                 }, 'Inscripción enviada. Falta que tu pareja acepte.')
               }
