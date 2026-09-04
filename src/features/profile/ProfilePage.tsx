@@ -1,7 +1,11 @@
+import { MapPin } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/features/auth/useAuth'
 import { BadgeGrid } from '@/features/badges/BadgeGrid'
+import { PrivacidadCard } from '@/features/feed/PrivacidadCard'
 import { EloCard } from './EloCard'
 
 function iniciales(nombre: string): string {
@@ -56,6 +60,15 @@ export default function ProfilePage() {
       </p>
 
       <BadgeGrid userId={perfil.id} />
+
+      <PrivacidadCard />
+
+      <Button asChild variant="outline" className="h-11 w-full">
+        <Link to="/canchas">
+          <MapPin className="size-4" />
+          Canchas de {perfil.ciudad}
+        </Link>
+      </Button>
     </div>
   )
 }

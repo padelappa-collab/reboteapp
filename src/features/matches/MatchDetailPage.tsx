@@ -1,4 +1,12 @@
-import { CalendarDays, Check, CircleAlert, LogOut, MapPin, Trophy } from 'lucide-react'
+import {
+  CalendarDays,
+  Check,
+  CircleAlert,
+  LogOut,
+  MapPin,
+  Share2,
+  Trophy,
+} from 'lucide-react'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -9,6 +17,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/useAuth'
+import { CreatePostSheet } from '@/features/feed/CreatePostSheet'
 import { useCourts } from '@/features/courts/useCourts'
 import { ETIQUETA_RANKING } from '@/lib/matchType'
 import { cn } from '@/lib/utils'
@@ -294,6 +303,30 @@ export default function MatchDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {soyJugador && partido.estado === 'confirmado' && (
+        <Card>
+          <CardContent className="space-y-3">
+            <div>
+              <p className="font-medium">¿Lo subes al feed?</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Se publica con el marcador y los jugadores. Puedes añadirle una foto, o
+                dejarlo solo con el resultado. Nada se publica sin que tú lo decidas.
+              </p>
+            </div>
+            <CreatePostSheet
+              matchId={partido.id}
+              onCreada={() => toast.success('Publicado en tu feed')}
+              disparador={
+                <Button variant="outline" className="h-11 w-full">
+                  <Share2 className="size-4" />
+                  Publicar este partido
+                </Button>
+              }
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {soyJugador && partido.estado === 'disputado' && (
         <Card>

@@ -5,6 +5,8 @@ import LoginPage from '@/features/auth/LoginPage'
 import ProfileSetupPage from '@/features/auth/ProfileSetupPage'
 import SignUpPage from '@/features/auth/SignUpPage'
 import BoardPage from '@/features/board/BoardPage'
+import FeedPage from '@/features/feed/FeedPage'
+import PlayerPage from '@/features/feed/PlayerPage'
 import BoardPostPage from '@/features/board/BoardPostPage'
 import CourtsPage from '@/features/courts/CourtsPage'
 import CreateMatchPage from '@/features/matches/CreateMatchPage'
@@ -36,7 +38,9 @@ export const router = createBrowserRouter([
       {
         element: <AppShell />,
         children: [
-          { path: '/', element: <MatchesListPage /> },
+          { path: '/', element: <FeedPage /> },
+          { path: '/feed', element: <FeedPage /> },
+          { path: '/jugador/:id', element: <PlayerPage /> },
           { path: '/partidos', element: <MatchesListPage /> },
           { path: '/partidos/nuevo', element: <CreateMatchPage /> },
           { path: '/partidos/:id', element: <MatchDetailPage /> },

@@ -1,12 +1,14 @@
-import { ListOrdered, MapPin, Megaphone, Swords, User } from 'lucide-react'
+import { Home, ListOrdered, Megaphone, Swords, User } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
+// Cinco secciones es el máximo que cabe cómodo en una barra de móvil. Canchas
+// se llega desde el perfil y desde el tablón, que es donde de verdad se usa.
 const ENLACES = [
+  { a: '/feed', icono: Home, texto: 'Feed' },
   { a: '/partidos', icono: Swords, texto: 'Partidos' },
-  { a: '/ranking', icono: ListOrdered, texto: 'Ranking' },
   { a: '/tablon', icono: Megaphone, texto: 'Tablón' },
-  { a: '/canchas', icono: MapPin, texto: 'Canchas' },
+  { a: '/ranking', icono: ListOrdered, texto: 'Ranking' },
   { a: '/perfil', icono: User, texto: 'Perfil' },
 ]
 
