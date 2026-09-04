@@ -288,6 +288,19 @@ export type TournamentMatchRow = {
   created_at: string
 }
 
+export type NotificationRow = {
+  id: string
+  user_id: string
+  tipo: string
+  titulo: string
+  cuerpo: string | null
+  enlace: string | null
+  actor_id: string | null
+  entidad_id: string | null
+  leida: boolean
+  created_at: string
+}
+
 export type BadgeRow = {
   id: string
   nombre: string
@@ -334,6 +347,7 @@ export type Database = {
       tournaments: Tabla<TournamentRow, TournamentInsert, TournamentUpdate>
       tournament_pairs: Tabla<TournamentPairRow, NoEscribible, NoEscribible>
       tournament_matches: Tabla<TournamentMatchRow, NoEscribible, NoEscribible>
+      notifications: Tabla<NotificationRow, NoEscribible, { leida?: boolean }>
       badges: Tabla<BadgeRow, NoEscribible, NoEscribible>
       user_badges: Tabla<UserBadgeRow, NoEscribible, NoEscribible>
     }

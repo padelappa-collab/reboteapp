@@ -14,6 +14,7 @@ import MatchDetailPage from '@/features/matches/MatchDetailPage'
 import MatchesListPage from '@/features/matches/MatchesListPage'
 import PrivacyPage from '@/features/legal/PrivacyPage'
 import TermsPage from '@/features/legal/TermsPage'
+import NotificationsPage from '@/features/notifications/NotificationsPage'
 import ProfilePage from '@/features/profile/ProfilePage'
 import RankingPage from '@/features/ranking/RankingPage'
 import CreateTournamentPage from '@/features/tournaments/CreateTournamentPage'
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
           { path: '/torneos/nuevo', element: <CreateTournamentPage /> },
           { path: '/torneos/:id', element: <TournamentDetailPage /> },
           { path: '/perfil', element: <ProfilePage /> },
+          { path: '/novedades', element: <NotificationsPage /> },
         ],
       },
     ],
