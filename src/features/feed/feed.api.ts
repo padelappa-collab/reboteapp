@@ -318,6 +318,46 @@ export async function relacionCon(usuarioId: string, yo: string): Promise<Relaci
   }
 }
 
+/** Lo justo para pintar a alguien en una lista y poder abrir su perfil. */
+export interface JugadorBreve {
+  id: string
+  nombre: string
+  username: string | null
+  foto_url: string | null
+}
+
+const CAMPOS_BREVE = 'id, nombre, username, foto_url'
+
+/** Quiénes lo siguen. Solo los aceptados: una solicitud pendiente no es seguir. */
+export async function seguidoresDe(usuarioId: string): Promise<JugadorBreve[]> {
+  const { data, error } = await supabase
+    .from('follows')
+    .select(`seguidor:users!follows_follower_id_fkey (${CAMPOS_BREVE})`)
+    .eq('followed_id', usuarioId)
+    .eq('estado', 'aceptado')
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return (data as unknown as Array<{ seguidor: JugadorBreve | null }>)
+    .map((f) => f.seguidor)
+    .filter((u): u is JugadorBreve => u !== null)
+}
+
+/** A quiénes sigue. */
+export async function siguiendoDe(usuarioId: string): Promise<JugadorBreve[]> {
+  const { data, error } = await supabase
+    .from('follows')
+    .select(`seguido:users!follows_followed_id_fkey (${CAMPOS_BREVE})`)
+    .eq('follower_id', usuarioId)
+    .eq('estado', 'aceptado')
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return (data as unknown as Array<{ seguido: JugadorBreve | null }>)
+    .map((f) => f.seguido)
+    .filter((u): u is JugadorBreve => u !== null)
+}
+
 /** Solicitudes que esperan mi respuesta. */
 export async function solicitudesPendientes(yo: string) {
   const { data, error } = await supabase

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
 import { BadgeGrid } from '@/features/badges/BadgeGrid'
+import { FollowsCard } from '@/features/feed/FollowsCard'
 import { MyPostsGrid } from '@/features/feed/MyPostsGrid'
 import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
 import { PushCard } from '@/features/notifications/PushCard'
@@ -45,6 +46,8 @@ export default function ProfilePage() {
           </p>
         </div>
       </div>
+
+      <FollowsCard userId={perfil.id} />
 
       <div className="flex flex-wrap items-center gap-2">
         <ProfileSettingsSheet />
