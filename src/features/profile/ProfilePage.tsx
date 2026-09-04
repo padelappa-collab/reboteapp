@@ -76,11 +76,12 @@ export default function ProfilePage() {
         corresponde a su tipo.
       </p>
 
+      {/* lo que espera respuesta va primero: si no, se pierde debajo de todo */}
+      <SolicitudesCard />
+
       <MyPostsGrid />
 
       <BadgeGrid userId={perfil.id} />
-
-      <SolicitudesCard />
 
       <Button asChild variant="outline" className="h-11 w-full">
         <Link to="/canchas">
