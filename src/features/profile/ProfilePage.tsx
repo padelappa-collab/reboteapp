@@ -64,6 +64,11 @@ export default function ProfilePage() {
         </p>
       )}
 
+      {/* lo que espera respuesta va primero: si no, se pierde debajo de todo */}
+      <SolicitudesCard />
+
+      <MyPostsGrid />
+
       <div className="space-y-3">
         {eloBase !== null && peakBase !== null && (
           <EloCard ranking={perfil.genero} elo={eloBase} peakElo={peakBase} />
@@ -75,11 +80,6 @@ export default function ProfilePage() {
         Los tres rankings se mueven por separado: cada partido solo afecta al que
         corresponde a su tipo.
       </p>
-
-      {/* lo que espera respuesta va primero: si no, se pierde debajo de todo */}
-      <SolicitudesCard />
-
-      <MyPostsGrid />
 
       <BadgeGrid userId={perfil.id} />
 
