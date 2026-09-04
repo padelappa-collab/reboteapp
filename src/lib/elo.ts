@@ -29,8 +29,14 @@ export const K_ESTABLE = 20
 export const PARTIDOS_CALIBRACION = 10
 export const PARTIDOS_INTERMEDIO = 40
 
-/** Suelo del ELO: por debajo de esto el número deja de significar algo. */
-export const ELO_MINIMO = 100
+/**
+ * Suelo del ELO.
+ *
+ * Un jugador de 7ma arranca en 700, así que 580 le deja 120 puntos de caída:
+ * perder cuesta, pero nadie termina en un pozo a cientos de puntos de su propia
+ * categoría del que tardaría decenas de partidos en salir.
+ */
+export const ELO_MINIMO = 580
 
 export type Lado = 'a' | 'b'
 
