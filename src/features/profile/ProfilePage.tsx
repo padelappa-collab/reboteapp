@@ -7,6 +7,7 @@ import { BadgeGrid } from '@/features/badges/BadgeGrid'
 import { FollowsCard } from '@/features/feed/FollowsCard'
 import { MyPostsGrid } from '@/features/feed/MyPostsGrid'
 import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
+import { InstallCard } from '@/features/install/InstallCard'
 import { PushCard } from '@/features/notifications/PushCard'
 import { AvatarUploader } from './AvatarUploader'
 import { EloCard } from './EloCard'
@@ -75,6 +76,9 @@ export default function ProfilePage() {
           Canchas de {perfil.ciudad}
         </Link>
       </Button>
+
+      {/* instalar va antes: en iPhone el push no existe sin ella */}
+      <InstallCard />
 
       <PushCard />
 
