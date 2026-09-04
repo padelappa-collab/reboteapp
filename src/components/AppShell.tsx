@@ -1,27 +1,37 @@
-import { LogOut } from 'lucide-react'
-import { Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import { BottomNav } from '@/components/BottomNav'
-import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/features/auth/useAuth'
 
-/** Marco de la app: cabecera fija, contenido y navegación inferior. */
+function iniciales(nombre: string) {
+  return nombre
+    .split(' ')
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('')
+}
+
+/** Marco de la app: cabecera con acceso al perfil, contenido y navegación. */
 export function AppShell() {
-  const { perfil, cerrarSesion } = useAuth()
+  const { perfil } = useAuth()
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-md items-center justify-between px-4">
-          <span className="font-semibold tracking-tight">REBOTEAPP</span>
+          <Link to="/feed" className="font-semibold tracking-tight">
+            REBOTEAPP
+          </Link>
+
           {perfil && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={cerrarSesion}
-              aria-label="Cerrar sesión"
-            >
-              <LogOut className="size-4" />
-            </Button>
+            <Link to="/perfil" aria-label="Tu perfil">
+              <Avatar className="size-9">
+                {perfil.foto_url && <AvatarImage src={perfil.foto_url} alt="" />}
+                <AvatarFallback className="text-xs">
+                  {iniciales(perfil.nombre)}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
           )}
         </div>
       </header>

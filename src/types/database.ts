@@ -24,6 +24,8 @@ export type SetMarcador = {
 export type UserRow = {
   id: string
   nombre: string
+  /** Único y opcional. El nombre real no es único. */
+  username: string | null
   ciudad: string
   genero: Genero
   categoria_inicial: string
@@ -54,6 +56,7 @@ export type UserInsert = {
 
 export type UserUpdate = {
   nombre?: string
+  username?: string | null
   ciudad?: string
   foto_url?: string | null
   cuenta_privada?: boolean

@@ -4,7 +4,7 @@ import type { RankingTipo, UserRow } from '@/types/database'
 
 export type FilaRanking = Pick<
   UserRow,
-  'id' | 'nombre' | 'ciudad' | 'genero' | 'partidos_jugados'
+  'id' | 'nombre' | 'username' | 'ciudad' | 'genero' | 'partidos_jugados'
 > & {
   elo: number
   peakElo: number
@@ -43,7 +43,7 @@ export function useRanking(tipo: RankingTipo, ciudad: string | null) {
       let consulta = supabase
         .from('users')
         .select(
-          `id, nombre, ciudad, genero, partidos_jugados, ${columnaElo}, ${columnaPeak}`,
+          `id, nombre, username, ciudad, genero, partidos_jugados, ${columnaElo}, ${columnaPeak}`,
         )
         .not(columnaElo, 'is', null)
         .order(columnaElo, { ascending: false })
@@ -64,6 +64,7 @@ export function useRanking(tipo: RankingTipo, ciudad: string | null) {
             return {
               id: f.id as string,
               nombre: f.nombre as string,
+              username: (f.username as string | null) ?? null,
               ciudad: f.ciudad as string,
               genero: f.genero as FilaRanking['genero'],
               partidos_jugados: f.partidos_jugados as number,

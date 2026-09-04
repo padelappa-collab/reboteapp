@@ -1,4 +1,5 @@
 import { Search, X } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { CategoryBadge } from '@/components/CategoryBadge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -50,7 +51,11 @@ export default function RankingPage() {
     const conPuesto = filas.map((fila, i) => ({ fila, puesto: i + 1 }))
     if (!busqueda.trim()) return conPuesto
     const texto = normalizar(busqueda)
-    return conPuesto.filter((f) => normalizar(f.fila.nombre).includes(texto))
+    return conPuesto.filter(
+      (f) =>
+        normalizar(f.fila.nombre).includes(texto) ||
+        normalizar(f.fila.username ?? '').includes(texto),
+    )
   }, [filas, busqueda])
 
   return (
@@ -89,7 +94,7 @@ export default function RankingPage() {
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="h-11 pl-9 pr-10"
-          placeholder="Buscar jugador"
+          placeholder="Buscar por nombre o usuario"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -141,7 +146,12 @@ export default function RankingPage() {
               <AvatarFallback className="text-xs">{iniciales(fila.nombre)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{fila.nombre}</p>
+              <Link
+                to={`/jugador/${fila.id}`}
+                className="truncate text-sm font-medium hover:underline"
+              >
+                {fila.nombre}
+              </Link>
               <CategoryBadge
                 elo={fila.elo}
                 ranking={tipo}

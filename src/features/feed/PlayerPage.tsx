@@ -112,6 +112,9 @@ export default function PlayerPage() {
 
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-semibold">{jugador.nombre}</h1>
+          {jugador.username && (
+            <p className="truncate text-sm text-muted-foreground">@{jugador.username}</p>
+          )}
           <p className="text-sm text-muted-foreground">
             {jugador.ciudad} · {relacion?.seguidores ?? 0} seguidores
           </p>

@@ -1,12 +1,13 @@
-import { MapPin } from 'lucide-react'
+import { LogOut, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
 import { BadgeGrid } from '@/features/badges/BadgeGrid'
-import { PrivacidadCard } from '@/features/feed/PrivacidadCard'
+import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
 import { EloCard } from './EloCard'
+import { ProfileSettingsSheet } from './ProfileSettingsSheet'
 
 function iniciales(nombre: string): string {
   return nombre
@@ -17,7 +18,7 @@ function iniciales(nombre: string): string {
 }
 
 export default function ProfilePage() {
-  const { perfil } = useAuth()
+  const { perfil, cerrarSesion } = useAuth()
   if (!perfil) return null
 
   const eloBase = perfil.genero === 'masculino' ? perfil.elo_masculino : perfil.elo_femenino
@@ -25,18 +26,26 @@ export default function ProfilePage() {
     perfil.genero === 'masculino' ? perfil.peak_elo_masculino : perfil.peak_elo_femenino
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-4">
       <div className="flex items-center gap-3">
-        <Avatar className="size-14">
+        <Avatar className="size-16">
+          {perfil.foto_url && <AvatarImage src={perfil.foto_url} alt="" />}
           <AvatarFallback>{iniciales(perfil.nombre)}</AvatarFallback>
         </Avatar>
-        <div>
-          <h1 className="text-xl font-semibold">{perfil.nombre}</h1>
-          <p className="text-sm text-muted-foreground">{perfil.ciudad}</p>
+
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-xl font-semibold">{perfil.nombre}</h1>
+          {perfil.username && (
+            <p className="truncate text-sm text-muted-foreground">@{perfil.username}</p>
+          )}
+          <p className="text-sm text-muted-foreground">
+            {perfil.ciudad} · cuenta {perfil.cuenta_privada ? 'privada' : 'pública'}
+          </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <ProfileSettingsSheet />
         {perfil.numero_registro <= 100 && (
           <Badge variant="secondary">Fundador #{perfil.numero_registro}</Badge>
         )}
@@ -46,6 +55,13 @@ export default function ProfilePage() {
             : `${perfil.partidos_jugados} partidos jugados`}
         </span>
       </div>
+
+      {!perfil.username && (
+        <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+          Todavía no tienes nombre de usuario. Es lo que permite que te encuentren sin
+          confundirte con otro jugador del mismo nombre.
+        </p>
+      )}
 
       <div className="space-y-3">
         {eloBase !== null && peakBase !== null && (
@@ -61,13 +77,22 @@ export default function ProfilePage() {
 
       <BadgeGrid userId={perfil.id} />
 
-      <PrivacidadCard />
+      <SolicitudesCard />
 
       <Button asChild variant="outline" className="h-11 w-full">
         <Link to="/canchas">
           <MapPin className="size-4" />
           Canchas de {perfil.ciudad}
         </Link>
+      </Button>
+
+      <Button
+        variant="ghost"
+        className="h-11 w-full text-destructive"
+        onClick={cerrarSesion}
+      >
+        <LogOut className="size-4" />
+        Cerrar sesión
       </Button>
     </div>
   )
