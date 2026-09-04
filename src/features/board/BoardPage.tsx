@@ -1,5 +1,8 @@
+import { Trophy } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/useAuth'
@@ -43,7 +46,15 @@ export default function BoardPage() {
     <div className="space-y-4 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Tablón</h1>
-        <CreatePostSheet onCreada={recargar} />
+        <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/torneos">
+              <Trophy className="size-4" />
+              Torneos
+            </Link>
+          </Button>
+          <CreatePostSheet onCreada={recargar} />
+        </div>
       </div>
 
       <Tabs value={pestana} onValueChange={(v) => setPestana(v as Pestana)}>

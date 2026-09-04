@@ -42,8 +42,14 @@ export default function TournamentsListPage() {
     cargar()
   }, [cargar])
 
-  const abiertos = torneos.filter((t) => t.estado !== 'finalizado')
-  const pasados = torneos.filter((t) => t.estado === 'finalizado')
+  const abiertos = torneos.filter(
+    (t) => t.estado === 'inscripciones' || t.estado === 'en_curso',
+  )
+  // los cancelados se quedan a la vista: quien se había inscrito merece ver por
+  // qué ya no aparece, en vez de que desaparezca sin más
+  const pasados = torneos.filter(
+    (t) => t.estado === 'finalizado' || t.estado === 'cancelado',
+  )
 
   function tarjeta(t: Torneo) {
     return (
@@ -119,7 +125,9 @@ export default function TournamentsListPage() {
 
       {pasados.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground">Terminados</h2>
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Terminados y cancelados
+          </h2>
           {pasados.map(tarjeta)}
         </section>
       )}

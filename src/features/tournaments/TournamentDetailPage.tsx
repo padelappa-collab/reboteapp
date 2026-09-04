@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, Check, MapPin, Trophy, X } from 'lucide-react'
+import { ArrowLeft, Ban, CalendarDays, Check, MapPin, Trophy, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import type { SetMarcador } from '@/types/database'
 import {
   aceptarInscripcion,
+  cancelarTorneo,
   crucesDe,
   ETIQUETA_ESTADO,
   ETIQUETA_FORMATO,
@@ -422,6 +423,28 @@ export default function TournamentDetailPage() {
           </Button>
           {errorParejas && <p className="text-sm text-destructive">{errorParejas}</p>}
         </div>
+      )}
+
+      {soyOrganizador &&
+        (torneo.estado === 'inscripciones' || torneo.estado === 'en_curso') && (
+          <Button
+            variant="ghost"
+            className="h-11 w-full text-destructive"
+            disabled={enviando}
+            onClick={() =>
+              accion(() => cancelarTorneo(torneo.id), 'Torneo cancelado')
+            }
+          >
+            <Ban className="size-4" />
+            Cancelar el torneo
+          </Button>
+        )}
+
+      {torneo.estado === 'cancelado' && (
+        <p className="rounded-lg border border-dashed p-3 text-center text-sm text-muted-foreground">
+          Este torneo se canceló. Los partidos que alcanzaron a jugarse siguen
+          contando para el ranking.
+        </p>
       )}
 
       {cruces.length > 0 && (

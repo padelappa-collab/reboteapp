@@ -1,4 +1,4 @@
-import { Plus, Trophy } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { MatchCard } from '@/components/MatchCard'
 import { Button } from '@/components/ui/button'
@@ -17,20 +17,12 @@ export default function MatchesListPage() {
     <div className="space-y-4 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Mis partidos</h1>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/torneos">
-              <Trophy className="size-4" />
-              Torneos
-            </Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link to="/partidos/nuevo">
-              <Plus className="size-4" />
-              Registrar
-            </Link>
-          </Button>
-        </div>
+        <Button asChild size="sm">
+          <Link to="/partidos/nuevo">
+            <Plus className="size-4" />
+            Registrar
+          </Link>
+        </Button>
       </div>
 
       {cargando && (

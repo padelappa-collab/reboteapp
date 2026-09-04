@@ -112,7 +112,6 @@ export async function torneosDe(ciudad: string): Promise<Torneo[]> {
     .from('tournaments')
     .select('*')
     .eq('ciudad', ciudad)
-    .neq('estado', 'cancelado')
     .order('fecha_inicio', { ascending: false })
 
   if (error) throw new Error(error.message)
@@ -263,6 +262,19 @@ export async function registrarResultado(cruceId: string, sets: SetMarcador[]) {
 
 export async function generarFaseFinal(torneoId: string) {
   const { error } = await supabase.rpc('generar_fase_final', { p_torneo: torneoId })
+  if (error) throw new Error(error.message)
+}
+
+/**
+ * Cancelar un torneo no lo borra: los inscritos reciben el aviso y el torneo
+ * queda a la vista como cancelado. Borrarlo dejaría a la gente esperando en una
+ * cancha por algo que desapareció sin explicación.
+ */
+export async function cancelarTorneo(torneoId: string) {
+  const { error } = await supabase
+    .from('tournaments')
+    .update({ estado: 'cancelado' })
+    .eq('id', torneoId)
   if (error) throw new Error(error.message)
 }
 
