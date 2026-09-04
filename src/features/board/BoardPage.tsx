@@ -1,6 +1,7 @@
 import { Trophy } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { enRango, ListFilters, type RangoFecha } from '@/components/ListFilters'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -26,19 +27,42 @@ export default function BoardPage() {
   const { perfil } = useAuth()
   const { publicaciones, cargando, error, recargar } = useBoard(perfil?.ciudad)
   const [pestana, setPestana] = useState<Pestana>('abiertas')
+  const [rango, setRango] = useState<RangoFecha>('todas')
+  const [fecha, setFecha] = useState('')
+  const [cancha, setCancha] = useState('todas')
+
+  // las canchas de la lista, no todas las de la ciudad: ofrecer un filtro que
+  // no deja nada es peor que no ofrecerlo
+  const canchas = useMemo(() => {
+    const porId = new Map<string, string>()
+    for (const p of publicaciones) {
+      if (p.cancha) porId.set(p.cancha.id, p.cancha.nombre)
+    }
+    return [...porId].map(([id, nombre]) => ({ id, nombre }))
+  }, [publicaciones])
+
+  const filtrada = (lista: PublicacionConDatos[]) =>
+    lista.filter(
+      (p) =>
+        enRango(p.fecha_partido, rango, fecha) &&
+        (cancha === 'todas' || p.cancha_id === cancha),
+    )
+
+  const filtrando = rango !== 'todas' || cancha !== 'todas'
 
   const yo = perfil?.id ?? ''
   const hayCupo = (p: PublicacionConDatos) =>
     quienesVan(p).length < 4 && p.estado !== 'cancelado'
-  const abiertas = publicaciones.filter(hayCupo)
+  const abiertas = filtrada(publicaciones.filter(hayCupo))
   // aquí sí entran las cerradas: cuando el cupo se llena hay que poder seguir
   // viendo el partido al que entraste, y registrarlo
-  const mias = publicaciones.filter((p) => esMia(p, yo))
+  const mias = filtrada(publicaciones.filter((p) => esMia(p, yo)))
 
   const lista = pestana === 'abiertas' ? abiertas : mias
 
-  const vacio =
-    pestana === 'abiertas'
+  const vacio = filtrando
+    ? 'Nada con esos filtros. Prueba con otra fecha o quítalos.'
+    : pestana === 'abiertas'
       ? 'No hay publicaciones abiertas. Publica la primera y que te encuentren.'
       : 'No estás en ninguna publicación. Apúntate a alguna o crea la tuya.'
 
@@ -77,6 +101,22 @@ export default function BoardPage() {
           </TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <ListFilters
+        rango={rango}
+        onRango={setRango}
+        fecha={fecha}
+        onFecha={setFecha}
+        cancha={cancha}
+        onCancha={setCancha}
+        canchas={canchas}
+        activo={filtrando}
+        onLimpiar={() => {
+          setRango('todas')
+          setFecha('')
+          setCancha('todas')
+        }}
+      />
 
       {cargando && (
         <div className="space-y-3">

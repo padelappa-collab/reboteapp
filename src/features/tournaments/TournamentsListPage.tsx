@@ -1,11 +1,20 @@
 import { CalendarDays, Plus, Trophy, Users } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { enRango, ListFilters, type RangoFecha } from '@/components/ListFilters'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useAuth } from '@/features/auth/useAuth'
+import { useCourts } from '@/features/courts/useCourts'
 import {
   ETIQUETA_ESTADO,
   ETIQUETA_FORMATO,
@@ -25,6 +34,11 @@ export default function TournamentsListPage() {
   const { perfil } = useAuth()
   const [torneos, setTorneos] = useState<Torneo[]>([])
   const [cargando, setCargando] = useState(true)
+  const { canchas: canchasCiudad } = useCourts(perfil?.ciudad)
+  const [rango, setRango] = useState<RangoFecha>('todas')
+  const [fecha, setFecha] = useState('')
+  const [cancha, setCancha] = useState('todas')
+  const [formato, setFormato] = useState('todos')
 
   const cargar = useCallback(async () => {
     if (!perfil) return
@@ -42,12 +56,29 @@ export default function TournamentsListPage() {
     cargar()
   }, [cargar])
 
-  const abiertos = torneos.filter(
+  // solo las canchas que algún torneo usa: un filtro que no deja nada estorba
+  const canchas = useMemo(() => {
+    const usadas = new Set(torneos.map((t) => t.cancha_id).filter(Boolean))
+    return canchasCiudad
+      .filter((c) => usadas.has(c.id))
+      .map((c) => ({ id: c.id, nombre: c.nombre }))
+  }, [torneos, canchasCiudad])
+
+  const filtrando = rango !== 'todas' || cancha !== 'todas' || formato !== 'todos'
+
+  const visibles = torneos.filter(
+    (t) =>
+      enRango(t.fecha_inicio, rango, fecha) &&
+      (cancha === 'todas' || t.cancha_id === cancha) &&
+      (formato === 'todos' || t.formato === formato),
+  )
+
+  const abiertos = visibles.filter(
     (t) => t.estado === 'inscripciones' || t.estado === 'en_curso',
   )
   // los cancelados se quedan a la vista: quien se había inscrito merece ver por
   // qué ya no aparece, en vez de que desaparezca sin más
-  const pasados = torneos.filter(
+  const pasados = visibles.filter(
     (t) => t.estado === 'finalizado' || t.estado === 'cancelado',
   )
 
@@ -105,6 +136,37 @@ export default function TournamentsListPage() {
         </Button>
       </div>
 
+      <ListFilters
+        rango={rango}
+        onRango={setRango}
+        fecha={fecha}
+        onFecha={setFecha}
+        cancha={cancha}
+        onCancha={setCancha}
+        canchas={canchas}
+        activo={filtrando}
+        onLimpiar={() => {
+          setRango('todas')
+          setFecha('')
+          setCancha('todas')
+          setFormato('todos')
+        }}
+      >
+        <Select value={formato} onValueChange={setFormato}>
+          <SelectTrigger className="h-10 flex-1">
+            <SelectValue placeholder="Formato" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="todos">Todos los formatos</SelectItem>
+            {(['americano', 'cuadrangular', 'grupos'] as const).map((f) => (
+              <SelectItem key={f} value={f}>
+                {ETIQUETA_FORMATO[f]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </ListFilters>
+
       {cargando && (
         <div className="space-y-3">
           <Skeleton className="h-40 w-full" />
@@ -112,11 +174,13 @@ export default function TournamentsListPage() {
         </div>
       )}
 
-      {!cargando && torneos.length === 0 && (
+      {!cargando && visibles.length === 0 && (
         <div className="rounded-lg border border-dashed p-8 text-center">
           <p className="text-sm text-muted-foreground">
-            No hay torneos en {perfil?.ciudad}. Crea el primero: puedes organizar un
-            americano, un cuadrangular o una fase de grupos.
+            {filtrando
+              ? 'Ningún torneo con esos filtros. Prueba con otra fecha o quítalos.'
+              : `No hay torneos en ${perfil?.ciudad}. Crea el primero: puedes organizar
+                 un americano, un cuadrangular o una fase de grupos.`}
           </p>
         </div>
       )}
