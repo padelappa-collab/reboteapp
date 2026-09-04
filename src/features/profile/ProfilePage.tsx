@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
 import { BadgeGrid } from '@/features/badges/BadgeGrid'
+import { MyPostsGrid } from '@/features/feed/MyPostsGrid'
 import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
 import { EloCard } from './EloCard'
 import { ProfileSettingsSheet } from './ProfileSettingsSheet'
@@ -74,6 +75,8 @@ export default function ProfilePage() {
         Los tres rankings se mueven por separado: cada partido solo afecta al que
         corresponde a su tipo.
       </p>
+
+      <MyPostsGrid />
 
       <BadgeGrid userId={perfil.id} />
 

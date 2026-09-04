@@ -257,7 +257,7 @@ export type Database = {
       board_posts: Tabla<BoardPostRow, BoardPostInsert, BoardPostUpdate>
       board_post_signups: Tabla<BoardPostSignupRow, BoardPostSignupInsert, NoEscribible>
       follows: Tabla<FollowRow, FollowRow, Partial<FollowRow>>
-      feed_posts: Tabla<FeedPostRow, FeedPostInsert>
+      feed_posts: Tabla<FeedPostRow, FeedPostInsert, { contenido?: string | null }>
       comments: Tabla<CommentRow, CommentInsert, NoEscribible>
       post_likes: Tabla<PostLikeRow, PostLikeInsert, NoEscribible>
       badges: Tabla<BadgeRow, NoEscribible, NoEscribible>

@@ -110,6 +110,15 @@ export async function crearPublicacion(datos: {
   if (error) throw new Error(error.message)
 }
 
+/** Solo cambia el texto: la foto y el partido de una publicación no se editan. */
+export async function editarPublicacion(id: string, contenido: string | null) {
+  const { error } = await supabase
+    .from('feed_posts')
+    .update({ contenido })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
 export async function borrarPublicacion(id: string) {
   const { error } = await supabase.from('feed_posts').delete().eq('id', id)
   if (error) throw new Error(error.message)
