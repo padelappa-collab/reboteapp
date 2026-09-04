@@ -5,6 +5,7 @@ import type { RankingTipo, SetMarcador } from '@/types/database'
 export type TorneoFormato = 'americano' | 'cuadrangular' | 'grupos'
 export type TorneoEstado = 'inscripciones' | 'en_curso' | 'finalizado' | 'cancelado'
 export type ParejaEstado = 'pendiente' | 'aceptada'
+export type TorneoModalidad = 'categoria' | 'suma'
 
 export interface Torneo {
   id: string
@@ -12,7 +13,9 @@ export interface Torneo {
   ciudad: string
   formato: TorneoFormato
   ranking: RankingTipo
-  categoria: string
+  modalidad: TorneoModalidad
+  categoria: string | null
+  suma: number | null
   fecha_inicio: string
   cancha_id: string | null
   descripcion: string | null
@@ -71,6 +74,30 @@ export function parejasValidas(formato: TorneoFormato, cuantas: number): string 
   return null
 }
 
+/** Cómo se describe el límite de nivel de un torneo. */
+export function limiteDeNivel(t: Pick<Torneo, 'modalidad' | 'categoria' | 'suma'>) {
+  return t.modalidad === 'suma' ? `Suma ${t.suma} o más` : `Categoría ${t.categoria}`
+}
+
+/**
+ * Con qué número cuenta cada categoría para las sumas: la 7ma vale 7 y la 1ra
+ * vale 1, así que sumar más significa ser una pareja más floja.
+ */
+export function numeroDeCategoria(categoria: string, ranking: RankingTipo): number {
+  const escala =
+    ranking === 'femenino'
+      ? ['D', 'C', 'B', 'A']
+      : ['7ma', '6ta', '5ta', '4ta', '3ra', '2da', '1ra']
+  const idx = escala.indexOf(categoria)
+  return idx === -1 ? 0 : escala.length - idx
+}
+
+/** Las sumas que tienen sentido en cada escala. */
+export function sumasPosibles(ranking: RankingTipo): number[] {
+  const tope = ranking === 'femenino' ? 8 : 14
+  return Array.from({ length: tope - 1 }, (_, i) => i + 2)
+}
+
 export const ETIQUETA_ESTADO: Record<TorneoEstado, string> = {
   inscripciones: 'Inscripciones abiertas',
   en_curso: 'En curso',
@@ -95,7 +122,9 @@ export async function crearTorneo(datos: {
   ciudad: string
   formato: TorneoFormato
   ranking: RankingTipo
-  categoria: string
+  modalidad: TorneoModalidad
+  categoria: string | null
+  suma: number | null
   fechaInicio: string
   canchaId: string | null
   descripcion: string | null
@@ -109,7 +138,9 @@ export async function crearTorneo(datos: {
       ciudad: datos.ciudad,
       formato: datos.formato,
       ranking: datos.ranking,
+      modalidad: datos.modalidad,
       categoria: datos.categoria,
+      suma: datos.suma,
       fecha_inicio: datos.fechaInicio,
       cancha_id: datos.canchaId,
       descripcion: datos.descripcion,

@@ -221,6 +221,7 @@ export type PostLikeInsert = {
 export type TorneoFormato = 'americano' | 'cuadrangular' | 'grupos'
 export type TorneoEstado = 'inscripciones' | 'en_curso' | 'finalizado' | 'cancelado'
 export type ParejaEstado = 'pendiente' | 'aceptada'
+export type TorneoModalidad = 'categoria' | 'suma'
 
 export type TournamentRow = {
   id: string
@@ -228,7 +229,9 @@ export type TournamentRow = {
   ciudad: string
   formato: TorneoFormato
   ranking: RankingTipo
-  categoria: string
+  modalidad: TorneoModalidad
+  categoria: string | null
+  suma: number | null
   fecha_inicio: string
   cancha_id: string | null
   descripcion: string | null
@@ -243,7 +246,9 @@ export type TournamentInsert = {
   ciudad: string
   formato: TorneoFormato
   ranking: RankingTipo
-  categoria: string
+  modalidad: TorneoModalidad
+  categoria?: string | null
+  suma?: number | null
   fecha_inicio: string
   cancha_id?: string | null
   descripcion?: string | null
@@ -411,6 +416,10 @@ export type Database = {
         Args: { p_match_id: string }
         Returns: MatchRow
       }
+      numero_categoria_de: {
+        Args: { p_user: string; p_ranking: RankingTipo }
+        Returns: number
+      }
       elegible_en_torneo: {
         Args: { p_user: string; p_ranking: RankingTipo; p_categoria: string }
         Returns: boolean
@@ -436,6 +445,7 @@ export type Database = {
       follow_estado: FollowEstado
       torneo_formato: TorneoFormato
       torneo_estado: TorneoEstado
+      torneo_modalidad: TorneoModalidad
       pareja_estado: ParejaEstado
     }
     CompositeTypes: Record<never, never>

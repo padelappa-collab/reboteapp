@@ -11,11 +11,18 @@
 -- propósito, para que un torneo de barrio no quede decidido por el ranking
 -- antes de empezar.
 --
--- Los torneos son POR CATEGORÍA. Se puede inscribir quien está en la categoría
--- del torneo, y también quien está cerca de ella por arriba o por abajo. El
--- margen es de 175 puntos, media categoría: lo bastante ancho para que un
--- torneo de barrio junte gente y no se quede sin parejas, sin llegar a mezclar
--- niveles que no tienen nada que ver.
+-- Un torneo limita el nivel de dos maneras, y el organizador elige cuál:
+--
+--   * por categoría -> la categoría del torneo, más 175 puntos de margen por
+--     arriba y por abajo. Media categoría: lo bastante ancho para que un torneo
+--     de barrio junte parejas sin mezclar niveles que no tienen que ver.
+--
+--   * por suma -> se suman las categorías de los dos jugadores y esa suma tiene
+--     que dar el número del torneo O MÁS. Como la 1ra es la más fuerte y la 7ma
+--     la más débil, sumar más significa ser más débil: la regla pone techo al
+--     nivel de la pareja, no piso. En un "suma 9" entran 7+2, 6+3 y 5+4, y
+--     también cualquier pareja más floja; lo que impide es que dos fuertes se
+--     junten.
 --
 -- Los partidos de torneo cuentan para el ranking igual que cualquier otro, así
 -- que se guardan en `matches` como todos los demás. La diferencia está en cómo
@@ -28,22 +35,33 @@
 create type torneo_formato as enum ('americano', 'cuadrangular', 'grupos');
 create type torneo_estado as enum ('inscripciones', 'en_curso', 'finalizado', 'cancelado');
 create type pareja_estado as enum ('pendiente', 'aceptada');
+create type torneo_modalidad as enum ('categoria', 'suma');
 
 create table if not exists public.tournaments (
   id           uuid primary key default gen_random_uuid(),
   nombre       text not null check (char_length(btrim(nombre)) between 3 and 80),
   ciudad       text not null default 'Cartagena',
   formato      torneo_formato not null,
-  -- de qué ranking y de qué categoría es el torneo
+  -- de qué ranking es, y cómo limita el nivel
   ranking      ranking_tipo not null,
-  categoria    text not null,
+  modalidad    torneo_modalidad not null default 'categoria',
+  categoria    text,
+  suma         smallint check (suma between 2 and 14),
   fecha_inicio timestamptz not null,
   cancha_id    uuid references public.courts (id) on delete set null,
   descripcion  text,
   max_parejas  smallint not null default 8 check (max_parejas between 3 and 32),
   estado       torneo_estado not null default 'inscripciones',
   creado_por   uuid not null references public.users (id) on delete cascade,
-  created_at   timestamptz not null default now()
+  created_at   timestamptz not null default now(),
+
+  -- cada modalidad necesita su dato y no el de la otra
+  constraint limite_de_nivel_coherente check (
+    case modalidad
+      when 'categoria' then categoria is not null and suma is null
+      when 'suma'      then suma is not null and categoria is null
+    end
+  )
 );
 
 create index if not exists tournaments_ciudad_fecha_idx
@@ -131,6 +149,58 @@ revoke insert, update, delete on public.tournament_matches from anon, authentica
 -- empezaron siendo el mismo número: una cosa es cuándo alguien deja de ser de
 -- una categoría, y otra a qué torneos puede meterse.
 -- ---------------------------------------------------------------------------
+-- El número con el que se conoce una categoría: 7ma es 7, 1ra es 1. En la
+-- escala femenina, D es 4 y A es 1. Sirve para las sumas.
+create or replace function public.numero_de_categoria(
+  p_categoria text,
+  p_ranking ranking_tipo
+)
+returns integer
+language plpgsql
+immutable
+as $FN$
+declare
+  v_cats text[] := public.categorias_de(p_ranking);
+  v_idx  integer := array_position(v_cats, p_categoria);
+begin
+  if v_idx is null then
+    return null;
+  end if;
+  -- el arreglo va de la más débil a la más fuerte, y el número al revés
+  return cardinality(v_cats) + 1 - v_idx;
+end;
+$FN$;
+
+-- El número de categoría de un jugador ahora mismo, según su ELO.
+create or replace function public.numero_categoria_de(
+  p_user uuid,
+  p_ranking ranking_tipo
+)
+returns integer
+language plpgsql
+stable
+as $FN$
+declare
+  v_user public.users;
+  v_elo  integer;
+begin
+  select * into v_user from public.users where id = p_user;
+  if v_user.id is null then
+    return null;
+  end if;
+
+  v_elo := public.elo_del_ranking(v_user, p_ranking);
+  if v_elo is null then
+    return null;
+  end if;
+
+  return public.numero_de_categoria(
+    public.categoria_desde_elo(v_elo, p_ranking, public.peak_del_ranking(v_user, p_ranking)),
+    p_ranking
+  );
+end;
+$FN$;
+
 create or replace function public.margen_torneo()
 returns integer
 language sql
@@ -224,6 +294,7 @@ declare
   v_uid     uuid := auth.uid();
   v_torneo  public.tournaments;
   v_cuantas integer;
+  v_suma    integer;
   v_pareja  public.tournament_pairs;
 begin
   if v_uid is null then
@@ -255,15 +326,25 @@ begin
       'Este torneo es %: la pareja no cumple esa condición', v_torneo.ranking;
   end if;
 
-  if not public.elegible_en_torneo(v_uid, v_torneo.ranking, v_torneo.categoria) then
-    raise exception
-      'Tu nivel no entra en la categoría % de este torneo', v_torneo.categoria;
-  end if;
+  if v_torneo.modalidad = 'categoria' then
+    if not public.elegible_en_torneo(v_uid, v_torneo.ranking, v_torneo.categoria) then
+      raise exception
+        'Tu nivel no entra en la categoría % de este torneo', v_torneo.categoria;
+    end if;
 
-  if not public.elegible_en_torneo(p_companero, v_torneo.ranking, v_torneo.categoria) then
-    raise exception
-      'El nivel de tu compañero no entra en la categoría % de este torneo',
-      v_torneo.categoria;
+    if not public.elegible_en_torneo(p_companero, v_torneo.ranking, v_torneo.categoria) then
+      raise exception
+        'El nivel de tu compañero no entra en la categoría % de este torneo',
+        v_torneo.categoria;
+    end if;
+  else
+    v_suma := coalesce(public.numero_categoria_de(v_uid, v_torneo.ranking), 0)
+            + coalesce(public.numero_categoria_de(p_companero, v_torneo.ranking), 0);
+
+    if v_suma < v_torneo.suma then
+      raise exception
+        'La pareja suma %, y este torneo es de suma % o más', v_suma, v_torneo.suma;
+    end if;
   end if;
 
   insert into public.tournament_pairs (tournament_id, jugador_a, jugador_b)

@@ -22,6 +22,7 @@ import {
   generarFaseFinal,
   iniciarTorneo,
   inscribirPareja,
+  limiteDeNivel,
   obtenerTorneo,
   parejasDe,
   parejasValidas,
@@ -226,8 +227,9 @@ export default function TournamentDetailPage() {
         <h1 className="text-xl font-semibold">{torneo.nombre}</h1>
         <Badge variant="outline">{ETIQUETA_FORMATO[torneo.formato]}</Badge>
         <Badge variant="secondary" className="capitalize">
-          {torneo.ranking} {torneo.categoria}
+          {torneo.ranking}
         </Badge>
+        <Badge variant="secondary">{limiteDeNivel(torneo)}</Badge>
         <Badge variant="outline">{ETIQUETA_ESTADO[torneo.estado]}</Badge>
       </div>
 
@@ -316,8 +318,9 @@ export default function TournamentDetailPage() {
             </Button>
             <p className="text-xs text-muted-foreground">
               Tu compañero tiene que aceptar para que la inscripción quede en firme.
-              Los dos tienen que estar en la categoría {torneo.categoria} o cerca de
-              ella, con 175 puntos de margen.
+              {torneo.modalidad === 'suma'
+                ? `Entre los dos tienen que sumar ${torneo.suma} o más, contando 7 la 7ma y 1 la 1ra.`
+                : `Los dos tienen que estar en la categoría ${torneo.categoria} o cerca de ella, con 175 puntos de margen.`}
             </p>
           </CardContent>
         </Card>

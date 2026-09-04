@@ -9,6 +9,7 @@ import { useAuth } from '@/features/auth/useAuth'
 import {
   ETIQUETA_ESTADO,
   ETIQUETA_FORMATO,
+  limiteDeNivel,
   torneosDe,
   type Torneo,
 } from './tournaments.api'
@@ -70,7 +71,7 @@ export default function TournamentsListPage() {
             </p>
             <p className="flex items-center gap-2">
               <Trophy className="size-4 shrink-0" />
-              {ETIQUETA_FORMATO[t.formato]} · {t.ranking} {t.categoria}
+              {ETIQUETA_FORMATO[t.formato]} · {t.ranking} · {limiteDeNivel(t)}
             </p>
             <p className="flex items-center gap-2">
               <Users className="size-4 shrink-0" />

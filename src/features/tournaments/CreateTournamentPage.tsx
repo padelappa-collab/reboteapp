@@ -26,7 +26,10 @@ import {
   crearTorneo,
   ETIQUETA_FORMATO,
   EXPLICACION_FORMATO,
+  numeroDeCategoria,
+  sumasPosibles,
   type TorneoFormato,
+  type TorneoModalidad,
 } from './tournaments.api'
 
 const SIN_CANCHA = 'sin-cancha'
@@ -58,6 +61,8 @@ export default function CreateTournamentPage() {
   const [maxParejas, setMaxParejas] = useState(8)
   const [ranking, setRanking] = useState<RankingTipo>(perfil?.genero ?? 'masculino')
   const [categoria, setCategoria] = useState('')
+  const [modalidad, setModalidad] = useState<TorneoModalidad>('categoria')
+  const [suma, setSuma] = useState(9)
   const [descripcion, setDescripcion] = useState('')
   const [enviando, setEnviando] = useState(false)
 
@@ -77,6 +82,21 @@ export default function CreateTournamentPage() {
   const miCategoria =
     miElo != null && miPico != null ? categoriaDesdeElo(miElo, ranking, miPico) : null
 
+  // qué parejas suman justo el número elegido, para explicarlo con ejemplos
+  const escala =
+    ranking === 'femenino'
+      ? ['D', 'C', 'B', 'A']
+      : ['7ma', '6ta', '5ta', '4ta', '3ra', '2da', '1ra']
+
+  const combinacionesExactas = escala
+    .flatMap((a, i) =>
+      escala.slice(i).map((b) => {
+        const total = numeroDeCategoria(a, ranking) + numeroDeCategoria(b, ranking)
+        return total === suma ? `${a}+${b}` : null
+      }),
+    )
+    .filter((x): x is string => x !== null)
+
   function cambiarFormato(nuevo: TorneoFormato) {
     setFormato(nuevo)
     // cada formato admite cantidades distintas; se ajusta sola
@@ -95,7 +115,9 @@ export default function CreateTournamentPage() {
         ciudad: perfil.ciudad,
         formato,
         ranking,
-        categoria,
+        modalidad,
+        categoria: modalidad === 'categoria' ? categoria : null,
+        suma: modalidad === 'suma' ? suma : null,
         fechaInicio: new Date(fecha).toISOString(),
         canchaId: canchaId === SIN_CANCHA ? null : canchaId,
         descripcion: descripcion.trim() || null,
@@ -178,28 +200,95 @@ export default function CreateTournamentPage() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="categoria-torneo">Categoría</Label>
-            <Select value={categoria} onValueChange={setCategoria}>
-              <SelectTrigger id="categoria-torneo" className="h-11 w-full">
-                <SelectValue placeholder="Elige la categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                {(ranking === 'femenino'
-                  ? CATEGORIAS_FEMENINO
-                  : CATEGORIAS_MASCULINO
-                ).map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Se pueden inscribir quienes están en esa categoría y quienes andan
-              cerca, con 175 puntos de margen por arriba y por abajo.
-              {miCategoria && ` La tuya es ${miCategoria}.`}
-            </p>
+            <Label>Cómo se limita el nivel</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  ['categoria', 'Por categoría', 'Una categoría concreta'],
+                  ['suma', 'Por suma', 'La suma de la pareja'],
+                ] as const
+              ).map(([valor, titulo, ayuda]) => (
+                <button
+                  key={valor}
+                  type="button"
+                  onClick={() => setModalidad(valor)}
+                  className={cn(
+                    'rounded-lg border px-3 py-3 text-left',
+                    modalidad === valor
+                      ? 'border-primary bg-primary/10'
+                      : 'hover:bg-accent',
+                  )}
+                >
+                  <span className="block text-sm font-medium">{titulo}</span>
+                  <span className="block text-xs text-muted-foreground">{ayuda}</span>
+                </button>
+              ))}
+            </div>
           </div>
+
+          {modalidad === 'categoria' ? (
+            <div className="grid gap-2">
+              <Label htmlFor="categoria-torneo">Categoría</Label>
+              <Select value={categoria} onValueChange={setCategoria}>
+                <SelectTrigger id="categoria-torneo" className="h-11 w-full">
+                  <SelectValue placeholder="Elige la categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(ranking === 'femenino'
+                    ? CATEGORIAS_FEMENINO
+                    : CATEGORIAS_MASCULINO
+                  ).map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Se pueden inscribir quienes están en esa categoría y quienes andan
+                cerca, con 175 puntos de margen por arriba y por abajo.
+                {miCategoria && ` La tuya es ${miCategoria}.`}
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <Label htmlFor="suma-torneo">Suma mínima</Label>
+              <Select value={String(suma)} onValueChange={(v) => setSuma(Number(v))}>
+                <SelectTrigger id="suma-torneo" className="h-11 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sumasPosibles(ranking).map((n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      Suma {n}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
+                <p>
+                  Se suman las categorías de los dos jugadores y tiene que dar{' '}
+                  <span className="font-medium text-foreground">{suma} o más</span>. Como
+                  la 1ra es la más fuerte, sumar más significa ser una pareja más floja:
+                  la regla impide que se junten dos fuertes.
+                </p>
+                {combinacionesExactas.length > 0 && (
+                  <p className="mt-1.5">
+                    Suman exactamente {suma}: {combinacionesExactas.join(', ')}. También
+                    entran las parejas que sumen más.
+                  </p>
+                )}
+                {miCategoria && (
+                  <p className="mt-1.5">
+                    Tú vales {numeroDeCategoria(miCategoria, ranking)}, así que necesitas
+                    un compañero de {Math.max(1, suma - numeroDeCategoria(miCategoria, ranking))}{' '}
+                    o más.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-2">
             <Label htmlFor="parejas-torneo">Cuántas parejas</Label>
@@ -270,7 +359,11 @@ export default function CreateTournamentPage() {
       <Button
         type="submit"
         className="h-11 w-full"
-        disabled={enviando || nombre.trim().length < 3 || !categoria}
+        disabled={
+          enviando ||
+          nombre.trim().length < 3 ||
+          (modalidad === 'categoria' && !categoria)
+        }
       >
         {enviando ? 'Creando…' : 'Crear torneo'}
       </Button>
