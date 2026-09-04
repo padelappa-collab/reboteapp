@@ -199,20 +199,12 @@ export async function buscarJugadores(
   texto: string,
   yo: string,
 ): Promise<JugadorBuscado[]> {
-  let consulta = supabase
-    .from('users')
-    .select('id, nombre, username, foto_url, cuenta_privada')
-    .neq('id', yo)
-    .limit(15)
-
-  const limpio = texto.trim()
-  if (limpio) {
-    consulta = consulta.or(`nombre.ilike.%${limpio}%,username.ilike.%${limpio}%`)
-  } else {
-    consulta = consulta.order('partidos_jugados', { ascending: false })
-  }
-
-  const { data, error } = await consulta
+  // la busqueda la resuelve la base: las cuentas privadas solo salen si
+  // escribes dos letras del principio de su nombre de usuario
+  const { data, error } = await supabase.rpc('buscar_jugadores', {
+    p_texto: texto,
+    p_excluir: [yo],
+  })
   if (error) throw new Error(error.message)
 
   const encontrados = data ?? []

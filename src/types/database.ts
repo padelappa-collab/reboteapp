@@ -45,6 +45,25 @@ export type UserRow = {
   updated_at: string
 }
 
+/** Lo que devuelve `buscar_jugadores`: sirve para los dos buscadores. */
+export type JugadorBuscadoRow = Pick<
+  UserRow,
+  | 'id'
+  | 'nombre'
+  | 'username'
+  | 'foto_url'
+  | 'cuenta_privada'
+  | 'ciudad'
+  | 'genero'
+  | 'elo_masculino'
+  | 'elo_femenino'
+  | 'elo_mixto'
+  | 'peak_elo_masculino'
+  | 'peak_elo_femenino'
+  | 'peak_elo_mixto'
+  | 'partidos_jugados'
+>
+
 /** Lo que el cliente puede mandar: el resto lo derivan los triggers. */
 export type UserInsert = {
   id: string
@@ -465,6 +484,10 @@ export type Database = {
       seguir: {
         Args: { p_usuario: string }
         Returns: FollowEstado
+      }
+      buscar_jugadores: {
+        Args: { p_texto: string; p_excluir: string[] }
+        Returns: JugadorBuscadoRow[]
       }
       alternar_avisos_de: {
         Args: { p_usuario: string; p_activo: boolean }

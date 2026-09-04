@@ -56,6 +56,9 @@ export default function CreateMatchPage() {
     ? {
         id: perfil.id,
         nombre: `${perfil.nombre} (tú)`,
+        // sin usuario a propósito: así la ficha muestra el "(tú)" y no @usuario,
+        // que es lo que hace falta para reconocerse de un vistazo
+        username: null,
         ciudad: perfil.ciudad,
         genero: perfil.genero,
         elo_masculino: perfil.elo_masculino,

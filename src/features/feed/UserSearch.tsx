@@ -87,7 +87,7 @@ export function UserSearch() {
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="h-11 pl-9 pr-10"
-          placeholder="Buscar jugadores para seguir"
+          placeholder="Buscar por usuario o nombre"
           value={texto}
           onFocus={() => setAbierto(true)}
           onChange={(e) => {
@@ -121,7 +121,7 @@ export function UserSearch() {
           {!buscando && resultados.length === 0 && (
             <p className="p-3 text-sm text-muted-foreground">
               {texto.trim()
-                ? 'Nadie con ese nombre o usuario.'
+                ? 'Nadie con ese usuario o nombre.'
                 : 'Todavía no hay otros jugadores registrados.'}
             </p>
           )}
@@ -144,14 +144,16 @@ export function UserSearch() {
               </Link>
 
               <Link to={`/jugador/${j.id}`} className="min-w-0 flex-1">
+                {/* el usuario va primero porque es lo unico que no se repite:
+                    dos jugadores pueden llamarse igual, tener el mismo usuario no */}
                 <p className="flex items-center gap-1 truncate text-sm font-medium">
-                  {j.nombre}
+                  {j.username ? `@${j.username}` : j.nombre}
                   {j.cuenta_privada && (
                     <Lock className="size-3 shrink-0 text-muted-foreground" />
                   )}
                 </p>
                 {j.username && (
-                  <p className="truncate text-xs text-muted-foreground">@{j.username}</p>
+                  <p className="truncate text-xs text-muted-foreground">{j.nombre}</p>
                 )}
               </Link>
 

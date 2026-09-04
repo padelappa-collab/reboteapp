@@ -15,29 +15,30 @@ export type JugadorResumen = Pick<
   | 'peak_elo_femenino'
   | 'peak_elo_mixto'
   | 'partidos_jugados'
+  | 'username'
 >
 
 const CAMPOS_JUGADOR =
-  'id, nombre, ciudad, genero, elo_masculino, elo_femenino, elo_mixto, peak_elo_masculino, peak_elo_femenino, peak_elo_mixto, partidos_jugados'
+  'id, nombre, username, ciudad, genero, elo_masculino, elo_femenino, elo_mixto, peak_elo_masculino, peak_elo_femenino, peak_elo_mixto, partidos_jugados'
 
+/**
+ * Busca jugadores para armar un partido.
+ *
+ * La consulta la resuelve la base: las cuentas privadas solo salen si escribes
+ * al menos dos letras del principio de su nombre de usuario, y esa regla no
+ * puede vivir aquí porque la clave del navegador es pública y cualquiera podría
+ * consultar la tabla saltándose el filtro.
+ */
 export async function buscarJugadores(
   texto: string,
   excluir: string[] = [],
 ): Promise<JugadorResumen[]> {
-  let consulta = supabase
-    .from('users')
-    .select(CAMPOS_JUGADOR)
-    .order('nombre')
-    .limit(12)
-
-  if (texto.trim()) {
-    consulta = consulta.ilike('nombre', `%${texto.trim()}%`)
-  }
-
-  const { data, error } = await consulta
+  const { data, error } = await supabase.rpc('buscar_jugadores', {
+    p_texto: texto,
+    p_excluir: excluir,
+  })
   if (error) throw new Error(error.message)
-
-  return (data ?? []).filter((j) => !excluir.includes(j.id))
+  return data ?? []
 }
 
 export async function perfilesDe(ids: string[]): Promise<Map<string, JugadorResumen>> {

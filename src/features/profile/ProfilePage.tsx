@@ -1,6 +1,5 @@
 import { LogOut, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
@@ -9,16 +8,9 @@ import { FollowsCard } from '@/features/feed/FollowsCard'
 import { MyPostsGrid } from '@/features/feed/MyPostsGrid'
 import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
 import { PushCard } from '@/features/notifications/PushCard'
+import { AvatarUploader } from './AvatarUploader'
 import { EloCard } from './EloCard'
 import { ProfileSettingsSheet } from './ProfileSettingsSheet'
-
-function iniciales(nombre: string): string {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 export default function ProfilePage() {
   const { perfil, cerrarSesion } = useAuth()
@@ -31,10 +23,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-5 pb-4">
       <div className="flex items-center gap-3">
-        <Avatar className="size-16">
-          {perfil.foto_url && <AvatarImage src={perfil.foto_url} alt="" />}
-          <AvatarFallback>{iniciales(perfil.nombre)}</AvatarFallback>
-        </Avatar>
+        <AvatarUploader />
 
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-semibold">{perfil.nombre}</h1>

@@ -83,7 +83,9 @@ export function PlayerPicker({
             <Avatar className="size-8">
               <AvatarFallback className="text-xs">{iniciales(j.nombre)}</AvatarFallback>
             </Avatar>
-            <span className="flex-1 truncate text-sm">{j.nombre}</span>
+            <span className="flex-1 truncate text-sm">
+              {j.username ? `@${j.username}` : j.nombre}
+            </span>
             <Button
               type="button"
               variant="ghost"
@@ -103,7 +105,7 @@ export function PlayerPicker({
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="h-11 pl-9"
-              placeholder="Buscar jugador por nombre"
+              placeholder="Buscar por usuario o nombre"
               value={texto}
               onFocus={() => setAbierto(true)}
               onChange={(e) => {
@@ -120,7 +122,9 @@ export function PlayerPicker({
               )}
               {!buscando && visibles.length === 0 && (
                 <p className="p-3 text-sm text-muted-foreground">
-                  Nadie con ese nombre. Los 4 jugadores tienen que estar registrados.
+                  Nadie con ese usuario o nombre. Los 4 jugadores tienen que
+                  estar registrados, y las cuentas privadas solo salen si
+                  escribes su usuario.
                 </p>
               )}
               {visibles.map((j) => (
@@ -144,7 +148,17 @@ export function PlayerPicker({
                       {iniciales(j.nombre)}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="flex-1 truncate text-sm">{j.nombre}</span>
+                  <span className="min-w-0 flex-1">
+                    {/* el usuario distingue a dos jugadores del mismo nombre */}
+                    <span className="block truncate text-sm">
+                      {j.username ? `@${j.username}` : j.nombre}
+                    </span>
+                    {j.username && (
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {j.nombre}
+                      </span>
+                    )}
+                  </span>
                   <span className="text-xs capitalize text-muted-foreground">
                     {j.genero === 'masculino' ? 'H' : 'M'}
                   </span>
