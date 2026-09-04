@@ -157,8 +157,10 @@ begin
   begin
     delete from public.notifications;
 
-    insert into public.board_posts (user_id, fecha_partido, faltan)
-    values (j[1], now() + interval '2 days', 1)
+    -- `faltan` es una columna generada (3 - acompanantes): con dos acompañantes
+    -- queda en 1, y una sola inscripción completa la publicación
+    insert into public.board_posts (user_id, fecha_partido, acompanantes)
+    values (j[1], now() + interval '2 days', array[j[3], j[4]])
     returning id into v_post;
 
     insert into public.board_post_signups (post_id, user_id) values (v_post, j[2]);
