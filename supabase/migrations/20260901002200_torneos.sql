@@ -3,13 +3,18 @@
 --
 -- Tres formatos, todos con parejas fijas:
 --   * americano    -> todas las parejas se enfrentan entre sí, una vez
---   * cuadrangular -> cuatro parejas, todas contra todas
---   * grupos       -> varios cuadrangulares y después una fase final entre los
---                     ganadores de cada grupo
+--   * cuadrangular -> grupos de cuatro parejas, todas contra todas dentro de su
+--                     grupo. Admite 4, 8, 16 o 32 parejas
+--   * grupos       -> lo mismo, y encima una fase final entre los ganadores
 --
 -- El sorteo es aleatorio: la app reparte las parejas. No se siembra por ELO a
 -- propósito, para que un torneo de barrio no quede decidido por el ranking
 -- antes de empezar.
+--
+-- Los torneos son POR CATEGORÍA. Se puede inscribir quien está en la categoría
+-- del torneo, y también quien está a punto de entrar en ella subiendo o
+-- bajando: el margen es el mismo colchón de 75 puntos de la histéresis, así que
+-- un jugador al borde no queda fuera por dos partidos de diferencia.
 --
 -- Los partidos de torneo cuentan para el ranking igual que cualquier otro, así
 -- que se guardan en `matches` como todos los demás. La diferencia está en cómo
@@ -28,6 +33,9 @@ create table if not exists public.tournaments (
   nombre       text not null check (char_length(btrim(nombre)) between 3 and 80),
   ciudad       text not null default 'Cartagena',
   formato      torneo_formato not null,
+  -- de qué ranking y de qué categoría es el torneo
+  ranking      ranking_tipo not null,
+  categoria    text not null,
   fecha_inicio timestamptz not null,
   cancha_id    uuid references public.courts (id) on delete set null,
   descripcion  text,
@@ -113,6 +121,81 @@ create policy tmatches_select on public.tournament_matches
 revoke insert, update, delete on public.tournament_matches from anon, authenticated;
 
 -- ---------------------------------------------------------------------------
+-- Quién puede inscribirse.
+--
+-- La categoría del torneo, más el colchón de 75 puntos por arriba y por abajo:
+-- entra quien ya está en ella y quien está a punto de subir o de bajar a ella.
+-- ---------------------------------------------------------------------------
+create or replace function public.elegible_en_torneo(
+  p_user      uuid,
+  p_ranking   ranking_tipo,
+  p_categoria text
+)
+returns boolean
+language plpgsql
+stable
+as $FN$
+declare
+  v_user  public.users;
+  v_elo   integer;
+  v_cats  text[];
+  v_idx   integer;
+  v_desde integer;
+  v_hasta integer;
+begin
+  select * into v_user from public.users where id = p_user;
+  if v_user.id is null then
+    return false;
+  end if;
+
+  v_elo := public.elo_del_ranking(v_user, p_ranking);
+  if v_elo is null then
+    return false;
+  end if;
+
+  v_cats := public.categorias_de(p_ranking);
+  v_idx := array_position(v_cats, p_categoria);
+  if v_idx is null then
+    return false;
+  end if;
+
+  v_desde := public.umbral_categoria(v_idx) - 75;
+
+  -- la categoría más alta no tiene techo
+  if v_idx = cardinality(v_cats) then
+    return v_elo >= v_desde;
+  end if;
+
+  v_hasta := public.umbral_categoria(v_idx + 1) + 75;
+  return v_elo >= v_desde and v_elo < v_hasta;
+end;
+$FN$;
+
+-- El género de la pareja tiene que cuadrar con el ranking del torneo, o el
+-- partido acabaría contando para otro ranking distinto al del torneo.
+create or replace function public.pareja_cuadra_con_ranking(
+  p_a uuid,
+  p_b uuid,
+  p_ranking ranking_tipo
+)
+returns boolean
+language sql
+stable
+as $FN$
+  select case p_ranking
+    when 'masculino' then
+      (select count(*) from public.users
+        where id in (p_a, p_b) and genero = 'masculino') = 2
+    when 'femenino' then
+      (select count(*) from public.users
+        where id in (p_a, p_b) and genero = 'femenino') = 2
+    else
+      (select count(*) from public.users
+        where id in (p_a, p_b) and genero = 'masculino') = 1
+  end;
+$FN$;
+
+-- ---------------------------------------------------------------------------
 -- Inscripción
 -- ---------------------------------------------------------------------------
 create or replace function public.inscribir_pareja(
@@ -152,6 +235,22 @@ begin
 
   if v_cuantas >= v_torneo.max_parejas then
     raise exception 'El torneo ya está lleno';
+  end if;
+
+  if not public.pareja_cuadra_con_ranking(v_uid, p_companero, v_torneo.ranking) then
+    raise exception
+      'Este torneo es %: la pareja no cumple esa condición', v_torneo.ranking;
+  end if;
+
+  if not public.elegible_en_torneo(v_uid, v_torneo.ranking, v_torneo.categoria) then
+    raise exception
+      'Tu nivel no entra en la categoría % de este torneo', v_torneo.categoria;
+  end if;
+
+  if not public.elegible_en_torneo(p_companero, v_torneo.ranking, v_torneo.categoria) then
+    raise exception
+      'El nivel de tu compañero no entra en la categoría % de este torneo',
+      v_torneo.categoria;
   end if;
 
   insert into public.tournament_pairs (tournament_id, jugador_a, jugador_b)
@@ -265,8 +364,8 @@ begin
 
   v_n := coalesce(cardinality(v_parejas), 0);
 
-  if v_torneo.formato = 'cuadrangular' and v_n <> 4 then
-    raise exception 'Un cuadrangular necesita exactamente 4 parejas, hay %', v_n;
+  if v_torneo.formato = 'cuadrangular' and v_n not in (4, 8, 16, 32) then
+    raise exception 'Un cuadrangular admite 4, 8, 16 o 32 parejas, hay %', v_n;
   end if;
 
   if v_torneo.formato = 'grupos' and (v_n < 8 or v_n % 4 <> 0) then
@@ -277,7 +376,9 @@ begin
     raise exception 'Un americano necesita al menos 3 parejas, hay %', v_n;
   end if;
 
-  v_grupos := case when v_torneo.formato = 'grupos' then v_n / 4 else 1 end;
+  -- cuadrangular y grupos se juegan en cuadros de cuatro; el americano, todos
+  -- contra todos en un solo grupo
+  v_grupos := case when v_torneo.formato = 'americano' then 1 else v_n / 4 end;
   v_tam := v_n / v_grupos;
 
   for v_grupo in 1 .. v_grupos loop

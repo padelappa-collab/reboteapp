@@ -70,7 +70,7 @@ export default function TournamentsListPage() {
             </p>
             <p className="flex items-center gap-2">
               <Trophy className="size-4 shrink-0" />
-              {ETIQUETA_FORMATO[t.formato]}
+              {ETIQUETA_FORMATO[t.formato]} · {t.ranking} {t.categoria}
             </p>
             <p className="flex items-center gap-2">
               <Users className="size-4 shrink-0" />

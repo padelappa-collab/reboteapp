@@ -14,8 +14,14 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/features/auth/useAuth'
+import {
+  CATEGORIAS_FEMENINO,
+  CATEGORIAS_MASCULINO,
+  categoriaDesdeElo,
+} from '@/lib/categories'
 import { useCourts } from '@/features/courts/useCourts'
 import { cn } from '@/lib/utils'
+import type { RankingTipo } from '@/types/database'
 import {
   crearTorneo,
   ETIQUETA_FORMATO,
@@ -28,7 +34,7 @@ const SIN_CANCHA = 'sin-cancha'
 /** Cuántas parejas tiene sentido admitir en cada formato. */
 const OPCIONES_PAREJAS: Record<TorneoFormato, number[]> = {
   americano: [3, 4, 5, 6, 7, 8],
-  cuadrangular: [4],
+  cuadrangular: [4, 8, 16, 32],
   grupos: [8, 12, 16, 20, 24, 32],
 }
 
@@ -50,8 +56,26 @@ export default function CreateTournamentPage() {
   const [fecha, setFecha] = useState(enUnaSemana())
   const [canchaId, setCanchaId] = useState(SIN_CANCHA)
   const [maxParejas, setMaxParejas] = useState(8)
+  const [ranking, setRanking] = useState<RankingTipo>(perfil?.genero ?? 'masculino')
+  const [categoria, setCategoria] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [enviando, setEnviando] = useState(false)
+
+  // la categoría propia, para sugerirla al organizador
+  const miElo =
+    ranking === 'masculino'
+      ? perfil?.elo_masculino
+      : ranking === 'femenino'
+        ? perfil?.elo_femenino
+        : perfil?.elo_mixto
+  const miPico =
+    ranking === 'masculino'
+      ? perfil?.peak_elo_masculino
+      : ranking === 'femenino'
+        ? perfil?.peak_elo_femenino
+        : perfil?.peak_elo_mixto
+  const miCategoria =
+    miElo != null && miPico != null ? categoriaDesdeElo(miElo, ranking, miPico) : null
 
   function cambiarFormato(nuevo: TorneoFormato) {
     setFormato(nuevo)
@@ -70,6 +94,8 @@ export default function CreateTournamentPage() {
         nombre,
         ciudad: perfil.ciudad,
         formato,
+        ranking,
+        categoria,
         fechaInicio: new Date(fecha).toISOString(),
         canchaId: canchaId === SIN_CANCHA ? null : canchaId,
         descripcion: descripcion.trim() || null,
@@ -127,6 +153,52 @@ export default function CreateTournamentPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label>Ranking</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['masculino', 'femenino', 'mixto'] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => {
+                    setRanking(r)
+                    setCategoria('')
+                  }}
+                  className={cn(
+                    'rounded-lg border px-2 py-3 text-sm capitalize',
+                    ranking === r ? 'border-primary bg-primary/10' : 'hover:bg-accent',
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="categoria-torneo">Categoría</Label>
+            <Select value={categoria} onValueChange={setCategoria}>
+              <SelectTrigger id="categoria-torneo" className="h-11 w-full">
+                <SelectValue placeholder="Elige la categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                {(ranking === 'femenino'
+                  ? CATEGORIAS_FEMENINO
+                  : CATEGORIAS_MASCULINO
+                ).map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Se pueden inscribir quienes están en esa categoría y quienes están a
+              punto de subir o bajar a ella (75 puntos de margen).
+              {miCategoria && ` La tuya es ${miCategoria}.`}
+            </p>
           </div>
 
           <div className="grid gap-2">
@@ -198,7 +270,7 @@ export default function CreateTournamentPage() {
       <Button
         type="submit"
         className="h-11 w-full"
-        disabled={enviando || nombre.trim().length < 3}
+        disabled={enviando || nombre.trim().length < 3 || !categoria}
       >
         {enviando ? 'Creando…' : 'Crear torneo'}
       </Button>

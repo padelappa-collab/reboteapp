@@ -1,6 +1,6 @@
 import { perfilesDe, type JugadorResumen } from '@/features/matches/matches.api'
 import { supabase } from '@/lib/supabase'
-import type { SetMarcador } from '@/types/database'
+import type { RankingTipo, SetMarcador } from '@/types/database'
 
 export type TorneoFormato = 'americano' | 'cuadrangular' | 'grupos'
 export type TorneoEstado = 'inscripciones' | 'en_curso' | 'finalizado' | 'cancelado'
@@ -11,6 +11,8 @@ export interface Torneo {
   nombre: string
   ciudad: string
   formato: TorneoFormato
+  ranking: RankingTipo
+  categoria: string
   fecha_inicio: string
   cancha_id: string | null
   descripcion: string | null
@@ -51,14 +53,14 @@ export const ETIQUETA_FORMATO: Record<TorneoFormato, string> = {
 
 export const EXPLICACION_FORMATO: Record<TorneoFormato, string> = {
   americano: 'Todas las parejas juegan contra todas. Gana quien más partidos gane.',
-  cuadrangular: 'Cuatro parejas, todas contra todas: tres partidos cada una.',
+  cuadrangular: 'Cuadros de cuatro parejas, todas contra todas dentro de su cuadro.',
   grupos: 'Cuadrangulares en paralelo y después una final entre los ganadores.',
 }
 
 /** Cuántas parejas admite cada formato. */
 export function parejasValidas(formato: TorneoFormato, cuantas: number): string | null {
-  if (formato === 'cuadrangular' && cuantas !== 4) {
-    return `Un cuadrangular necesita exactamente 4 parejas. Hay ${cuantas}.`
+  if (formato === 'cuadrangular' && ![4, 8, 16, 32].includes(cuantas)) {
+    return `Un cuadrangular admite 4, 8, 16 o 32 parejas. Hay ${cuantas}.`
   }
   if (formato === 'grupos' && (cuantas < 8 || cuantas % 4 !== 0)) {
     return `La fase de grupos necesita 8, 12, 16... parejas. Hay ${cuantas}.`
@@ -92,6 +94,8 @@ export async function crearTorneo(datos: {
   nombre: string
   ciudad: string
   formato: TorneoFormato
+  ranking: RankingTipo
+  categoria: string
   fechaInicio: string
   canchaId: string | null
   descripcion: string | null
@@ -104,6 +108,8 @@ export async function crearTorneo(datos: {
       nombre: datos.nombre.trim(),
       ciudad: datos.ciudad,
       formato: datos.formato,
+      ranking: datos.ranking,
+      categoria: datos.categoria,
       fecha_inicio: datos.fechaInicio,
       cancha_id: datos.canchaId,
       descripcion: datos.descripcion,
@@ -165,6 +171,21 @@ export async function crucesDe(torneoId: string): Promise<Cruce[]> {
     ...c,
     sets: c.partido?.sets ?? null,
   }))
+}
+
+/** Si un jugador puede inscribirse en este torneo, según su nivel. */
+export async function esElegible(
+  userId: string,
+  ranking: RankingTipo,
+  categoria: string,
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc('elegible_en_torneo', {
+    p_user: userId,
+    p_ranking: ranking,
+    p_categoria: categoria,
+  })
+  if (error) throw new Error(error.message)
+  return Boolean(data)
 }
 
 export async function inscribirPareja(torneoId: string, companeroId: string) {

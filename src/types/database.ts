@@ -227,6 +227,8 @@ export type TournamentRow = {
   nombre: string
   ciudad: string
   formato: TorneoFormato
+  ranking: RankingTipo
+  categoria: string
   fecha_inicio: string
   cancha_id: string | null
   descripcion: string | null
@@ -240,6 +242,8 @@ export type TournamentInsert = {
   nombre: string
   ciudad: string
   formato: TorneoFormato
+  ranking: RankingTipo
+  categoria: string
   fecha_inicio: string
   cancha_id?: string | null
   descripcion?: string | null
@@ -406,6 +410,10 @@ export type Database = {
       aplicar_resultado: {
         Args: { p_match_id: string }
         Returns: MatchRow
+      }
+      elegible_en_torneo: {
+        Args: { p_user: string; p_ranking: RankingTipo; p_categoria: string }
+        Returns: boolean
       }
       seguir: {
         Args: { p_usuario: string }
