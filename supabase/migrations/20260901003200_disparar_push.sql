@@ -22,9 +22,11 @@ begin
     url := 'https://rflqogmivuwqqzpyrilm.supabase.co/functions/v1/enviar-push',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      -- la anon key es pública por diseño y sirve como JWT válido para que la
-      -- función acepte la llamada
-      'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmbHFvZ21pdnV3cXF6cHlyaWxtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgyOTM1OTUsImV4cCI6MjEwMzg2OTU5NX0.061BXcZpvk_y7_1KAklTERO9fJ-YikEzn7cCE3Dzln4'
+      -- La puerta de entrada de las Edge Functions solo acepta el formato nuevo
+      -- de claves: la anon key de siempre, que sirve para la base y el login,
+      -- aquí devuelve 401. Esta es pública por diseño.
+      'apikey', 'sb_publishable_F3Iv0GXE0QiNnZuiee-FZA_gI51a0el',
+      'Authorization', 'Bearer sb_publishable_F3Iv0GXE0QiNnZuiee-FZA_gI51a0el'
     ),
     body := jsonb_build_object('record', to_jsonb(new))
   );
