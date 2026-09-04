@@ -69,6 +69,7 @@ export const ICONO_NOVEDAD: Record<string, string> = {
   partido_disputado: '⚠️',
   partido_pronto: '⏰',
   tablon_union: '🤝',
+  tablon_salida: '🏃',
   torneo_inscripcion: '🎫',
   torneo_empezo: '🏆',
   torneo_cancelado: '🚫',
