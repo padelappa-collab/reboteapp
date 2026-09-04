@@ -30,8 +30,6 @@ declare
   n        integer;
   rep      text := E'\n\n========== AUDITORÍA DE AVISOS ==========\n\n';
 
-  -- marca de cada línea del informe
-  function_ok text;
 begin
   select array_agg(id order by created_at)
     into j
