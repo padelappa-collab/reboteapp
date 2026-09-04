@@ -300,7 +300,7 @@ export default function TournamentDetailPage() {
         </Card>
       )}
 
-      {torneo.estado === 'inscripciones' && !miPareja && (
+      {torneo.estado === 'inscripciones' && !miPareja && !soyOrganizador && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Inscribirse</CardTitle>
@@ -338,7 +338,7 @@ export default function TournamentDetailPage() {
       {soyOrganizador && torneo.estado === 'inscripciones' && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Inscribir una pareja</CardTitle>
+            <CardTitle className="text-base">Inscribir parejas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <PlayerPicker
@@ -366,9 +366,10 @@ export default function TournamentDetailPage() {
               Inscribir esta pareja
             </Button>
             <p className="text-xs text-muted-foreground">
-              Puedes armar tú el cuadro y que cada jugador confirme desde su app, o
-              inscribir solo algunas y dejar que el resto se apunte. No hace falta
-              que juegues el torneo que organizas.
+              Armas el cuadro y cada jugador confirma desde su app, o inscribes solo
+              algunas y dejas que el resto se apunte. No hace falta que juegues el
+              torneo que organizas; si quieres jugarlo, inscríbete aquí como una
+              pareja más.
             </p>
           </CardContent>
         </Card>
