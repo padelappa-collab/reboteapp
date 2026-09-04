@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react'
+import { AtSign } from 'lucide-react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -13,12 +14,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { Categoria, Genero } from '@/lib/categories'
-import { crearPerfil } from './auth.api'
+import { crearPerfil, usuarioLibre } from './auth.api'
 import { GenderCategorySelect } from './GenderCategorySelect'
 import { useAuth } from './useAuth'
 
 /** El piloto es en Cartagena; Barranquilla entra en una fase posterior. */
 const CIUDADES = ['Cartagena']
+
+const FORMATO_USUARIO = /^[a-zA-Z0-9_.]{3,20}$/
 
 export default function ProfileSetupPage() {
   const { session, refrescarPerfil } = useAuth()
@@ -28,9 +31,36 @@ export default function ProfileSetupPage() {
     (session?.user.user_metadata.full_name as string | undefined) ?? '',
   )
   const [ciudad, setCiudad] = useState(CIUDADES[0])
+  const [usuario, setUsuario] = useState('')
   const [genero, setGenero] = useState<Genero | null>(null)
   const [categoria, setCategoria] = useState<Categoria | null>(null)
   const [enviando, setEnviando] = useState(false)
+  const [libre, setLibre] = useState<boolean | null>(null)
+
+  const usuarioValido = FORMATO_USUARIO.test(usuario)
+
+  // Se comprueba mientras escribe y no al enviar: enterarse de que el usuario
+  // está tomado después de llenar todo el formulario es una forma tonta de
+  // perder a alguien en su primer minuto en la app.
+  useEffect(() => {
+    if (!usuarioValido) {
+      setLibre(null)
+      return
+    }
+    let vigente = true
+    const t = setTimeout(async () => {
+      try {
+        const resultado = await usuarioLibre(usuario)
+        if (vigente) setLibre(resultado)
+      } catch {
+        if (vigente) setLibre(null)
+      }
+    }, 400)
+    return () => {
+      vigente = false
+      clearTimeout(t)
+    }
+  }, [usuario, usuarioValido])
 
   async function enviar(e: FormEvent) {
     e.preventDefault()
@@ -41,6 +71,7 @@ export default function ProfileSetupPage() {
       await crearPerfil({
         id: session.user.id,
         nombre,
+        username: usuario,
         ciudad,
         genero,
         categoriaInicial: categoria,
@@ -81,6 +112,41 @@ export default function ProfileSetupPage() {
             </div>
 
             <div className="grid gap-2">
+              <Label htmlFor="usuario">Nombre de usuario</Label>
+              <div className="relative">
+                <AtSign className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="usuario"
+                  required
+                  className="pl-9"
+                  maxLength={20}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  placeholder="sin espacios"
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value.trim())}
+                />
+              </div>
+              <p
+                className={
+                  usuario === '' || (usuarioValido && libre !== false)
+                    ? 'text-xs text-muted-foreground'
+                    : 'text-xs text-destructive'
+                }
+              >
+                {usuario === ''
+                  ? 'Con esto te encuentran los demás. No tiene que ser tu nombre: dos jugadores pueden llamarse igual, tener el mismo usuario no.'
+                  : !usuarioValido
+                    ? 'Entre 3 y 20 caracteres, solo letras, números, punto o guion bajo.'
+                    : libre === false
+                      ? 'Ese usuario ya está tomado.'
+                      : libre === true
+                        ? 'Disponible.'
+                        : 'Comprobando…'}
+              </p>
+            </div>
+
+            <div className="grid gap-2">
               <Label htmlFor="ciudad">Ciudad</Label>
               <Select value={ciudad} onValueChange={setCiudad}>
                 <SelectTrigger id="ciudad" className="w-full">
@@ -106,7 +172,14 @@ export default function ProfileSetupPage() {
             <Button
               type="submit"
               className="h-11 w-full"
-              disabled={enviando || !genero || !categoria || nombre.trim().length < 2}
+              disabled={
+                enviando ||
+                !genero ||
+                !categoria ||
+                nombre.trim().length < 2 ||
+                !usuarioValido ||
+                libre !== true
+              }
             >
               {enviando ? 'Guardando…' : 'Empezar'}
             </Button>

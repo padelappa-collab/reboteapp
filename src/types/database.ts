@@ -68,6 +68,7 @@ export type JugadorBuscadoRow = Pick<
 export type UserInsert = {
   id: string
   nombre: string
+  username: string
   ciudad: string
   genero: Genero
   categoria_inicial: string

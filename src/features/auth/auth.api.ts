@@ -32,6 +32,7 @@ export async function entrarConProveedor(proveedor: Proveedor) {
 export async function crearPerfil(datos: {
   id: string
   nombre: string
+  username: string
   ciudad: string
   genero: Genero
   categoriaInicial: string
@@ -39,14 +40,32 @@ export async function crearPerfil(datos: {
   const fila: UserInsert = {
     id: datos.id,
     nombre: datos.nombre.trim(),
+    username: datos.username.trim(),
     ciudad: datos.ciudad,
     genero: datos.genero,
     categoria_inicial: datos.categoriaInicial,
   }
 
   const { data, error } = await supabase.from('users').insert(fila).select().single()
-  if (error) throw new Error(traducirError(error.message))
+  if (error) {
+    // el índice único del usuario devuelve un error que no dice nada
+    throw new Error(
+      error.code === '23505'
+        ? 'Ese nombre de usuario ya está tomado'
+        : traducirError(error.message),
+    )
+  }
   return data
+}
+
+/** ¿Está libre este nombre de usuario? La comparación no distingue mayúsculas. */
+export async function usuarioLibre(username: string): Promise<boolean> {
+  const { count, error } = await supabase
+    .from('users')
+    .select('id', { count: 'exact', head: true })
+    .ilike('username', username)
+  if (error) throw new Error(error.message)
+  return (count ?? 0) === 0
 }
 
 export async function actualizarPerfil(

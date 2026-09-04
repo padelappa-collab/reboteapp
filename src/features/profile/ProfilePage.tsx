@@ -50,13 +50,6 @@ export default function ProfilePage() {
         </span>
       </div>
 
-      {!perfil.username && (
-        <p className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-          Todavía no tienes nombre de usuario. Es lo que permite que te encuentren sin
-          confundirte con otro jugador del mismo nombre.
-        </p>
-      )}
-
       {/* lo que espera respuesta va primero: si no, se pierde debajo de todo */}
       <SolicitudesCard />
 

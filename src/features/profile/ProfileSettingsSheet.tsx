@@ -29,7 +29,8 @@ export function ProfileSettingsSheet() {
 
   if (!perfil) return null
 
-  const usuarioValido = usuario === '' || FORMATO_USUARIO.test(usuario)
+  // ya no puede quedar vacío: sin usuario nadie podría encontrarte
+  const usuarioValido = FORMATO_USUARIO.test(usuario)
   const nombreValido = nombre.trim().length >= 2
 
   async function guardar(e: FormEvent) {
@@ -42,7 +43,7 @@ export function ProfileSettingsSheet() {
         .from('users')
         .update({
           nombre: nombre.trim(),
-          username: usuario.trim() || null,
+          username: usuario.trim(),
           cuenta_privada: privada,
         })
         .eq('id', perfil!.id)
@@ -119,7 +120,7 @@ export function ProfileSettingsSheet() {
               )}
             >
               {usuarioValido
-                ? 'Único en toda la app. Entre 3 y 20 caracteres: letras, números, punto o guion bajo. No tiene que ser tu nombre.'
+                ? 'Único en toda la app y es con lo que te encuentran, así que no puede quedar vacío. Entre 3 y 20 caracteres: letras, números, punto o guion bajo. No tiene que ser tu nombre.'
                 : 'Entre 3 y 20 caracteres, solo letras, números, punto o guion bajo.'}
             </p>
           </div>
