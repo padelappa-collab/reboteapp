@@ -161,6 +161,22 @@ export type BoardPostSignupRow = {
   created_at: string
 }
 
+export type BadgeRow = {
+  id: string
+  nombre: string
+  descripcion: string
+  icono: string
+  categoria: string
+  periodica: boolean
+  orden: number
+}
+
+export type UserBadgeRow = {
+  user_id: string
+  badge_id: string
+  fecha_obtenido: string
+}
+
 type Tabla<Row, Insert = Row, Update = Partial<Insert>> = {
   Row: Row
   Insert: Insert
@@ -184,6 +200,8 @@ export type Database = {
       elo_history: Tabla<EloHistoryRow, NoEscribible, NoEscribible>
       board_posts: Tabla<BoardPostRow, BoardPostInsert, BoardPostUpdate>
       board_post_signups: Tabla<BoardPostSignupRow, BoardPostSignupInsert, NoEscribible>
+      badges: Tabla<BadgeRow, NoEscribible, NoEscribible>
+      user_badges: Tabla<UserBadgeRow, NoEscribible, NoEscribible>
     }
     Views: Record<never, never>
     Functions: {

@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/features/auth/useAuth'
+import { BadgeGrid } from '@/features/badges/BadgeGrid'
 import { EloCard } from './EloCard'
 
 function iniciales(nombre: string): string {
@@ -53,6 +54,8 @@ export default function ProfilePage() {
         Los tres rankings se mueven por separado: cada partido solo afecta al que
         corresponde a su tipo.
       </p>
+
+      <BadgeGrid userId={perfil.id} />
     </div>
   )
 }
