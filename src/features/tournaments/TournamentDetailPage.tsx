@@ -90,6 +90,9 @@ export default function TournamentDetailPage() {
   const errorParejas = parejasValidas(torneo.formato, aceptadas.length)
   const porJugar = cruces.filter((c) => !c.ganador_id).length
 
+  // quien ya está en el torneo no puede volver a aparecer en un buscador
+  const yaInscritos = parejas.flatMap((p) => [p.jugador_a, p.jugador_b])
+
   const grupos = [...new Set(cruces.filter((c) => c.grupo).map((c) => c.grupo!))].sort()
   const parejaPorId = new Map(parejas.map((p) => [p.id, p]))
 
@@ -309,7 +312,7 @@ export default function TournamentDetailPage() {
             <PlayerPicker
               etiqueta="Tu pareja"
               seleccionados={companero}
-              yaElegidos={[yo, ...companero.map((j) => j.id)]}
+              yaElegidos={[yo, ...yaInscritos, ...companero.map((j) => j.id)]}
               onChange={setCompanero}
               maximo={1}
             />
@@ -344,7 +347,7 @@ export default function TournamentDetailPage() {
             <PlayerPicker
               etiqueta="Los dos jugadores"
               seleccionados={parejaAjena}
-              yaElegidos={parejaAjena.map((j) => j.id)}
+              yaElegidos={[...yaInscritos, ...parejaAjena.map((j) => j.id)]}
               onChange={setParejaAjena}
               maximo={2}
             />
