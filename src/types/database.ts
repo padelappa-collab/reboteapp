@@ -96,6 +96,7 @@ export type MatchRow = {
   confirmado_at: string | null
   cancelado_por: string | null
   cancelado_at: string | null
+  tournament_id: string | null
 }
 
 export type MatchInsert = {
@@ -217,6 +218,67 @@ export type PostLikeInsert = {
   user_id: string
 }
 
+export type TorneoFormato = 'americano' | 'cuadrangular' | 'grupos'
+export type TorneoEstado = 'inscripciones' | 'en_curso' | 'finalizado' | 'cancelado'
+export type ParejaEstado = 'pendiente' | 'aceptada'
+
+export type TournamentRow = {
+  id: string
+  nombre: string
+  ciudad: string
+  formato: TorneoFormato
+  fecha_inicio: string
+  cancha_id: string | null
+  descripcion: string | null
+  max_parejas: number
+  estado: TorneoEstado
+  creado_por: string
+  created_at: string
+}
+
+export type TournamentInsert = {
+  nombre: string
+  ciudad: string
+  formato: TorneoFormato
+  fecha_inicio: string
+  cancha_id?: string | null
+  descripcion?: string | null
+  max_parejas: number
+  creado_por: string
+}
+
+export type TournamentUpdate = {
+  estado?: TorneoEstado
+  nombre?: string
+  descripcion?: string | null
+  fecha_inicio?: string
+  cancha_id?: string | null
+}
+
+export type TournamentPairRow = {
+  id: string
+  tournament_id: string
+  jugador_a: string
+  jugador_b: string
+  estado: ParejaEstado
+  grupo: number | null
+  created_at: string
+}
+
+export type TournamentMatchRow = {
+  id: string
+  tournament_id: string
+  fase: string
+  grupo: number | null
+  ronda: number
+  orden: number
+  pareja_a_id: string | null
+  pareja_b_id: string | null
+  match_id: string | null
+  ganador_id: string | null
+  created_at: string
+}
+
 export type BadgeRow = {
   id: string
   nombre: string
@@ -260,6 +322,9 @@ export type Database = {
       feed_posts: Tabla<FeedPostRow, FeedPostInsert, { contenido?: string | null }>
       comments: Tabla<CommentRow, CommentInsert, NoEscribible>
       post_likes: Tabla<PostLikeRow, PostLikeInsert, NoEscribible>
+      tournaments: Tabla<TournamentRow, TournamentInsert, TournamentUpdate>
+      tournament_pairs: Tabla<TournamentPairRow, NoEscribible, NoEscribible>
+      tournament_matches: Tabla<TournamentMatchRow, NoEscribible, NoEscribible>
       badges: Tabla<BadgeRow, NoEscribible, NoEscribible>
       user_badges: Tabla<UserBadgeRow, NoEscribible, NoEscribible>
     }
@@ -314,6 +379,34 @@ export type Database = {
         Args: { p_match_id: string; p_sets: SetMarcador[] }
         Returns: MatchRow
       }
+      inscribir_pareja: {
+        Args: { p_torneo: string; p_companero: string }
+        Returns: TournamentPairRow
+      }
+      aceptar_inscripcion: {
+        Args: { p_pareja: string }
+        Returns: TournamentPairRow
+      }
+      retirar_pareja: {
+        Args: { p_pareja: string }
+        Returns: undefined
+      }
+      iniciar_torneo: {
+        Args: { p_torneo: string }
+        Returns: undefined
+      }
+      generar_fase_final: {
+        Args: { p_torneo: string }
+        Returns: number
+      }
+      registrar_resultado_torneo: {
+        Args: { p_cruce: string; p_sets: SetMarcador[] }
+        Returns: TournamentMatchRow
+      }
+      aplicar_resultado: {
+        Args: { p_match_id: string }
+        Returns: MatchRow
+      }
       seguir: {
         Args: { p_usuario: string }
         Returns: FollowEstado
@@ -333,6 +426,9 @@ export type Database = {
       match_estado: MatchEstado
       board_estado: BoardEstado
       follow_estado: FollowEstado
+      torneo_formato: TorneoFormato
+      torneo_estado: TorneoEstado
+      pareja_estado: ParejaEstado
     }
     CompositeTypes: Record<never, never>
   }

@@ -16,6 +16,9 @@ import PrivacyPage from '@/features/legal/PrivacyPage'
 import TermsPage from '@/features/legal/TermsPage'
 import ProfilePage from '@/features/profile/ProfilePage'
 import RankingPage from '@/features/ranking/RankingPage'
+import CreateTournamentPage from '@/features/tournaments/CreateTournamentPage'
+import TournamentDetailPage from '@/features/tournaments/TournamentDetailPage'
+import TournamentsListPage from '@/features/tournaments/TournamentsListPage'
 
 export const router = createBrowserRouter([
   // públicas: Google y las tiendas las exigen accesibles sin sesión
@@ -50,6 +53,9 @@ export const router = createBrowserRouter([
           { path: '/tablon', element: <BoardPage /> },
           { path: '/tablon/:id', element: <BoardPostPage /> },
           { path: '/canchas', element: <CourtsPage /> },
+          { path: '/torneos', element: <TournamentsListPage /> },
+          { path: '/torneos/nuevo', element: <CreateTournamentPage /> },
+          { path: '/torneos/:id', element: <TournamentDetailPage /> },
           { path: '/perfil', element: <ProfilePage /> },
         ],
       },

@@ -1,0 +1,127 @@
+import { CalendarDays, Plus, Trophy, Users } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useAuth } from '@/features/auth/useAuth'
+import {
+  ETIQUETA_ESTADO,
+  ETIQUETA_FORMATO,
+  torneosDe,
+  type Torneo,
+} from './tournaments.api'
+
+const COLOR_ESTADO: Record<Torneo['estado'], string> = {
+  inscripciones: 'bg-primary/10 text-primary',
+  en_curso: 'bg-amber-100 text-amber-900',
+  finalizado: 'bg-muted text-muted-foreground',
+  cancelado: 'bg-muted text-muted-foreground',
+}
+
+export default function TournamentsListPage() {
+  const { perfil } = useAuth()
+  const [torneos, setTorneos] = useState<Torneo[]>([])
+  const [cargando, setCargando] = useState(true)
+
+  const cargar = useCallback(async () => {
+    if (!perfil) return
+    setCargando(true)
+    try {
+      setTorneos(await torneosDe(perfil.ciudad))
+    } catch (error) {
+      console.error('No se pudieron cargar los torneos', error)
+    } finally {
+      setCargando(false)
+    }
+  }, [perfil])
+
+  useEffect(() => {
+    cargar()
+  }, [cargar])
+
+  const abiertos = torneos.filter((t) => t.estado !== 'finalizado')
+  const pasados = torneos.filter((t) => t.estado === 'finalizado')
+
+  function tarjeta(t: Torneo) {
+    return (
+      <Card key={t.id}>
+        <CardContent className="space-y-2">
+          <div className="flex items-start justify-between gap-2">
+            <Link to={`/torneos/${t.id}`} className="min-w-0 flex-1">
+              <p className="truncate font-medium hover:underline">{t.nombre}</p>
+            </Link>
+            <Badge variant="outline" className={COLOR_ESTADO[t.estado]}>
+              {ETIQUETA_ESTADO[t.estado]}
+            </Badge>
+          </div>
+
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <p className="flex items-center gap-2">
+              <CalendarDays className="size-4 shrink-0" />
+              {new Date(t.fecha_inicio).toLocaleString('es-CO', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </p>
+            <p className="flex items-center gap-2">
+              <Trophy className="size-4 shrink-0" />
+              {ETIQUETA_FORMATO[t.formato]}
+            </p>
+            <p className="flex items-center gap-2">
+              <Users className="size-4 shrink-0" />
+              Hasta {t.max_parejas} parejas
+            </p>
+          </div>
+
+          <Button asChild variant="secondary" className="h-10 w-full">
+            <Link to={`/torneos/${t.id}`}>Ver torneo</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-4 pb-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Torneos</h1>
+        <Button asChild size="sm">
+          <Link to="/torneos/nuevo">
+            <Plus className="size-4" />
+            Crear
+          </Link>
+        </Button>
+      </div>
+
+      {cargando && (
+        <div className="space-y-3">
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      )}
+
+      {!cargando && torneos.length === 0 && (
+        <div className="rounded-lg border border-dashed p-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            No hay torneos en {perfil?.ciudad}. Crea el primero: puedes organizar un
+            americano, un cuadrangular o una fase de grupos.
+          </p>
+        </div>
+      )}
+
+      <div className="space-y-3">{abiertos.map(tarjeta)}</div>
+
+      {pasados.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium text-muted-foreground">Terminados</h2>
+          {pasados.map(tarjeta)}
+        </section>
+      )}
+    </div>
+  )
+}
