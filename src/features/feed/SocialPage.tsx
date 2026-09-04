@@ -3,12 +3,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/useAuth'
 import { CreatePostSheet } from './CreatePostSheet'
+import { UserSearch } from './UserSearch'
 import { FeedPostCard } from './FeedPostCard'
 import { publicaciones, type Publicacion } from './feed.api'
 
 type Pestana = 'siguiendo' | 'descubrir'
 
-export default function FeedPage() {
+export default function SocialPage() {
   const { perfil } = useAuth()
   // al arrancar el piloto casi nadie sigue a nadie, así que Descubrir es lo
   // primero que se ve; si no, el feed estaría vacío y nadie volvería
@@ -36,9 +37,11 @@ export default function FeedPage() {
   return (
     <div className="space-y-4 pb-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Feed</h1>
+        <h1 className="text-xl font-semibold">Social</h1>
         <CreatePostSheet onCreada={recargar} />
       </div>
+
+      <UserSearch />
 
       <Tabs value={pestana} onValueChange={(v) => setPestana(v as Pestana)}>
         <TabsList className="w-full">
@@ -62,7 +65,7 @@ export default function FeedPage() {
         <div className="rounded-lg border border-dashed p-8 text-center">
           <p className="text-sm text-muted-foreground">
             {pestana === 'siguiendo'
-              ? 'Todavía no sigues a nadie que haya publicado. Busca jugadores en el ranking.'
+              ? 'Todavía no sigues a nadie que haya publicado. Búscalos aquí arriba.'
               : `Aún no hay publicaciones en ${perfil?.ciudad}. Publica la primera.`}
           </p>
         </div>

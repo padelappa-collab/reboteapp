@@ -93,7 +93,7 @@ export function MyPostsGrid() {
 
         {lista.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Todavía no has publicado nada. Puedes subir una foto desde el feed o
+            Todavía no has publicado nada. Puedes subir una foto desde Social o
             publicar un partido desde su ficha.
           </p>
         ) : (

@@ -5,7 +5,7 @@ import LoginPage from '@/features/auth/LoginPage'
 import ProfileSetupPage from '@/features/auth/ProfileSetupPage'
 import SignUpPage from '@/features/auth/SignUpPage'
 import BoardPage from '@/features/board/BoardPage'
-import FeedPage from '@/features/feed/FeedPage'
+import SocialPage from '@/features/feed/SocialPage'
 import PlayerPage from '@/features/feed/PlayerPage'
 import BoardPostPage from '@/features/board/BoardPostPage'
 import CourtsPage from '@/features/courts/CourtsPage'
@@ -38,8 +38,10 @@ export const router = createBrowserRouter([
       {
         element: <AppShell />,
         children: [
-          { path: '/', element: <FeedPage /> },
-          { path: '/feed', element: <FeedPage /> },
+          { path: '/', element: <SocialPage /> },
+          { path: '/social', element: <SocialPage /> },
+          // el nombre viejo sigue funcionando por si quedó algún enlace
+          { path: '/feed', element: <SocialPage /> },
           { path: '/jugador/:id', element: <PlayerPage /> },
           { path: '/partidos', element: <MatchesListPage /> },
           { path: '/partidos/nuevo', element: <CreateMatchPage /> },

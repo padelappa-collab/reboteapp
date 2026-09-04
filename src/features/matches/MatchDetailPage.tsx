@@ -308,7 +308,7 @@ export default function MatchDetailPage() {
         <Card>
           <CardContent className="space-y-3">
             <div>
-              <p className="font-medium">¿Lo subes al feed?</p>
+              <p className="font-medium">¿Lo publicas?</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Se publica con el marcador y los jugadores. Puedes añadirle una foto, o
                 dejarlo solo con el resultado. Nada se publica sin que tú lo decidas.
@@ -316,7 +316,7 @@ export default function MatchDetailPage() {
             </div>
             <CreatePostSheet
               matchId={partido.id}
-              onCreada={() => toast.success('Publicado en tu feed')}
+              onCreada={() => toast.success('Publicado en tu perfil')}
               disparador={
                 <Button variant="outline" className="h-11 w-full">
                   <Share2 className="size-4" />

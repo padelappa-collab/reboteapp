@@ -19,7 +19,7 @@ export function AppShell() {
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-md items-center justify-between px-4">
-          <Link to="/feed" className="font-semibold tracking-tight">
+          <Link to="/social" className="font-semibold tracking-tight">
             REBOTEAPP
           </Link>
 

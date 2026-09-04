@@ -97,7 +97,7 @@ export default function PlayerPage() {
   return (
     <div className="space-y-4 pb-4">
       <Link
-        to="/feed"
+        to="/social"
         className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />

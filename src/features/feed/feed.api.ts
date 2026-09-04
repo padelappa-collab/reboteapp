@@ -179,6 +179,59 @@ export async function comentar(postId: string, userId: string, contenido: string
   if (error) throw new Error(error.message)
 }
 
+export interface JugadorBuscado {
+  id: string
+  nombre: string
+  username: string | null
+  foto_url: string | null
+  cuenta_privada: boolean
+  /** Mi relación con él: null si no lo sigo. */
+  estado: FollowEstado | null
+}
+
+/**
+ * Busca jugadores por nombre o por usuario.
+ *
+ * Con el buscador vacío devuelve a quienes más partidos han jugado: al empezar,
+ * lo útil es ver quién está activo, no una lista alfabética.
+ */
+export async function buscarJugadores(
+  texto: string,
+  yo: string,
+): Promise<JugadorBuscado[]> {
+  let consulta = supabase
+    .from('users')
+    .select('id, nombre, username, foto_url, cuenta_privada')
+    .neq('id', yo)
+    .limit(15)
+
+  const limpio = texto.trim()
+  if (limpio) {
+    consulta = consulta.or(`nombre.ilike.%${limpio}%,username.ilike.%${limpio}%`)
+  } else {
+    consulta = consulta.order('partidos_jugados', { ascending: false })
+  }
+
+  const { data, error } = await consulta
+  if (error) throw new Error(error.message)
+
+  const encontrados = data ?? []
+  if (encontrados.length === 0) return []
+
+  const { data: relaciones } = await supabase
+    .from('follows')
+    .select('followed_id, estado')
+    .eq('follower_id', yo)
+    .in(
+      'followed_id',
+      encontrados.map((u) => u.id),
+    )
+
+  const porId = new Map((relaciones ?? []).map((r) => [r.followed_id, r.estado]))
+
+  return encontrados.map((u) => ({ ...u, estado: porId.get(u.id) ?? null }))
+}
+
 // ----------------------------------------------------------------- seguidores
 
 export async function seguir(usuarioId: string): Promise<FollowEstado> {

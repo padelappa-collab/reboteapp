@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 // Cinco secciones es el máximo que cabe cómodo en una barra de móvil. El perfil
 // no está aquí: se llega por el avatar de la esquina superior derecha.
 const ENLACES = [
-  { a: '/feed', icono: Home, texto: 'Feed' },
+  { a: '/social', icono: Home, texto: 'Social' },
   { a: '/partidos', icono: Swords, texto: 'Partidos' },
   { a: '/tablon', icono: Megaphone, texto: 'Tablón' },
   { a: '/ranking', icono: ListOrdered, texto: 'Ranking' },
