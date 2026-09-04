@@ -17,5 +17,9 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // Las pruebas de paridad consultan la base de verdad, una ida y vuelta por
+    // caso. Con los 5 segundos de serie, un rato de red lenta hace fallar casos
+    // sueltos y distintos en cada corrida: parece un error de lógica y no lo es.
+    testTimeout: 30000,
   },
 })
