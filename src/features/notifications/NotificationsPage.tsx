@@ -1,10 +1,11 @@
-import { CheckCheck, Trash2 } from 'lucide-react'
+import { Bell, CheckCheck, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/useAuth'
+import { activarPush, esIOS, estaInstalada, estaSuscrito, soportaPush } from '@/lib/push'
 import { cn } from '@/lib/utils'
 import {
   borrarNovedad,
@@ -31,6 +32,17 @@ export default function NotificationsPage() {
   const navegar = useNavigate()
   const [lista, setLista] = useState<Novedad[]>([])
   const [cargando, setCargando] = useState(true)
+  const [ofrecerPush, setOfrecerPush] = useState(false)
+  const [activando, setActivando] = useState(false)
+
+  // El permiso se pide aquí y no al entrar a la app: mirando tus avisos, que te
+  // ofrezcan recibirlos en el teléfono se entiende solo. Pedirlo de golpe al
+  // abrir consigue un "no" por reflejo, y en iPhone eso casi no se revierte.
+  useEffect(() => {
+    if (!soportaPush() || (esIOS() && !estaInstalada())) return
+    if (localStorage.getItem('reboteapp-push-descartado')) return
+    estaSuscrito().then((si) => setOfrecerPush(!si))
+  }, [])
 
   const cargar = useCallback(async () => {
     if (!perfil) return
@@ -78,6 +90,52 @@ export default function NotificationsPage() {
           </Button>
         )}
       </div>
+
+      {ofrecerPush && (
+        <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+          <Bell className="mt-0.5 size-5 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">¿Te avisamos al teléfono?</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Así te enteras cuando te pidan confirmar un partido, aunque tengas la
+              app cerrada. Hasta que los cuatro confirmen, el ELO no se mueve.
+            </p>
+            <Button
+              size="sm"
+              className="mt-2 h-9"
+              disabled={activando}
+              onClick={async () => {
+                setActivando(true)
+                try {
+                  const fallo = await activarPush(perfil!.id)
+                  if (fallo) {
+                    toast.error(fallo, { duration: 6000 })
+                  } else {
+                    toast.success('Listo, te avisaremos al teléfono')
+                    setOfrecerPush(false)
+                  }
+                } finally {
+                  setActivando(false)
+                }
+              }}
+            >
+              Activar
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Ahora no"
+            className="size-8 shrink-0"
+            onClick={() => {
+              localStorage.setItem('reboteapp-push-descartado', '1')
+              setOfrecerPush(false)
+            }}
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
+      )}
 
       {cargando && (
         <div className="space-y-2">

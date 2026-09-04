@@ -68,8 +68,6 @@ export default function ProfilePage() {
       {/* lo que espera respuesta va primero: si no, se pierde debajo de todo */}
       <SolicitudesCard />
 
-      <PushCard />
-
       <MyPostsGrid />
 
       <div className="space-y-3">
@@ -92,6 +90,8 @@ export default function ProfilePage() {
           Canchas de {perfil.ciudad}
         </Link>
       </Button>
+
+      <PushCard />
 
       <Button
         variant="ghost"
