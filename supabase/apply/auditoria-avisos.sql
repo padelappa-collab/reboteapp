@@ -296,9 +296,10 @@ begin
     insert into public.tournament_pairs (tournament_id, jugador_a, jugador_b)
     values (v_torneo, j[1], j[2]) returning id into v_pa1;
 
+    -- ninguno de los dos ha aceptado todavia, asi que el aviso va a los dos
     select count(*) into n from public.notifications where tipo = 'torneo_inscripcion';
     rep := rep || rpad('torneo_inscripcion', 26)
-               || case when n = 1 then '[OK]  ' else '[!!]  ' end || n || '/1' || E'\n';
+               || case when n = 2 then '[OK]  ' else '[!!]  ' end || n || '/2' || E'\n';
   exception when others then
     rep := rep || rpad('torneo_inscripcion', 26) || '[ERROR] ' || sqlerrm || E'\n';
   end;
