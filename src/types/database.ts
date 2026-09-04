@@ -176,6 +176,7 @@ export type FollowRow = {
   follower_id: string
   followed_id: string
   estado: FollowEstado
+  avisar_publicaciones: boolean
   created_at: string
 }
 
@@ -464,6 +465,10 @@ export type Database = {
       seguir: {
         Args: { p_usuario: string }
         Returns: FollowEstado
+      }
+      alternar_avisos_de: {
+        Args: { p_usuario: string; p_activo: boolean }
+        Returns: boolean
       }
       puede_ver_feed_de: {
         Args: { p_autor: string }

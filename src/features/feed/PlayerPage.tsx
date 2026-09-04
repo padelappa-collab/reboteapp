@@ -1,4 +1,4 @@
-import { ArrowLeft, Lock } from 'lucide-react'
+import { ArrowLeft, Bell, BellOff, Lock } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -12,6 +12,7 @@ import { BadgeGrid } from '@/features/badges/BadgeGrid'
 import { supabase } from '@/lib/supabase'
 import type { UserRow } from '@/types/database'
 import {
+  alternarAvisosDe,
   dejarDeSeguir,
   publicacionesDe,
   relacionCon,
@@ -94,6 +95,25 @@ export default function PlayerPage() {
     }
   }
 
+  async function alternarAvisos() {
+    if (!perfil || !id || !relacion) return
+    const activo = !relacion.avisos
+    setEnviando(true)
+    try {
+      await alternarAvisosDe(id, activo)
+      setRelacion({ ...relacion, avisos: activo })
+      toast.success(
+        activo
+          ? `Te avisaremos cuando ${jugador!.nombre} publique`
+          : 'Ya no te avisaremos de sus publicaciones',
+      )
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo cambiar')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
   return (
     <div className="space-y-4 pb-4">
       <Link
@@ -130,18 +150,43 @@ export default function PlayerPage() {
       </div>
 
       {!soyYo && (
-        <Button
-          className="h-11 w-full"
-          variant={estado ? 'outline' : 'default'}
-          disabled={enviando}
-          onClick={alternarSeguir}
-        >
-          {estado === 'aceptado'
-            ? 'Siguiendo'
-            : estado === 'pendiente'
-              ? 'Solicitud enviada'
-              : 'Seguir'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            className="h-11 flex-1"
+            variant={estado ? 'outline' : 'default'}
+            disabled={enviando}
+            onClick={alternarSeguir}
+          >
+            {estado === 'aceptado'
+              ? 'Siguiendo'
+              : estado === 'pendiente'
+                ? 'Solicitud enviada'
+                : 'Seguir'}
+          </Button>
+
+          {/* Los avisos de publicaciones se piden de a uno. Sin esto habría que
+              elegir entre saberlo todo de todos o no saber nada de nadie. */}
+          {estado === 'aceptado' && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-11 shrink-0"
+              disabled={enviando}
+              aria-label={
+                relacion?.avisos
+                  ? 'Dejar de avisarme de sus publicaciones'
+                  : 'Avisarme cuando publique'
+              }
+              onClick={alternarAvisos}
+            >
+              {relacion?.avisos ? (
+                <Bell className="size-4 text-primary" />
+              ) : (
+                <BellOff className="size-4 text-muted-foreground" />
+              )}
+            </Button>
+          )}
+        </div>
       )}
 
       {oculto ? (

@@ -271,13 +271,30 @@ export interface RelacionSeguimiento {
   estado: FollowEstado | null
   seguidores: number
   siguiendo: number
+  /** Si pediste que te avisen cuando esta persona publique. */
+  avisos: boolean
+}
+
+/**
+ * Avisos de las publicaciones de alguien en concreto.
+ *
+ * Arranca apagado y se prende persona por persona. Avisar de todo lo que
+ * publica todo el que sigues es lo que hace que la gente apague las
+ * notificaciones enteras, y con ellas las que sí importan.
+ */
+export async function alternarAvisosDe(usuarioId: string, activo: boolean) {
+  const { error } = await supabase.rpc('alternar_avisos_de', {
+    p_usuario: usuarioId,
+    p_activo: activo,
+  })
+  if (error) throw new Error(error.message)
 }
 
 export async function relacionCon(usuarioId: string, yo: string): Promise<RelacionSeguimiento> {
   const [mia, seguidores, siguiendo] = await Promise.all([
     supabase
       .from('follows')
-      .select('estado')
+      .select('estado, avisar_publicaciones')
       .eq('follower_id', yo)
       .eq('followed_id', usuarioId)
       .maybeSingle(),
@@ -295,6 +312,7 @@ export async function relacionCon(usuarioId: string, yo: string): Promise<Relaci
 
   return {
     estado: mia.data?.estado ?? null,
+    avisos: mia.data?.avisar_publicaciones ?? false,
     seguidores: seguidores.count ?? 0,
     siguiendo: siguiendo.count ?? 0,
   }
