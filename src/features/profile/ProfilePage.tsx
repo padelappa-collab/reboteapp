@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/useAuth'
 import { BadgeGrid } from '@/features/badges/BadgeGrid'
 import { MyPostsGrid } from '@/features/feed/MyPostsGrid'
 import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
+import { PushCard } from '@/features/notifications/PushCard'
 import { EloCard } from './EloCard'
 import { ProfileSettingsSheet } from './ProfileSettingsSheet'
 
@@ -66,6 +67,8 @@ export default function ProfilePage() {
 
       {/* lo que espera respuesta va primero: si no, se pierde debajo de todo */}
       <SolicitudesCard />
+
+      <PushCard />
 
       <MyPostsGrid />
 

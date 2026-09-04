@@ -40,6 +40,7 @@ export type UserRow = {
   numero_registro: number
   /** Solo afecta al feed: el ranking y los partidos siguen siendo públicos. */
   cuenta_privada: boolean
+  push_activo: boolean
   created_at: string
   updated_at: string
 }
@@ -60,6 +61,7 @@ export type UserUpdate = {
   ciudad?: string
   foto_url?: string | null
   cuenta_privada?: boolean
+  push_activo?: boolean
 }
 
 export type CourtRow = {
@@ -290,6 +292,24 @@ export type TournamentMatchRow = {
   created_at: string
 }
 
+export type PushSubscriptionRow = {
+  id: string
+  user_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  agente: string | null
+  created_at: string
+}
+
+export type PushSubscriptionInsert = {
+  user_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  agente?: string | null
+}
+
 export type NotificationRow = {
   id: string
   user_id: string
@@ -350,6 +370,7 @@ export type Database = {
       tournament_pairs: Tabla<TournamentPairRow, NoEscribible, NoEscribible>
       tournament_matches: Tabla<TournamentMatchRow, NoEscribible, NoEscribible>
       notifications: Tabla<NotificationRow, NoEscribible, { leida?: boolean }>
+      push_subscriptions: Tabla<PushSubscriptionRow, PushSubscriptionInsert, NoEscribible>
       badges: Tabla<BadgeRow, NoEscribible, NoEscribible>
       user_badges: Tabla<UserBadgeRow, NoEscribible, NoEscribible>
     }
