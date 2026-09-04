@@ -51,6 +51,7 @@ export default function TournamentDetailPage() {
   const [enviando, setEnviando] = useState(false)
 
   const [companero, setCompanero] = useState<JugadorResumen[]>([])
+  const [parejaAjena, setParejaAjena] = useState<JugadorResumen[]>([])
   const [registrando, setRegistrando] = useState<string | null>(null)
   const [sets, setSets] = useState<SetMarcador[]>([{ a: 6, b: 4 }])
 
@@ -78,7 +79,12 @@ export default function TournamentDetailPage() {
   const soyOrganizador = torneo.creado_por === yo
   const aceptadas = parejas.filter((p) => p.estado === 'aceptada')
   const miPareja = parejas.find((p) => p.jugador_a === yo || p.jugador_b === yo)
-  const meInvitaron = parejas.find((p) => p.jugador_b === yo && p.estado === 'pendiente')
+
+  // me falta confirmar, sea que me inscribió mi compañero o el organizador
+  const meInvitaron = parejas.find(
+    (p) =>
+      (p.jugador_a === yo && !p.acepto_a) || (p.jugador_b === yo && !p.acepto_b),
+  )
   const cancha = canchas.find((c) => c.id === torneo.cancha_id)
   const errorParejas = parejasValidas(torneo.formato, aceptadas.length)
   const porJugar = cruces.filter((c) => !c.ganador_id).length
@@ -260,11 +266,13 @@ export default function TournamentDetailPage() {
         <Card>
           <CardContent className="space-y-3">
             <p className="text-sm">
+              Te inscribieron en este torneo con{' '}
               <span className="font-medium">
-                {parejas.find((p) => p.id === meInvitaron.id)?.jugadores[0]?.nombre ??
-                  'Alguien'}
-              </span>{' '}
-              te inscribió como su pareja.
+                {meInvitaron.jugador_a === yo
+                  ? (meInvitaron.jugadores[1]?.nombre ?? 'otro jugador')
+                  : (meInvitaron.jugadores[0]?.nombre ?? 'otro jugador')}
+              </span>
+              . Acepta para que la inscripción quede en firme.
             </p>
             <div className="flex gap-2">
               <Button
@@ -326,6 +334,45 @@ export default function TournamentDetailPage() {
         </Card>
       )}
 
+      {soyOrganizador && torneo.estado === 'inscripciones' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Inscribir una pareja</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <PlayerPicker
+              etiqueta="Los dos jugadores"
+              seleccionados={parejaAjena}
+              yaElegidos={parejaAjena.map((j) => j.id)}
+              onChange={setParejaAjena}
+              maximo={2}
+            />
+            <Button
+              variant="outline"
+              className="h-11 w-full"
+              disabled={enviando || parejaAjena.length !== 2}
+              onClick={() =>
+                accion(async () => {
+                  await inscribirPareja(
+                    torneo.id,
+                    parejaAjena[1].id,
+                    parejaAjena[0].id,
+                  )
+                  setParejaAjena([])
+                }, 'Pareja inscrita. Falta que confirmen.')
+              }
+            >
+              Inscribir esta pareja
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Puedes armar tú el cuadro y que cada jugador confirme desde su app, o
+              inscribir solo algunas y dejar que el resto se apunte. No hace falta
+              que juegues el torneo que organizas.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Parejas inscritas</CardTitle>
@@ -338,7 +385,16 @@ export default function TournamentDetailPage() {
             <div key={p.id} className="flex items-center gap-2 text-sm">
               <span className="min-w-0 flex-1 truncate">{nombrePareja(p)}</span>
               {p.grupo && <Badge variant="secondary">Grupo {p.grupo}</Badge>}
-              {p.estado === 'pendiente' && <Badge variant="outline">Sin confirmar</Badge>}
+              {p.estado === 'pendiente' && (
+                <Badge variant="outline">
+                  Falta{' '}
+                  {!p.acepto_a && !p.acepto_b
+                    ? 'que confirmen los dos'
+                    : !p.acepto_a
+                      ? (p.jugadores[0]?.nombre ?? 'uno')
+                      : (p.jugadores[1]?.nombre ?? 'uno')}
+                </Badge>
+              )}
               {p.id === miPareja?.id && torneo.estado === 'inscripciones' && (
                 <Button
                   variant="ghost"

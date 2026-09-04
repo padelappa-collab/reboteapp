@@ -270,6 +270,8 @@ export type TournamentPairRow = {
   jugador_a: string
   jugador_b: string
   estado: ParejaEstado
+  acepto_a: boolean
+  acepto_b: boolean
   grupo: number | null
   created_at: string
 }
@@ -403,7 +405,7 @@ export type Database = {
         Returns: MatchRow
       }
       inscribir_pareja: {
-        Args: { p_torneo: string; p_companero: string }
+        Args: { p_torneo: string; p_companero: string; p_jugador_a?: string }
         Returns: TournamentPairRow
       }
       aceptar_inscripcion: {

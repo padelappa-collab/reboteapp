@@ -31,6 +31,8 @@ export interface Pareja {
   jugador_a: string
   jugador_b: string
   estado: ParejaEstado
+  acepto_a: boolean
+  acepto_b: boolean
   grupo: number | null
   jugadores: [JugadorResumen | undefined, JugadorResumen | undefined]
 }
@@ -68,8 +70,8 @@ export function parejasValidas(formato: TorneoFormato, cuantas: number): string 
   if (formato === 'grupos' && (cuantas < 8 || cuantas % 4 !== 0)) {
     return `La fase de grupos necesita 8, 12, 16... parejas. Hay ${cuantas}.`
   }
-  if (formato === 'americano' && cuantas < 3) {
-    return `Un americano necesita al menos 3 parejas. Hay ${cuantas}.`
+  if (formato === 'americano' && cuantas < 2) {
+    return `Un americano necesita al menos 2 parejas. Hay ${cuantas}.`
   }
   return null
 }
@@ -219,10 +221,19 @@ export async function esElegible(
   return Boolean(data)
 }
 
-export async function inscribirPareja(torneoId: string, companeroId: string) {
+/**
+ * Inscribe una pareja. Si `jugadorA` va vacío se inscribe quien llama; si viene,
+ * es el organizador armando una pareja de la que puede no formar parte.
+ */
+export async function inscribirPareja(
+  torneoId: string,
+  companeroId: string,
+  jugadorA?: string,
+) {
   const { error } = await supabase.rpc('inscribir_pareja', {
     p_torneo: torneoId,
     p_companero: companeroId,
+    p_jugador_a: jugadorA ?? undefined,
   })
   if (error) throw new Error(error.message)
 }

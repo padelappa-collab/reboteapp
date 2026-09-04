@@ -36,7 +36,7 @@ const SIN_CANCHA = 'sin-cancha'
 
 /** Cuántas parejas tiene sentido admitir en cada formato. */
 const OPCIONES_PAREJAS: Record<TorneoFormato, number[]> = {
-  americano: [3, 4, 5, 6, 7, 8],
+  americano: [2, 3, 4, 5, 6, 7, 8],
   cuadrangular: [4, 8, 16, 32],
   grupos: [8, 12, 16, 20, 24, 32],
 }
