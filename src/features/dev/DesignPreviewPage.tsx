@@ -206,18 +206,23 @@ function ChatMuestra() {
               )}
             >
               {b.post && (
-                <div className="flex items-center gap-2.5 rounded-[var(--radius)] bg-background/70 p-2">
+                <div className="w-56 max-w-full overflow-hidden rounded-[var(--radius)] bg-background/80">
                   <img
                     src={lienzo('#1D4D3E', '#E8FF3D', '')}
                     alt=""
-                    className="size-12 shrink-0 rounded-[calc(var(--radius)-4px)] object-cover"
+                    className="aspect-square w-full object-cover"
                   />
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-medium">Sergio Martínez</span>
-                    <span className="block truncate text-xs opacity-70">
-                      Partidazo en Bocagrande
-                    </span>
-                  </span>
+                  <div className="p-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <Avatar className="size-5">
+                        <AvatarFallback className="text-[9px]">SM</AvatarFallback>
+                      </Avatar>
+                      <span className="truncate text-xs font-medium">Sergio Martínez</span>
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-xs opacity-70">
+                      Partidazo en Bocagrande. Tercer set a muerte
+                    </p>
+                  </div>
                 </div>
               )}
               {b.txt && <p className="text-sm">{b.txt}</p>}

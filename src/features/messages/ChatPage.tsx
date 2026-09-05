@@ -48,26 +48,39 @@ function PostCompartido({ mensaje }: { mensaje: Mensaje }) {
 
   return (
     <Link
-      to={`/jugador/${post.autor?.id ?? ''}`}
-      className="flex items-center gap-2.5 rounded-[var(--radius)] bg-background/70 p-2"
+      // a la publicación, no al perfil: quien toca una foto que le acaban de
+      // mandar quiere ver esa foto
+      to={`/publicacion/${post.id}`}
+      className="block w-56 max-w-full overflow-hidden rounded-[var(--radius)] bg-background/80"
     >
       {post.imagen_url ? (
         <img
           src={post.imagen_url}
           alt=""
-          className="size-12 shrink-0 rounded-[calc(var(--radius)-4px)] object-cover"
+          className="aspect-square w-full object-cover"
         />
       ) : (
-        <span className="grid size-12 shrink-0 place-items-center rounded-[calc(var(--radius)-4px)] bg-muted text-xs text-muted-foreground">
+        <span className="grid aspect-video w-full place-items-center bg-muted text-xs text-muted-foreground">
           Sin foto
         </span>
       )}
-      <span className="min-w-0">
-        <span className="block truncate text-xs font-medium">
-          {post.autor?.nombre ?? 'Publicación'}
+
+      <span className="block p-2.5">
+        <span className="flex items-center gap-1.5">
+          <Avatar className="size-5">
+            {post.autor?.foto_url && <AvatarImage src={post.autor.foto_url} alt="" />}
+            <AvatarFallback className="text-[9px]">
+              {iniciales(post.autor?.nombre ?? '?')}
+            </AvatarFallback>
+          </Avatar>
+          <span className="truncate text-xs font-medium">
+            {post.autor?.nombre ?? 'Publicación'}
+          </span>
         </span>
         {post.contenido && (
-          <span className="block truncate text-xs opacity-70">{post.contenido}</span>
+          <span className="mt-1 line-clamp-2 block text-xs opacity-70">
+            {post.contenido}
+          </span>
         )}
       </span>
     </Link>

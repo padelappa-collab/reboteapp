@@ -95,6 +95,22 @@ export async function publicaciones(
   return filas.map((f) => aPublicacion(f, yo))
 }
 
+/** Una publicación suelta, para su propia pantalla. */
+export async function publicacionPorId(
+  id: string,
+  yo: string,
+): Promise<Publicacion | null> {
+  const { data, error } = await supabase
+    .from('feed_posts')
+    .select(SELECT_PUBLICACION)
+    .eq('id', id)
+    .maybeSingle()
+
+  if (error) throw new Error(error.message)
+  if (!data) return null
+  return aPublicacion(data as unknown as FilaCruda, yo)
+}
+
 export async function publicacionesDe(userId: string, yo: string): Promise<Publicacion[]> {
   const { data, error } = await supabase
     .from('feed_posts')
