@@ -40,8 +40,18 @@ export function AppShell() {
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-md items-center justify-between px-4">
-          <Link to="/social" className="font-semibold tracking-tight">
-            REBOTEAPP
+          <Link to="/social" className="flex items-center gap-2">
+            {/* el PNG y no el SVG: el trazado del logo pesa 54 KB comprimido y
+                aqui se ve a 28 px, donde no se nota. Los dos salen del mismo
+                maestro, asi que no pueden descuadrarse */}
+            <img
+              src="/logo-96.png"
+              alt=""
+              width={28}
+              height={28}
+              className="size-7 rounded-lg"
+            />
+            <span className="font-semibold tracking-tight">REBOTEAPP</span>
           </Link>
 
           {perfil && (
