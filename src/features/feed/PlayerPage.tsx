@@ -180,7 +180,7 @@ export default function PlayerPage() {
               onClick={alternarAvisos}
             >
               {relacion?.avisos ? (
-                <Bell className="size-4 text-primary" />
+                <Bell className="size-4 text-court" />
               ) : (
                 <BellOff className="size-4 text-muted-foreground" />
               )}

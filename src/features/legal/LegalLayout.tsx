@@ -46,7 +46,7 @@ export function LegalLayout({
             '[&_p]:text-muted-foreground',
             '[&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-5 [&_ul]:text-muted-foreground',
             '[&_li>strong]:text-foreground',
-            '[&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline',
+            '[&_a]:text-court [&_a]:underline-offset-4 hover:[&_a]:underline',
           ].join(' ')}
         >
           {children}

@@ -64,7 +64,7 @@ export function SetsInput({
             inputMode="numeric"
             min={0}
             max={20}
-            className="h-11 text-center"
+            className="numero h-12 text-center text-xl"
             aria-label={`Juegos de ${etiquetaA} en el set ${i + 1}`}
             value={set.a}
             onChange={(e) => editar(i, 'a', e.target.value)}
@@ -75,7 +75,7 @@ export function SetsInput({
             inputMode="numeric"
             min={0}
             max={20}
-            className="h-11 text-center"
+            className="numero h-12 text-center text-xl"
             aria-label={`Juegos de ${etiquetaB} en el set ${i + 1}`}
             value={set.b}
             onChange={(e) => editar(i, 'b', e.target.value)}

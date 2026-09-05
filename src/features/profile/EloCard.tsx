@@ -22,32 +22,43 @@ export function EloCard({
 
   return (
     <Card>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
-            {TITULO[ranking]}
-          </span>
+      <CardContent className="space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {TITULO[ranking]}
+            </p>
+            {/* El ELO es lo que la persona viene a mirar: va primero, grande y
+                con su propia tipografia. El resto de la tarjeta lo acompaña. */}
+            <p className="numero mt-1 text-5xl leading-none">{elo}</p>
+          </div>
           <CategoryBadge elo={elo} ranking={ranking} peakElo={peakElo} />
         </div>
 
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-semibold tabular-nums">{elo}</span>
-          {peakElo > elo && (
-            <span className="text-xs text-muted-foreground">pico {peakElo}</span>
-          )}
-        </div>
+        {peakElo > elo && (
+          <p className="text-xs text-muted-foreground">
+            Tu máximo fue <span className="numero text-foreground">{peakElo}</span>
+          </p>
+        )}
 
         <div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            {/* uno de los dos usos del neón en esta pantalla: lo que te falta
+                para subir es exactamente lo que se quiere destacar */}
             <div
               className="h-full rounded-full bg-primary transition-all"
               style={{ width: `${Math.round(resumen.progreso * 100)}%` }}
             />
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {resumen.faltaParaSubir === null
-              ? 'Categoría más alta de la escala'
-              : `${resumen.faltaParaSubir} puntos para subir de categoría`}
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {resumen.faltaParaSubir === null ? (
+              'Categoría más alta de la escala'
+            ) : (
+              <>
+                <span className="numero text-foreground">{resumen.faltaParaSubir}</span>{' '}
+                puntos para subir de categoría
+              </>
+            )}
           </p>
         </div>
       </CardContent>

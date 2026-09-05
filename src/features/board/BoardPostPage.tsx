@@ -47,7 +47,7 @@ export default function BoardPostPage() {
           Esta publicación ya no existe. Puede que quien la creó se haya salido y no
           quedara nadie más.
         </p>
-        <Link to="/tablon" className="text-sm font-medium text-primary">
+        <Link to="/tablon" className="text-sm font-medium text-court">
           Volver al tablón
         </Link>
       </div>

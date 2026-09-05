@@ -34,7 +34,7 @@ import { usePartido } from './useMatches'
 
 const ESTADO: Record<MatchEstado, { texto: string; clase: string }> = {
   pendiente: { texto: 'Pendiente de confirmar', clase: 'bg-amber-100 text-amber-900' },
-  confirmado: { texto: 'Confirmado', clase: 'bg-primary/10 text-primary' },
+  confirmado: { texto: 'Confirmado', clase: 'bg-primary/10 text-court' },
   disputado: { texto: 'En disputa', clase: 'bg-destructive/10 text-destructive' },
   cancelado: { texto: 'Cancelado', clase: 'bg-muted text-muted-foreground' },
 }
@@ -93,7 +93,7 @@ function FilaJugador({
 
       {confirmado ? (
         <span
-          className="flex items-center gap-1 text-xs text-primary"
+          className="flex items-center gap-1 text-xs text-court"
           title="Confirmó el resultado"
         >
           <Check className="size-4" />
@@ -130,7 +130,7 @@ function Pareja({
     >
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          {gano && <Trophy className="size-3.5 text-primary" />}
+          {gano && <Trophy className="size-3.5 text-court" />}
           {gano ? 'Ganadores' : 'Perdedores'}
         </span>
         <span className="flex gap-1.5 tabular-nums">
@@ -279,7 +279,7 @@ export default function MatchDetailPage() {
           )}
 
           {partido.estado === 'confirmado' && (
-            <p className="text-xs text-primary">
+            <p className="text-xs text-court">
               El ranking {ETIQUETA_RANKING[partido.match_type].toLowerCase()} ya se
               actualizó con este resultado.
             </p>

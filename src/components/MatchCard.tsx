@@ -53,7 +53,9 @@ export function MatchCard({
           </div>
         </div>
 
-        <div className="grid gap-1 text-sm">
+        {/* el marcador se lee antes que los nombres: es lo que se busca al
+            recorrer la lista */}
+        <div className="grid gap-1.5 text-sm">
           <div
             className={cn(
               'flex justify-between gap-2',
@@ -63,7 +65,7 @@ export function MatchCard({
             <span className="truncate">
               {nombre(partido.pareja_a[0])} y {nombre(partido.pareja_a[1])}
             </span>
-            <span className="shrink-0 tabular-nums">
+            <span className="numero shrink-0 text-xl leading-none">
               {partido.sets.map((s) => s.a).join(' ')}
             </span>
           </div>
@@ -76,7 +78,7 @@ export function MatchCard({
             <span className="truncate">
               {nombre(partido.pareja_b[0])} y {nombre(partido.pareja_b[1])}
             </span>
-            <span className="shrink-0 tabular-nums">
+            <span className="numero shrink-0 text-xl leading-none">
               {partido.sets.map((s) => s.b).join(' ')}
             </span>
           </div>
@@ -96,7 +98,7 @@ export function MatchCard({
           </span>
           <Link
             to={`/partidos/${partido.id}`}
-            className="text-xs font-medium text-primary underline-offset-4 hover:underline"
+            className="text-xs font-medium text-court underline-offset-4 hover:underline"
           >
             Ver detalle
           </Link>

@@ -38,7 +38,7 @@ export function InstallBanner() {
   return (
     <div className="fixed inset-x-0 bottom-16 z-40 px-3 pb-2">
       <div className="mx-auto flex max-w-md items-center gap-2 rounded-xl border bg-card p-3 shadow-lg">
-        <Download className="size-5 shrink-0 text-primary" />
+        <Download className="size-5 shrink-0 text-court" />
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">Ten REBOTEAPP a mano</p>

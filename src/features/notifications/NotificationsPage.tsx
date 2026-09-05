@@ -93,7 +93,7 @@ export default function NotificationsPage() {
 
       {ofrecerPush && (
         <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
-          <Bell className="mt-0.5 size-5 shrink-0 text-primary" />
+          <Bell className="mt-0.5 size-5 shrink-0 text-court" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">¿Te avisamos al teléfono?</p>
             <p className="mt-0.5 text-xs text-muted-foreground">

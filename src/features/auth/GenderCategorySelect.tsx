@@ -70,7 +70,7 @@ export function GenderCategorySelect({
               className={cn(
                 'rounded-lg border px-3 py-3 text-sm capitalize transition-colors',
                 genero === g
-                  ? 'border-primary bg-primary/10 font-medium text-primary'
+                  ? 'border-primary bg-primary/10 font-medium text-court'
                   : 'border-border hover:bg-accent',
               )}
             >

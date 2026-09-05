@@ -280,7 +280,7 @@ export function InstallSheet({
       <SheetContent side="bottom" className="max-h-[90dvh] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <Share className="size-5 text-primary" />
+            <Share className="size-5 text-court" />
             Instala REBOTEAPP
           </SheetTitle>
           <SheetDescription>

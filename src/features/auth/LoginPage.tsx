@@ -84,7 +84,7 @@ export default function LoginPage() {
           </p>
           <p className="text-center text-sm text-muted-foreground">
             ¿No tienes cuenta?{' '}
-            <Link to="/registro" className="font-medium text-primary underline-offset-4 hover:underline">
+            <Link to="/registro" className="font-medium text-court underline-offset-4 hover:underline">
               Regístrate
             </Link>
           </p>

@@ -18,7 +18,7 @@ export function InstallCard() {
     <Card>
       <CardContent className="space-y-3">
         <div className="flex items-start gap-3">
-          <Smartphone className="mt-0.5 size-5 shrink-0 text-primary" />
+          <Smartphone className="mt-0.5 size-5 shrink-0 text-court" />
           <div className="min-w-0">
             <p className="font-medium">Instalar en la pantalla de inicio</p>
             <p className="mt-0.5 text-xs text-muted-foreground">

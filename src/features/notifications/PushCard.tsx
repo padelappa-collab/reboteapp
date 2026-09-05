@@ -63,7 +63,7 @@ export function PushCard() {
       <CardContent className="space-y-3">
         <div className="flex items-start gap-3">
           {suscrito ? (
-            <Bell className="mt-0.5 size-5 shrink-0 text-primary" />
+            <Bell className="mt-0.5 size-5 shrink-0 text-court" />
           ) : (
             <BellOff className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
           )}

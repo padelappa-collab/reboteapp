@@ -1,8 +1,5 @@
 import { Search, X } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useMemo, useState } from 'react'
-import { CategoryBadge } from '@/components/CategoryBadge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -15,8 +12,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/useAuth'
-import { cn } from '@/lib/utils'
 import type { RankingTipo } from '@/types/database'
+import { RankingRow } from './RankingRow'
 import { useRanking } from './useRanking'
 
 const TODAS = 'todas'
@@ -28,14 +25,6 @@ function normalizar(texto: string) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
-}
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
 }
 
 export default function RankingPage() {
@@ -130,37 +119,18 @@ export default function RankingPage() {
         </div>
       )}
 
-      <ol className="divide-y rounded-lg border">
+      <ol className="divide-y divide-border overflow-hidden rounded-xl bg-card shadow-sm">
         {visibles.map(({ fila, puesto }) => (
-          <li
+          <RankingRow
             key={fila.id}
-            className={cn(
-              'flex items-center gap-3 p-3',
-              fila.id === perfil?.id && 'bg-primary/5',
-            )}
-          >
-            <span className="w-6 text-center text-sm font-medium tabular-nums text-muted-foreground">
-              {puesto}
-            </span>
-            <Avatar className="size-9">
-              <AvatarFallback className="text-xs">{iniciales(fila.nombre)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <Link
-                to={`/jugador/${fila.id}`}
-                className="truncate text-sm font-medium hover:underline"
-              >
-                {fila.nombre}
-              </Link>
-              <CategoryBadge
-                elo={fila.elo}
-                ranking={tipo}
-                peakElo={fila.peakElo}
-                className="mt-0.5"
-              />
-            </div>
-            <span className="text-base font-semibold tabular-nums">{fila.elo}</span>
-          </li>
+            id={fila.id}
+            puesto={puesto}
+            nombre={fila.nombre}
+            elo={fila.elo}
+            peakElo={fila.peakElo}
+            ranking={tipo}
+            soyYo={fila.id === perfil?.id}
+          />
         ))}
       </ol>
     </div>
