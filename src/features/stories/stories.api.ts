@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { HistoriaAutorRow, HistoriaRow } from '@/types/database'
+import type { HistoriaAutorRow, HistoriaRow, LikeHistoriaRow } from '@/types/database'
 
 export type AutorConHistorias = HistoriaAutorRow
 export type Historia = HistoriaRow
@@ -53,4 +53,38 @@ export async function publicarHistoria(userId: string, archivo: File) {
 export async function borrarHistoria(id: string) {
   const { error } = await supabase.from('stories').delete().eq('id', id)
   if (error) throw new Error(error.message)
+}
+
+/** ¿Ya le di me gusta a esta historia? */
+export async function yaDiMeGusta(storyId: string, yo: string): Promise<boolean> {
+  const { count } = await supabase
+    .from('story_likes')
+    .select('story_id', { count: 'exact', head: true })
+    .eq('story_id', storyId)
+    .eq('user_id', yo)
+  return (count ?? 0) > 0
+}
+
+export async function alternarLikeHistoria(storyId: string, yo: string, dar: boolean) {
+  if (dar) {
+    const { error } = await supabase
+      .from('story_likes')
+      .insert({ story_id: storyId, user_id: yo, created_at: new Date().toISOString() })
+    if (error) throw new Error(error.message)
+    return
+  }
+
+  const { error } = await supabase
+    .from('story_likes')
+    .delete()
+    .eq('story_id', storyId)
+    .eq('user_id', yo)
+  if (error) throw new Error(error.message)
+}
+
+/** Quiénes le dieron me gusta. La base solo lo responde a quien la publicó. */
+export async function likesDeHistoria(storyId: string): Promise<LikeHistoriaRow[]> {
+  const { data, error } = await supabase.rpc('likes_de_historia', { p_story: storyId })
+  if (error) throw new Error(error.message)
+  return data ?? []
 }

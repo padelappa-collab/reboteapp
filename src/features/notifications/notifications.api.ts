@@ -84,6 +84,8 @@ export const ICONO_NOVEDAD: Record<string, string> = {
   partido_confirmacion: '👍',
   partido_falta_confirmar: '⏳',
   comentario_respuesta: '🗨️',
+  mensaje: '✉️',
+  like_historia: '❤️',
   publicacion_nueva: '📸',
   torneo_sorteo: '🎲',
   torneo_lleno: '📋',

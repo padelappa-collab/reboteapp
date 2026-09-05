@@ -1,6 +1,6 @@
-import { ArrowLeft, Bell, BellOff, Lock } from 'lucide-react'
+import { ArrowLeft, Bell, BellOff, Lock, MessageCircle } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { CategoryBadge } from '@/components/CategoryBadge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/useAuth'
 import { BadgeGrid } from '@/features/badges/BadgeGrid'
+import { conversacionCon } from '@/features/messages/messages.api'
 import { supabase } from '@/lib/supabase'
 import type { UserRow } from '@/types/database'
 import {
@@ -34,6 +35,7 @@ function iniciales(nombre: string) {
 export default function PlayerPage() {
   const { id } = useParams<{ id: string }>()
   const { perfil } = useAuth()
+  const navegar = useNavigate()
 
   const [jugador, setJugador] = useState<UserRow | null>(null)
   const [relacion, setRelacion] = useState<RelacionSeguimiento | null>(null)
@@ -163,6 +165,30 @@ export default function PlayerPage() {
                 ? 'Solicitud enviada'
                 : 'Seguir'}
           </Button>
+
+          {/* escribirle solo tiene sentido si ya hay relación: la base exige
+              que alguno de los dos siga al otro */}
+          {estado === 'aceptado' && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-11 shrink-0"
+              disabled={enviando}
+              aria-label="Enviarle un mensaje"
+              onClick={async () => {
+                if (!id) return
+                try {
+                  navegar(`/mensajes/${await conversacionCon(id)}`)
+                } catch (error) {
+                  toast.error(
+                    error instanceof Error ? error.message : 'No se pudo abrir el chat',
+                  )
+                }
+              }}
+            >
+              <MessageCircle className="size-4" />
+            </Button>
+          )}
 
           {/* Los avisos de publicaciones se piden de a uno. Sin esto habría que
               elegir entre saberlo todo de todos o no saber nada de nadie. */}

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ETIQUETA_RANKING } from '@/lib/matchType'
 import { cn } from '@/lib/utils'
+import { ShareSheet } from '@/features/messages/ShareSheet'
 import { alternarMeGusta, borrarPublicacion, type Publicacion } from './feed.api'
 import { CommentSheet } from './CommentSheet'
 
@@ -52,6 +53,7 @@ export function FeedPostCard({
   const [cuantos, setCuantos] = useState(publicacion.meGusta)
   const [comentarios, setComentarios] = useState(false)
   const [latido, setLatido] = useState(false)
+  const [compartir, setCompartir] = useState(false)
 
   const ultimoToque = useRef(0)
 
@@ -217,18 +219,7 @@ export function FeedPostCard({
           size="icon"
           className="size-9"
           aria-label="Compartir"
-          onClick={async () => {
-            const url = `${window.location.origin}/jugador/${publicacion.user_id}`
-            try {
-              if (navigator.share) await navigator.share({ url, title: 'REBOTEAPP' })
-              else {
-                await navigator.clipboard.writeText(url)
-                toast.success('Enlace copiado')
-              }
-            } catch {
-              /* si cancela el menú de compartir, no hay nada que decirle */
-            }
-          }}
+          onClick={() => setCompartir(true)}
         >
           <Send className="size-6" />
         </Button>
@@ -280,6 +271,12 @@ export function FeedPostCard({
           {fechaLarga(publicacion.created_at)}
         </p>
       </div>
+
+      <ShareSheet
+        postId={publicacion.id}
+        abierto={compartir}
+        onAbrirChange={setCompartir}
+      />
 
       <CommentSheet
         postId={publicacion.id}

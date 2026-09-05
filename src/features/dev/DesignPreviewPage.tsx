@@ -11,7 +11,7 @@ import { StoryViewer } from '@/features/stories/StoryViewer'
 import type { MatchRow, SetMarcador } from '@/types/database'
 import type { Publicacion } from '@/features/feed/feed.api'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Plus } from 'lucide-react'
+import { Plus, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /**
@@ -146,6 +146,99 @@ function BarraMuestra({ onAbrir }: { onAbrir: () => void }) {
   )
 }
 
+/** La bandeja, con datos inventados: los componentes reales piden sesión. */
+function BandejaMuestra() {
+  const filas = [
+    { n: 'sergiom', real: 'Sergio Martínez', txt: 'Listo, nos vemos a las 7', t: '5 min', sin: 2 },
+    { n: 'andresv', real: 'Andrés Vergara', txt: 'Una publicación', t: '2 h', sin: 1 },
+    { n: 'camilor', real: 'Camilo Restrepo', txt: 'Tú: dale, yo llevo las bolas', t: 'ayer', sin: 0 },
+  ]
+  return (
+    <ul className="divide-y divide-border overflow-hidden rounded-xl bg-card shadow-sm">
+      {filas.map((f) => (
+        <li key={f.n} className="flex items-center gap-3 p-3">
+          <Avatar className="size-11">
+            <AvatarFallback className="text-xs">{f.real.slice(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{f.n}</p>
+            <p
+              className={cn(
+                'truncate text-sm',
+                f.sin > 0 ? 'font-medium text-foreground' : 'text-muted-foreground',
+              )}
+            >
+              {f.txt}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <span className="text-xs text-muted-foreground">{f.t}</span>
+            {f.sin > 0 && (
+              <span className="numero flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
+                {f.sin}
+              </span>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/** Una conversación: burbujas, publicación compartida y campo de envío. */
+function ChatMuestra() {
+  const burbujas = [
+    { mio: false, txt: '¿Jugamos el sábado?', h: '18:02' },
+    { mio: true, txt: 'De una. ¿A qué hora?', h: '18:03' },
+    { mio: false, txt: '7 de la noche en Bocagrande', h: '18:03' },
+    { mio: true, post: true, h: '18:05' },
+    { mio: false, txt: 'Jajaja qué partidazo ese', h: '18:07' },
+  ]
+  return (
+    <Card>
+      <CardContent className="space-y-2">
+        {burbujas.map((b, i) => (
+          <div key={i} className={cn('flex', b.mio ? 'justify-end' : 'justify-start')}>
+            <div
+              className={cn(
+                'max-w-[78%] space-y-1 rounded-[var(--radius)] px-3 py-2',
+                b.mio ? 'bg-primary/20' : 'bg-muted',
+              )}
+            >
+              {b.post && (
+                <div className="flex items-center gap-2.5 rounded-[var(--radius)] bg-background/70 p-2">
+                  <img
+                    src={lienzo('#1D4D3E', '#E8FF3D', '')}
+                    alt=""
+                    className="size-12 shrink-0 rounded-[calc(var(--radius)-4px)] object-cover"
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate text-xs font-medium">Sergio Martínez</span>
+                    <span className="block truncate text-xs opacity-70">
+                      Partidazo en Bocagrande
+                    </span>
+                  </span>
+                </div>
+              )}
+              {b.txt && <p className="text-sm">{b.txt}</p>}
+              <p className="text-right text-[10px] text-muted-foreground">{b.h}</p>
+            </div>
+          </div>
+        ))}
+
+        <div className="flex items-center gap-2 pt-1">
+          <div className="h-11 flex-1 rounded-[var(--radius)] border px-3 text-sm leading-[2.75rem] text-muted-foreground">
+            Escribe un mensaje
+          </div>
+          <Button size="icon" className="size-11 shrink-0" aria-label="Enviar">
+            <Send className="size-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 function Seccion({ titulo, nota, children }: {
   titulo: string
   nota: string
@@ -187,6 +280,20 @@ export default function DesignPreviewPage() {
         nota="Anillo de un solo tono: gris oscuro si queda algo por ver, gris claro si ya lo viste. Toca cualquiera para abrir el visor."
       >
         <BarraMuestra onAbrir={() => setVisor(true)} />
+      </Seccion>
+
+      <Seccion
+        titulo="Mensajes · bandeja"
+        nota="El no leído se lee más oscuro y lleva el contador en neón. Es el único acento de la pantalla."
+      >
+        <BandejaMuestra />
+      </Seccion>
+
+      <Seccion
+        titulo="Mensajes · conversación"
+        nota="Lo tuyo a la derecha en neón diluido, lo del otro a la izquierda en gris. Una publicación compartida llega como tarjeta, no como copia."
+      >
+        <ChatMuestra />
       </Seccion>
 
       <Seccion

@@ -83,6 +83,71 @@ export type HistoriaRow = {
   visto: boolean
 }
 
+export type StoryLikeRow = {
+  story_id: string
+  user_id: string
+  created_at: string
+}
+
+export type ConversationRow = {
+  id: string
+  es_grupal: boolean
+  clave: string | null
+  created_at: string
+}
+
+export type MessageRow = {
+  id: string
+  conversation_id: string
+  sender_id: string
+  contenido: string | null
+  post_compartido_id: string | null
+  created_at: string
+}
+
+export type MessageInsert = {
+  conversation_id: string
+  sender_id: string
+  contenido?: string | null
+  post_compartido_id?: string | null
+}
+
+export type MessageReadRow = {
+  message_id: string
+  user_id: string
+  leido_at: string
+}
+
+/** Una conversación tal como la pinta la bandeja. */
+export type ConversacionRow = {
+  conversation_id: string
+  otro_id: string
+  otro_nombre: string
+  otro_username: string | null
+  otro_foto: string | null
+  ultimo_texto: string | null
+  ultimo_es_post: boolean | null
+  ultimo_at: string | null
+  ultimo_mio: boolean | null
+  sin_leer: number
+}
+
+export type CandidatoRow = {
+  user_id: string
+  nombre: string
+  username: string | null
+  foto_url: string | null
+  mutuo: boolean
+}
+
+export type LikeHistoriaRow = {
+  user_id: string
+  nombre: string
+  username: string | null
+  foto_url: string | null
+  cuando: string
+}
+
 /** Lo que devuelve `buscar_jugadores`: sirve para los dos buscadores. */
 export type JugadorBuscadoRow = Pick<
   UserRow,
@@ -423,6 +488,15 @@ export type Database = {
       board_post_signups: Tabla<BoardPostSignupRow, BoardPostSignupInsert, NoEscribible>
       follows: Tabla<FollowRow, FollowRow, Partial<FollowRow>>
       stories: Tabla<StoryRow, StoryInsert, NoEscribible>
+      story_likes: Tabla<StoryLikeRow, StoryLikeRow, NoEscribible>
+      conversations: Tabla<ConversationRow, NoEscribible, NoEscribible>
+      conversation_participants: Tabla<
+        { conversation_id: string; user_id: string },
+        NoEscribible,
+        NoEscribible
+      >
+      messages: Tabla<MessageRow, MessageInsert, NoEscribible>
+      message_reads: Tabla<MessageReadRow, MessageReadRow, NoEscribible>
       story_views: Tabla<StoryViewRow, StoryViewRow, NoEscribible>
       feed_posts: Tabla<FeedPostRow, FeedPostInsert, { contenido?: string | null }>
       comments: Tabla<CommentRow, CommentInsert, NoEscribible>
@@ -525,6 +599,30 @@ export type Database = {
       seguir: {
         Args: { p_usuario: string }
         Returns: FollowEstado
+      }
+      conversacion_con: {
+        Args: { p_usuario: string }
+        Returns: string
+      }
+      mis_conversaciones: {
+        Args: Record<string, never>
+        Returns: ConversacionRow[]
+      }
+      marcar_conversacion_leida: {
+        Args: { p_conv: string }
+        Returns: undefined
+      }
+      compartir_post: {
+        Args: { p_post: string; p_usuarios: string[] }
+        Returns: number
+      }
+      gente_para_compartir: {
+        Args: Record<string, never>
+        Returns: CandidatoRow[]
+      }
+      likes_de_historia: {
+        Args: { p_story: string }
+        Returns: LikeHistoriaRow[]
       }
       historias_activas: {
         Args: Record<string, never>

@@ -13,6 +13,8 @@ import DesignPreviewPage from '@/features/dev/DesignPreviewPage'
 import CreateMatchPage from '@/features/matches/CreateMatchPage'
 import MatchDetailPage from '@/features/matches/MatchDetailPage'
 import MatchesListPage from '@/features/matches/MatchesListPage'
+import ChatPage from '@/features/messages/ChatPage'
+import ConversationsPage from '@/features/messages/ConversationsPage'
 import PrivacyPage from '@/features/legal/PrivacyPage'
 import TermsPage from '@/features/legal/TermsPage'
 import NotificationsPage from '@/features/notifications/NotificationsPage'
@@ -54,6 +56,8 @@ export const router = createBrowserRouter([
           { path: '/partidos', element: <MatchesListPage /> },
           { path: '/partidos/nuevo', element: <CreateMatchPage /> },
           { path: '/partidos/:id', element: <MatchDetailPage /> },
+          { path: '/mensajes', element: <ConversationsPage /> },
+          { path: '/mensajes/:id', element: <ChatPage /> },
           { path: '/ranking', element: <RankingPage /> },
           { path: '/tablon', element: <BoardPage /> },
           { path: '/tablon/:id', element: <BoardPostPage /> },

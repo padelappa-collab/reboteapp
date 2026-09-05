@@ -1,8 +1,19 @@
-import { X } from 'lucide-react'
+import { Heart, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
-import { historiasDe, verHistoria, type AutorConHistorias, type Historia } from './stories.api'
+import { Input } from '@/components/ui/input'
+import { useAuth } from '@/features/auth/useAuth'
+import {
+  alternarLikeHistoria,
+  historiasDe,
+  likesDeHistoria,
+  verHistoria,
+  yaDiMeGusta,
+  type AutorConHistorias,
+  type Historia,
+} from './stories.api'
+import type { LikeHistoriaRow } from '@/types/database'
 
 /** Lo que dura una historia en pantalla si nadie la toca. */
 const DURACION = 5000
@@ -59,6 +70,10 @@ export function StoryViewer({
   const [cargando, setCargando] = useState(true)
   const [pausado, setPausado] = useState(false)
   const [arrastre, setArrastre] = useState(0)
+  const [meGusta, setMeGusta] = useState(false)
+  const [quienes, setQuienes] = useState<LikeHistoriaRow[] | null>(null)
+
+  const { perfil } = useAuth()
 
   const autor = autores[iAutor]
   const actual = historias[iHistoria]
@@ -125,6 +140,33 @@ export function StoryViewer({
   useEffect(() => {
     if (actual && !actual.visto && !historiasFijas) verHistoria(actual.id)
   }, [actual, historiasFijas])
+
+  // -------------------------------------------- me gusta y quiénes lo dieron
+  useEffect(() => {
+    if (!actual || !perfil || historiasFijas) {
+      setMeGusta(false)
+      setQuienes(null)
+      return
+    }
+
+    let vigente = true
+    yaDiMeGusta(actual.id, perfil.id)
+      .then((si) => vigente && setMeGusta(si))
+      .catch(() => vigente && setMeGusta(false))
+
+    // la lista solo la responde la base a quien publicó la historia
+    if (autor.soy_yo) {
+      likesDeHistoria(actual.id)
+        .then((l) => vigente && setQuienes(l))
+        .catch(() => vigente && setQuienes([]))
+    } else {
+      setQuienes(null)
+    }
+
+    return () => {
+      vigente = false
+    }
+  }, [actual, perfil, autor.soy_yo, historiasFijas])
 
   // ------------------------------------------------------ avance automático
   useEffect(() => {
@@ -235,6 +277,75 @@ export function StoryViewer({
           />
         )}
       </div>
+
+      {/* Abajo cambia según de quién sea la historia: si es tuya, quién te la
+          vio y le gustó; si es de otro, con qué responderle. */}
+      {actual && autor.soy_yo && (
+        <div
+          className="max-h-40 space-y-2 overflow-y-auto px-4 pb-5 pt-3"
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+        >
+          <p className="text-xs text-white/60">
+            {quienes === null
+              ? 'Cargando…'
+              : quienes.length === 0
+                ? 'Todavía nadie le ha dado me gusta'
+                : `Le gustó a ${quienes.length}`}
+          </p>
+          {(quienes ?? []).map((q) => (
+            <div key={q.user_id} className="flex items-center gap-2">
+              <Avatar className="size-7">
+                {q.foto_url && <AvatarImage src={q.foto_url} alt="" />}
+                <AvatarFallback className="text-[10px]">
+                  {iniciales(q.nombre)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="truncate text-sm text-white/90">
+                {q.username ?? q.nombre}
+              </span>
+              <Heart className="ml-auto size-4 fill-primary text-primary" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {actual && !autor.soy_yo && (
+        <div
+          className="flex items-center gap-2 px-3 pb-5 pt-3"
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+        >
+          <Input
+            className="h-11 flex-1 border-white/30 bg-transparent text-white placeholder:text-white/50"
+            placeholder="Enviar mensaje"
+            disabled
+          />
+          <button
+            type="button"
+            aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
+            aria-pressed={meGusta}
+            className="p-2"
+            onClick={async () => {
+              if (!perfil) return
+              const nuevo = !meGusta
+              setMeGusta(nuevo)
+              try {
+                await alternarLikeHistoria(actual.id, perfil.id, nuevo)
+              } catch {
+                setMeGusta(!nuevo)
+              }
+            }}
+          >
+            <Heart
+              className={cn(
+                'size-7 text-white transition-colors',
+                meGusta && 'fill-primary text-primary',
+              )}
+            />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

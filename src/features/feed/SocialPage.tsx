@@ -1,4 +1,8 @@
+import { MessageCircle } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { mensajesSinLeer } from '@/features/messages/messages.api'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/useAuth'
@@ -17,6 +21,7 @@ export default function SocialPage() {
   const [pestana, setPestana] = useState<Pestana>('descubrir')
   const [lista, setLista] = useState<Publicacion[]>([])
   const [cargando, setCargando] = useState(true)
+  const [sinLeer, setSinLeer] = useState(0)
 
   const recargar = useCallback(async () => {
     if (!perfil) return
@@ -35,11 +40,39 @@ export default function SocialPage() {
     recargar()
   }, [recargar])
 
+  // el punto de mensajes sin leer: se recuenta al entrar a Social, que es el
+  // momento en que la persona está mirando esta barra
+  useEffect(() => {
+    mensajesSinLeer()
+      .then(setSinLeer)
+      .catch(() => setSinLeer(0))
+  }, [])
+
   return (
     <div className="space-y-4 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Social</h1>
-        <CreatePostSheet onCreada={recargar} />
+
+        <div className="flex items-center gap-1">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="relative"
+            aria-label={
+              sinLeer > 0 ? `Mensajes, ${sinLeer} sin leer` : 'Mensajes'
+            }
+          >
+            <Link to="/mensajes">
+              <MessageCircle className="size-5" />
+              {sinLeer > 0 && (
+                <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary ring-2 ring-background" />
+              )}
+            </Link>
+          </Button>
+
+          <CreatePostSheet onCreada={recargar} />
+        </div>
       </div>
 
       <UserSearch />
