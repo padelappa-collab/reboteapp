@@ -5,8 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { SetsInput } from '@/features/matches/SetsInput'
 import { EloCard } from '@/features/profile/EloCard'
+import { FeedPostCard } from '@/features/feed/FeedPostCard'
 import { RankingRow } from '@/features/ranking/RankingRow'
+import { StoryViewer } from '@/features/stories/StoryViewer'
 import type { MatchRow, SetMarcador } from '@/types/database'
+import type { Publicacion } from '@/features/feed/feed.api'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 /**
  * Vista del sistema de diseño, con datos inventados.
@@ -53,6 +59,93 @@ function partido(over: Partial<MatchRow>): MatchRow {
   } as MatchRow
 }
 
+/** Una foto de mentira, para no meter fotografías en la interfaz. */
+function lienzo(a: string, b: string, texto: string) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    <rect width="400" height="400" fill="${a}"/>
+    <circle cx="300" cy="110" r="120" fill="${b}" opacity="0.5"/>
+    <circle cx="110" cy="300" r="90" fill="${b}" opacity="0.35"/>
+    <text x="200" y="210" font-family="sans-serif" font-size="26" fill="#ffffff"
+      text-anchor="middle" opacity="0.85">${texto}</text>
+  </svg>`
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
+const HISTORIAS = [
+  { id: 'h1', imagen_url: lienzo('#1D4D3E', '#E8FF3D', 'Cancha 3, 7pm'), created_at: new Date(Date.now() - 3600e3).toISOString(), visto: false },
+  { id: 'h2', imagen_url: lienzo('#131A14', '#E8FF3D', 'Falta uno'), created_at: new Date(Date.now() - 1800e3).toISOString(), visto: false },
+  { id: 'h3', imagen_url: lienzo('#3B2E1D', '#E8FF3D', 'Ganamos 6-4 7-5'), created_at: new Date(Date.now() - 600e3).toISOString(), visto: false },
+]
+
+const AUTORES_HISTORIA = [
+  { user_id: '2', nombre: 'Sergio Martínez', username: 'sergiom', foto_url: null, total: 3, sin_ver: 3, ultima: new Date().toISOString(), soy_yo: false },
+]
+
+function publicacion(over: Partial<Publicacion>): Publicacion {
+  return {
+    id: 'f1',
+    user_id: '2',
+    contenido: 'Partidazo en Bocagrande. Tercer set a muerte 🎾',
+    match_id: null,
+    imagen_url: lienzo('#1D4D3E', '#E8FF3D', 'Foto del partido'),
+    created_at: new Date(Date.now() - 7200e3).toISOString(),
+    autor: { id: '2', nombre: 'Sergio Martínez', foto_url: null, cuenta_privada: false },
+    partido: null,
+    meGusta: 13,
+    yaDiMeGusta: false,
+    comentarios: 4,
+    unoQueDioMeGusta: 'felipenule',
+    ...over,
+  } as Publicacion
+}
+
+/** La barra de historias, sin sesión: solo para mirar los anillos. */
+function BarraMuestra({ onAbrir }: { onAbrir: () => void }) {
+  const gente = [
+    { n: 'Tu historia', sinVer: false, propia: true },
+    { n: 'sergiom', sinVer: true, propia: false },
+    { n: 'andresv', sinVer: true, propia: false },
+    { n: 'camilor', sinVer: false, propia: false },
+    { n: 'jpdiaz', sinVer: false, propia: false },
+  ]
+  return (
+    <div className="-mx-4 flex gap-3.5 overflow-x-auto px-4 py-1">
+      {gente.map((g) => (
+        <button
+          key={g.n}
+          type="button"
+          className="flex w-16 shrink-0 flex-col items-center gap-1"
+          onClick={onAbrir}
+        >
+          <span className="relative">
+            <Avatar
+              className={cn(
+                'size-16 ring-2 ring-offset-2',
+                g.sinVer ? 'ring-muted-foreground' : 'ring-border',
+              )}
+            >
+              <AvatarFallback>{g.n.slice(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            {g.propia && (
+              <span className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full border-2 border-background bg-court text-white">
+                <Plus className="size-3" />
+              </span>
+            )}
+          </span>
+          <span
+            className={cn(
+              'w-full truncate text-center text-xs',
+              g.sinVer ? 'font-medium text-foreground' : 'text-muted-foreground',
+            )}
+          >
+            {g.n}
+          </span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function Seccion({ titulo, nota, children }: {
   titulo: string
   nota: string
@@ -70,6 +163,7 @@ function Seccion({ titulo, nota, children }: {
 }
 
 export default function DesignPreviewPage() {
+  const [visor, setVisor] = useState(false)
   const [sets, setSets] = useState<SetMarcador[]>([
     { a: 6, b: 4 },
     { a: 3, b: 6 },
@@ -87,6 +181,24 @@ export default function DesignPreviewPage() {
           resultado.
         </p>
       </header>
+
+      <Seccion
+        titulo="Historias"
+        nota="Anillo de un solo tono: gris oscuro si queda algo por ver, gris claro si ya lo viste. Toca cualquiera para abrir el visor."
+      >
+        <BarraMuestra onAbrir={() => setVisor(true)} />
+      </Seccion>
+
+      <Seccion
+        titulo="Feed"
+        nota="Doble toque en la foto para el corazón en neón. El corazón de abajo refleja el mismo estado."
+      >
+        <FeedPostCard
+          publicacion={publicacion({})}
+          usuarioId="1"
+          onCambio={() => {}}
+        />
+      </Seccion>
 
       <Seccion
         titulo="Ranking"
@@ -175,6 +287,15 @@ export default function DesignPreviewPage() {
           </CardContent>
         </Card>
       </Seccion>
+
+      {visor && (
+        <StoryViewer
+          autores={AUTORES_HISTORIA}
+          indiceInicial={0}
+          historiasFijas={HISTORIAS}
+          onCerrar={() => setVisor(false)}
+        />
+      )}
     </div>
   )
 }

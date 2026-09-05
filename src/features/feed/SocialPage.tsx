@@ -3,6 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/useAuth'
 import { CreatePostSheet } from './CreatePostSheet'
+import { StoriesBar } from '@/features/stories/StoriesBar'
 import { UserSearch } from './UserSearch'
 import { FeedPostCard } from './FeedPostCard'
 import { publicaciones, type Publicacion } from './feed.api'
@@ -42,6 +43,10 @@ export default function SocialPage() {
       </div>
 
       <UserSearch />
+
+      {/* las historias van arriba del feed: son lo que caduca, y lo que caduca
+          se mira primero */}
+      <StoriesBar />
 
       <Tabs value={pestana} onValueChange={(v) => setPestana(v as Pestana)}>
         <TabsList className="w-full">

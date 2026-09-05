@@ -45,6 +45,44 @@ export type UserRow = {
   updated_at: string
 }
 
+export type StoryRow = {
+  id: string
+  user_id: string
+  imagen_url: string
+  created_at: string
+  expira_at: string
+}
+
+export type StoryInsert = {
+  user_id: string
+  imagen_url: string
+}
+
+export type StoryViewRow = {
+  story_id: string
+  viewer_id: string
+  visto_at: string
+}
+
+/** Una persona con historias sin caducar, tal como la devuelve la base. */
+export type HistoriaAutorRow = {
+  user_id: string
+  nombre: string
+  username: string | null
+  foto_url: string | null
+  total: number
+  sin_ver: number
+  ultima: string
+  soy_yo: boolean
+}
+
+export type HistoriaRow = {
+  id: string
+  imagen_url: string
+  created_at: string
+  visto: boolean
+}
+
 /** Lo que devuelve `buscar_jugadores`: sirve para los dos buscadores. */
 export type JugadorBuscadoRow = Pick<
   UserRow,
@@ -384,6 +422,8 @@ export type Database = {
       board_posts: Tabla<BoardPostRow, BoardPostInsert, BoardPostUpdate>
       board_post_signups: Tabla<BoardPostSignupRow, BoardPostSignupInsert, NoEscribible>
       follows: Tabla<FollowRow, FollowRow, Partial<FollowRow>>
+      stories: Tabla<StoryRow, StoryInsert, NoEscribible>
+      story_views: Tabla<StoryViewRow, StoryViewRow, NoEscribible>
       feed_posts: Tabla<FeedPostRow, FeedPostInsert, { contenido?: string | null }>
       comments: Tabla<CommentRow, CommentInsert, NoEscribible>
       post_likes: Tabla<PostLikeRow, PostLikeInsert, NoEscribible>
@@ -485,6 +525,18 @@ export type Database = {
       seguir: {
         Args: { p_usuario: string }
         Returns: FollowEstado
+      }
+      historias_activas: {
+        Args: Record<string, never>
+        Returns: HistoriaAutorRow[]
+      }
+      historias_de: {
+        Args: { p_usuario: string }
+        Returns: HistoriaRow[]
+      }
+      ver_historia: {
+        Args: { p_story: string }
+        Returns: undefined
       }
       buscar_jugadores: {
         Args: { p_texto: string; p_excluir: string[] }

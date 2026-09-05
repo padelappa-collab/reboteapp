@@ -14,30 +14,41 @@ export interface Publicacion extends FeedPostRow {
   meGusta: number
   yaDiMeGusta: boolean
   comentarios: number
+  /** Alguien que dio me gusta, para poder decir "a X y N más les gusta". */
+  unoQueDioMeGusta: string | null
 }
 
 const SELECT_PUBLICACION = `
   *,
   autor:users!feed_posts_user_id_fkey (id, nombre, foto_url, cuenta_privada),
   partido:matches (id, sets, ganador, pareja_a, pareja_b, match_type),
-  likes:post_likes (user_id),
+  likes:post_likes (user_id, usuario:users (nombre, username)),
   comentarios:comments (id)
 `
 
 type FilaCruda = FeedPostRow & {
   autor: AutorResumen | null
   partido: Publicacion['partido']
-  likes: Array<{ user_id: string }> | null
+  likes: Array<{
+    user_id: string
+    usuario: { nombre: string; username: string | null } | null
+  }> | null
   comentarios: Array<{ id: string }> | null
 }
 
 function aPublicacion(fila: FilaCruda, yo: string): Publicacion {
   const likes = fila.likes ?? []
+  // se prefiere a otra persona antes que a uno mismo: "a ti y 3 más les gusta"
+  // se lee raro, y el dato interesante es quién más lo vio
+  const otro = likes.find((l) => l.user_id !== yo) ?? likes[0]
+  const quien = otro?.usuario
+
   return {
     ...fila,
     meGusta: likes.length,
     yaDiMeGusta: likes.some((l) => l.user_id === yo),
     comentarios: (fila.comentarios ?? []).length,
+    unoQueDioMeGusta: quien ? (quien.username ?? quien.nombre) : null,
   }
 }
 

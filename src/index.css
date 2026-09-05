@@ -112,3 +112,21 @@
     letter-spacing: -0.02em;
   }
 }
+
+/* La barra de progreso de las historias. Se anima el ancho y no un transform
+   porque cada segmento tiene su propio carril y el crecimiento tiene que
+   quedarse dentro. */
+@keyframes crecer {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* El corazón del doble toque: aparece de golpe, crece un poco y se va. Dura lo
+   justo para confirmar el gesto sin taparle la foto a nadie. */
+@keyframes latido {
+  0%   { opacity: 0; transform: scale(0.4); }
+  15%  { opacity: 1; transform: scale(1.15); }
+  35%  { transform: scale(0.95); }
+  55%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.3); }
+}
