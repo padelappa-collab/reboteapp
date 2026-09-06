@@ -48,14 +48,18 @@ export type UserRow = {
 export type StoryRow = {
   id: string
   user_id: string
-  imagen_url: string
+  /** Una historia lleva foto o vídeo, nunca las dos ni ninguna. */
+  imagen_url: string | null
+  /** Identificador en Cloudflare Stream. El archivo no vive aquí. */
+  video_uid: string | null
   created_at: string
   expira_at: string
 }
 
 export type StoryInsert = {
   user_id: string
-  imagen_url: string
+  imagen_url?: string | null
+  video_uid?: string | null
 }
 
 export type StoryViewRow = {
@@ -101,7 +105,8 @@ export type EstadisticasRow = {
 
 export type HistoriaRow = {
   id: string
-  imagen_url: string
+  imagen_url: string | null
+  video_uid: string | null
   created_at: string
   visto: boolean
 }

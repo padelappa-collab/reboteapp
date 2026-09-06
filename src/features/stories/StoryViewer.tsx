@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/features/auth/useAuth'
 import { toast } from 'sonner'
 import { conversacionCon, enviarMensaje } from '@/features/messages/messages.api'
+import { StoryMedia } from './StoryMedia'
 import {
   alternarLikeHistoria,
   borrarHistoria,
@@ -18,7 +19,7 @@ import {
 } from './stories.api'
 import type { LikeHistoriaRow } from '@/types/database'
 
-/** Lo que dura una historia en pantalla si nadie la toca. */
+/** Lo que dura una FOTO en pantalla si nadie la toca. Un vídeo dura lo suyo. */
 const DURACION = 5000
 /** Cuánto hay que arrastrar hacia abajo para que se cierre. */
 const CIERRE = 90
@@ -68,6 +69,8 @@ export function StoryViewer({
   const [meGusta, setMeGusta] = useState(false)
   const [quienes, setQuienes] = useState<LikeHistoriaRow[] | null>(null)
   const [borrando, setBorrando] = useState(false)
+  // en segundos, la que diga el vídeo; null mientras sea una foto
+  const [duracion, setDuracion] = useState<number | null>(null)
   const [respuesta, setRespuesta] = useState('')
   const [mandando, setMandando] = useState(false)
 
@@ -213,7 +216,13 @@ export function StoryViewer({
 
   // ------------------------------------------------------ avance automático
   useEffect(() => {
+    setDuracion(null)
+  }, [actual?.id])
+
+  useEffect(() => {
     if (!actual || pausado) return
+    // el vídeo avisa por su cuenta al terminar; el temporizador es para las fotos
+    if (actual.video_uid) return
     const t = setTimeout(siguiente, DURACION)
     return () => clearTimeout(t)
   }, [actual, pausado, siguiente])
@@ -288,13 +297,11 @@ export function StoryViewer({
         menú de guardar encima, la pausa deja de funcionar.
       */}
       {actual && (
-        <img
-          src={actual.imagen_url}
-          alt=""
-          draggable={false}
-          onContextMenu={(e) => e.preventDefault()}
-          className="pointer-events-none absolute inset-0 size-full select-none object-contain"
-          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }}
+        <StoryMedia
+          historia={actual}
+          pausado={pausado}
+          onDuracion={setDuracion}
+          onFin={siguiente}
         />
       )}
 
@@ -303,10 +310,12 @@ export function StoryViewer({
         {historias.map((h, i) => (
           <div key={h.id} className="h-0.5 flex-1 overflow-hidden rounded-full bg-white/30">
             <div
-              className={cn('h-full bg-white', i === iHistoria && !pausado && 'animate-[crecer_5s_linear]')}
+              className={cn('h-full bg-white', i === iHistoria && 'animate-[crecer_linear]')}
               style={{
                 width: i < iHistoria ? '100%' : i === iHistoria ? undefined : '0%',
                 animationPlayState: pausado ? 'paused' : 'running',
+                // la barra tarda lo que tarde el contenido, no siempre cinco
+                animationDuration: `${duracion ?? DURACION / 1000}s`,
               }}
             />
           </div>

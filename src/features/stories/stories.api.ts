@@ -88,3 +88,50 @@ export async function likesDeHistoria(storyId: string): Promise<LikeHistoriaRow[
   if (error) throw new Error(error.message)
   return data ?? []
 }
+
+/** Cuánto puede durar el vídeo de una historia. Cloudflare aplica el mismo. */
+export const SEGUNDOS_MAX = 30
+
+/**
+ * Sube un vídeo a Cloudflare Stream y publica la historia.
+ *
+ * El archivo va del teléfono a Cloudflare sin pasar por Supabase: en la base
+ * solo entra el identificador. Por eso el vídeo no gasta ni el almacenamiento
+ * ni la cuota de tráfico del proyecto, que es la misma que sirve el ranking.
+ */
+export async function publicarVideo(userId: string, archivo: File) {
+  const { data, error } = await supabase.functions.invoke('video', {
+    body: { accion: 'crear' },
+  })
+  if (error) throw new Error('No se pudo preparar la subida')
+
+  const { subidaUrl, uid } = data as { subidaUrl: string; uid: string }
+
+  const formulario = new FormData()
+  formulario.append('file', archivo)
+
+  const subida = await fetch(subidaUrl, { method: 'POST', body: formulario })
+  if (!subida.ok) {
+    // el rechazo más común es la duración: el tope lo aplica Cloudflare
+    throw new Error('Cloudflare rechazó el vídeo. Comprueba que dure menos de 30 s.')
+  }
+
+  const { error: fallo } = await supabase
+    .from('stories')
+    .insert({ user_id: userId, video_uid: uid })
+  if (fallo) throw new Error(fallo.message)
+}
+
+/** Cuánto dura un vídeo, leído del propio archivo antes de subirlo. */
+export function duracionDe(archivo: File): Promise<number> {
+  return new Promise((resolver, fallar) => {
+    const v = document.createElement('video')
+    v.preload = 'metadata'
+    v.onloadedmetadata = () => {
+      URL.revokeObjectURL(v.src)
+      resolver(v.duration)
+    }
+    v.onerror = () => fallar(new Error('No se pudo leer el vídeo'))
+    v.src = URL.createObjectURL(archivo)
+  })
+}
