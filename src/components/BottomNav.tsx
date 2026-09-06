@@ -26,7 +26,10 @@ export function BottomNav() {
             className={({ isActive }) =>
               cn(
                 'flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs',
-                isActive ? 'text-court' : 'text-muted-foreground',
+                // La pestaña donde estás va en neón. Es el único elemento de la
+                // barra que lleva color, así que no compite con nada y cumple la
+                // regla de un acento por pantalla.
+                isActive ? 'text-primary' : 'text-muted-foreground',
               )
             }
           >
