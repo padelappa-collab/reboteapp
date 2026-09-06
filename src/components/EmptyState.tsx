@@ -48,32 +48,3 @@ export function EmptyState({
     </div>
   )
 }
-
-/**
- * La sugerencia que rellena el hueco cuando hay poco contenido de verdad.
- *
- * No es un estado vacío: hay cosas, pero tan pocas que la pantalla parece
- * cortada. En vez de dejar el aire muerto, se ofrece el siguiente paso.
- */
-export function NextStepCard({
-  icono: Icono,
-  titulo,
-  texto,
-  children,
-}: {
-  icono: LucideIcon
-  titulo: string
-  texto: string
-  children?: ReactNode
-}) {
-  return (
-    <div className="flex items-start gap-3 rounded-[var(--radius)] border border-dashed p-4">
-      <Icono className="mt-0.5 size-5 shrink-0 text-muted-foreground" strokeWidth={1.5} />
-      <div className="min-w-0 flex-1 space-y-1">
-        <p className="text-sm font-medium">{titulo}</p>
-        <p className="text-xs text-muted-foreground">{texto}</p>
-        {children}
-      </div>
-    </div>
-  )
-}

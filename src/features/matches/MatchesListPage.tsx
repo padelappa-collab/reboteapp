@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react'
-import { CalendarPlus, Swords } from 'lucide-react'
-import { EmptyState, NextStepCard } from '@/components/EmptyState'
+import { Swords } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 import { MatchStats } from './MatchStats'
 import { Link } from 'react-router-dom'
 import { MatchCard } from '@/components/MatchCard'
@@ -51,18 +51,6 @@ export default function MatchesListPage() {
             <Link to="/partidos/nuevo">Registrar partido</Link>
           </Button>
         </EmptyState>
-      )}
-
-      {!cargando && partidos.length > 0 && partidos.length < 3 && (
-        <NextStepCard
-          icono={CalendarPlus}
-          titulo="Registra tu próximo partido"
-          texto="Cada partido confirmado mueve tu ELO y te acerca a la siguiente categoría."
-        >
-          <Button asChild variant="outline" size="sm" className="mt-2 h-9">
-            <Link to="/partidos/nuevo">Registrar</Link>
-          </Button>
-        </NextStepCard>
       )}
 
       {pendientes.length > 0 && (
