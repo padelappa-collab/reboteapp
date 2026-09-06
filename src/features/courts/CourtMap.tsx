@@ -32,14 +32,29 @@ const ETIQUETAS = `${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/
 
 type Vista = keyof typeof VISTAS
 
-const VERDE = '#1f7a53'
-const VERDE_CLARO = '#2f9a6b'
+/*
+ * Los colores del mapa salen de la paleta de marca, no de un verde suelto.
+ *
+ * La cancha seleccionada va en neón y el resto en verde cancha. Es uno de los
+ * pocos sitios donde el neón se gana su sitio: sobre una foto de satélite —con
+ * tejados, agua y vegetación— cualquier verde oscuro se pierde, y lo que se
+ * busca es justo que salte a la vista cuál estás mirando.
+ *
+ * Van como texto y no como clases de Tailwind porque Leaflet monta el pin
+ * inyectando HTML, fuera del árbol de React.
+ */
+const NEON = '#E8FF3D'
+const CANCHA = '#1D4D3E'
+const TINTA = '#131A14'
 
 /** Pin de gota con una pelota de pádel dentro, dibujado en SVG. */
 function pin(activo: boolean, nombre: string) {
   const alto = activo ? 50 : 40
   const ancho = Math.round(alto * 0.72)
-  const relleno = activo ? VERDE : VERDE_CLARO
+  const relleno = activo ? NEON : CANCHA
+  // el detalle de la pelota tiene que contrastar con su propio relleno
+  const detalle = activo ? CANCHA : '#FFFFFF'
+  const borde = activo ? CANCHA : '#FFFFFF'
 
   return L.divIcon({
     className: '',
@@ -47,14 +62,14 @@ function pin(activo: boolean, nombre: string) {
       <div style="display:flex;flex-direction:column;align-items:center">
         <svg width="${ancho}" height="${alto}" viewBox="0 0 24 34" fill="none">
           <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
-                fill="${relleno}" stroke="white" stroke-width="1.6"/>
-          <circle cx="12" cy="11.6" r="5.4" fill="white"/>
+                fill="${relleno}" stroke="${borde}" stroke-width="1.6"/>
+          <circle cx="12" cy="11.6" r="5.4" fill="${detalle}"/>
           <path d="M12 6.2c1.5 1.5 1.5 9.3 0 10.8M6.6 11.6c1.9-1.4 8.9-1.4 10.8 0"
                 stroke="${relleno}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
         </svg>
         <span style="
-          margin-top:-4px;white-space:nowrap;background:white;color:#111;
-          border:1px solid rgba(0,0,0,.12);border-radius:6px;padding:1px 6px;
+          margin-top:-4px;white-space:nowrap;background:white;color:${TINTA};
+          border:1px solid #E5E5E0;border-radius:10px;padding:2px 7px;
           font-size:11px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.2);
         ">${nombre}</span>
       </div>`,
