@@ -4,12 +4,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
 import { BadgeGrid } from '@/features/badges/BadgeGrid'
-import { FollowsCard } from '@/features/feed/FollowsCard'
 import { MyPostsGrid } from '@/features/feed/MyPostsGrid'
 import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
 import { InstallCard } from '@/features/install/InstallCard'
 import { PushCard } from '@/features/notifications/PushCard'
+import { CategoryBadge } from '@/components/CategoryBadge'
 import { AvatarUploader } from './AvatarUploader'
+import { ProfileStats } from './ProfileStats'
 import { EloCard } from './EloCard'
 import { ProfileSettingsSheet } from './ProfileSettingsSheet'
 
@@ -23,21 +24,38 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-5 pb-4">
+      {/*
+        Orden de perfil social: quién eres, tus números, y tus publicaciones.
+        Lo de pádel va debajo. El perfil es la cara que enseñas a los demás; el
+        ELO tiene su propia pantalla en Ranking y sus tarjetas más abajo.
+      */}
       <div className="flex items-center gap-3">
         <AvatarUploader />
 
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-semibold">{perfil.nombre}</h1>
-          {perfil.username && (
-            <p className="truncate text-sm text-muted-foreground">@{perfil.username}</p>
-          )}
-          <p className="text-sm text-muted-foreground">
-            {perfil.ciudad} · cuenta {perfil.cuenta_privada ? 'privada' : 'pública'}
+          <p className="truncate text-sm text-muted-foreground">
+            @{perfil.username}
           </p>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {/* La píldora del ELO evita que el número que define a un jugador
+                quede enterrado bajo la rejilla de fotos. */}
+            {eloBase !== null && peakBase !== null && (
+              <CategoryBadge
+                elo={eloBase}
+                ranking={perfil.genero}
+                peakElo={peakBase}
+              />
+            )}
+            <span className="numero text-sm">{eloBase ?? perfil.elo_mixto}</span>
+            <span className="text-xs text-muted-foreground">
+              · {perfil.ciudad} · {perfil.cuenta_privada ? 'privada' : 'pública'}
+            </span>
+          </div>
         </div>
       </div>
 
-      <FollowsCard userId={perfil.id} />
+      <ProfileStats userId={perfil.id} />
 
       <div className="flex flex-wrap items-center gap-2">
         <ProfileSettingsSheet />
@@ -51,10 +69,12 @@ export default function ProfilePage() {
         </span>
       </div>
 
-      {/* lo que espera respuesta va primero: si no, se pierde debajo de todo */}
+      {/* lo que espera respuesta va antes: si no, se pierde debajo de todo */}
       <SolicitudesCard />
 
       <MyPostsGrid />
+
+      <div className="h-px bg-border" />
 
       <div className="space-y-3">
         {eloBase !== null && peakBase !== null && (

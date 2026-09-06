@@ -2,7 +2,6 @@ import { Heart, ImageOff, MessageCircle, Swords, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   Sheet,
   SheetContent,
@@ -84,26 +83,25 @@ export function MyPostsGrid() {
   }
 
   return (
-    <Card>
-      <CardContent className="space-y-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-medium">Mis publicaciones</h2>
-          <span className="text-sm text-muted-foreground">{lista.length}</span>
-        </div>
-
-        {lista.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
+    <>
+      {/* Sin tarjeta ni encabezado: la rejilla ES el contenido y va a lo ancho,
+          como en cualquier perfil social. El contador vive arriba, en la fila de
+          cifras, así que repetirlo aquí solo restaba sitio a las fotos. */}
+      {lista.length === 0 ? (
+        <div className="rounded-[var(--radius)] border border-dashed p-8 text-center">
+          <p className="text-sm text-muted-foreground">
             Todavía no has publicado nada. Puedes subir una foto desde Social o
             publicar un partido desde su ficha.
           </p>
-        ) : (
-          <div className="grid grid-cols-3 gap-1">
+        </div>
+      ) : (
+        <div className="-mx-4 grid grid-cols-3 gap-0.5">
             {lista.map((p) => (
               <button
                 key={p.id}
                 type="button"
                 onClick={() => abrir(p)}
-                className="relative aspect-square overflow-hidden rounded-md border bg-muted text-left"
+                className="relative aspect-square overflow-hidden bg-muted text-left"
               >
                 {p.imagen_url ? (
                   <img
@@ -144,10 +142,9 @@ export function MyPostsGrid() {
                   </span>
                 )}
               </button>
-            ))}
-          </div>
-        )}
-      </CardContent>
+          ))}
+        </div>
+      )}
 
       <Sheet open={abierta !== null} onOpenChange={(v) => !v && setAbierta(null)}>
         <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto">
@@ -195,6 +192,6 @@ export function MyPostsGrid() {
           </div>
         </SheetContent>
       </Sheet>
-    </Card>
+    </>
   )
 }

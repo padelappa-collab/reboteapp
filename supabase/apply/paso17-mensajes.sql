@@ -116,8 +116,10 @@ create table if not exists public.messages (
   -- no una copia: si el autor la borra o le cambia el pie, el chat no se queda
   -- enseñando algo que ya no existe
   post_compartido_id uuid references public.feed_posts (id) on delete set null,
-  created_at         timestamptz not null default now(),
-  constraint mensaje_con_algo check (contenido is not null or post_compartido_id is not null)
+  -- ojo: la exigencia de "algo" vive en la política de inserción, no aquí. Ver
+  -- 20260901004000: como restricción de tabla impedía borrar una publicación que
+  -- ya se hubiera compartido por mensaje.
+  created_at         timestamptz not null default now()
 );
 
 create index if not exists messages_conversacion_idx
