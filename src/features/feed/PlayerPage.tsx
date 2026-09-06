@@ -202,9 +202,10 @@ export default function PlayerPage() {
                 : 'Seguir'}
           </Button>
 
-          {/* escribirle solo tiene sentido si ya hay relación: la base exige
-              que alguno de los dos siga al otro */}
-          {estado === 'aceptado' && (
+          {/* la misma regla que aplica la base: a quien sigues, o a cualquier
+              cuenta pública. Enseñar el botón cuando va a fallar es peor que no
+              enseñarlo */}
+          {(estado === 'aceptado' || !jugador.cuenta_privada) && (
             <Button
               variant="outline"
               size="icon"
