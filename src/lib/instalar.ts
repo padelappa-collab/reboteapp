@@ -31,8 +31,6 @@ export type Plataforma =
   | 'ios-navegador'
   | 'escritorio'
 
-const CLAVE_DESCARTADO = 'reboteapp-instalar-descartado'
-
 let guardado: EventoInstalacion | null = null
 const suscriptores = new Set<() => void>()
 
@@ -109,10 +107,3 @@ export async function instalar(): Promise<boolean> {
   return outcome === 'accepted'
 }
 
-export function seDescarto(): boolean {
-  return localStorage.getItem(CLAVE_DESCARTADO) === '1'
-}
-
-export function descartar() {
-  localStorage.setItem(CLAVE_DESCARTADO, '1')
-}

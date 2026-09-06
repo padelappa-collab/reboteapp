@@ -11,7 +11,6 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import {
-  descartar,
   hayInstalacionNativa,
   instalar,
   plataforma,
@@ -293,9 +292,4 @@ export function InstallSheet({
       </SheetContent>
     </Sheet>
   )
-}
-
-/** El mismo panel, pero recordando que ya no hay que insistir. */
-export function marcarVisto() {
-  descartar()
 }

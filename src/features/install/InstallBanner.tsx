@@ -1,14 +1,19 @@
 import { Download, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { descartar, plataforma, seDescarto, suscribirse } from '@/lib/instalar'
+import { plataforma, suscribirse } from '@/lib/instalar'
 import { InstallSheet } from './InstallSheet'
 
 /**
  * Franja que ofrece instalar la app.
  *
- * Aparece una vez, se cierra y no vuelve. Quien la cierre y luego cambie de
- * idea la encuentra siempre en su perfil.
+ * Vuelve a aparecer en cada visita. Cerrarla la quita de en medio mientras
+ * navegas, pero al entrar de nuevo está otra vez.
+ *
+ * Es a propósito y no un descuido: en iPhone las notificaciones NO existen sin
+ * instalar, así que quien la descarta una vez se queda sin enterarse de que le
+ * piden confirmar un partido, y sin manera de saber por qué. Mientras siga sin
+ * instalar, el aviso sigue siendo pertinente.
  *
  * Solo en teléfono y solo si no está instalada ya. En escritorio no sale: no
  * hay nada que ganar y estorbaría a quien esté probando desde el computador.
@@ -21,7 +26,7 @@ export function InstallBanner() {
       const donde = plataforma()
       const enTelefono =
         donde === 'android' || donde === 'ios-safari' || donde === 'ios-navegador'
-      setVisible(enTelefono && !seDescarto())
+      setVisible(enTelefono)
     }
     revisar()
     // en Android el evento puede llegar después de montar
@@ -30,8 +35,8 @@ export function InstallBanner() {
 
   if (!visible) return null
 
+  // solo para esta visita: al volver a entrar, la franja está de nuevo
   function cerrar() {
-    descartar()
     setVisible(false)
   }
 

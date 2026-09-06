@@ -43,7 +43,6 @@ export default function NotificationsPage() {
   // abrir consigue un "no" por reflejo, y en iPhone eso casi no se revierte.
   useEffect(() => {
     if (!soportaPush() || (esIOS() && !estaInstalada())) return
-    if (localStorage.getItem('reboteapp-push-descartado')) return
     estaSuscrito().then((si) => setOfrecerPush(!si))
   }, [])
 
@@ -131,7 +130,8 @@ export default function NotificationsPage() {
             aria-label="Ahora no"
             className="size-8 shrink-0"
             onClick={() => {
-              localStorage.setItem('reboteapp-push-descartado', '1')
+              // solo por esta visita: mientras sigan apagadas, el ofrecimiento
+              // vuelve. Sin avisos, un partido sin confirmar no llega a nadie
               setOfrecerPush(false)
             }}
           >
