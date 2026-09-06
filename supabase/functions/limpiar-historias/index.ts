@@ -1,5 +1,5 @@
 // =============================================================================
-// Borra las historias caducadas: la fila, la foto y el vídeo.
+// La limpieza: historias caducadas y archivos que ya no son de nadie.
 //
 // Antes esto lo hacía una función de SQL que solo borraba la fila. La foto se
 // quedaba en el bucket para siempre: cada historia publicada dejaba su archivo
@@ -30,6 +30,34 @@ function rutaDe(url: string): string | null {
   return trozo ? decodeURIComponent(trozo) : null
 }
 
+/**
+ * Barre los archivos que ya no menciona ninguna fila.
+ *
+ * Borrar bien en cada sitio no basta: siempre queda alguna forma de dejar un
+ * archivo suelto —una subida que sale bien y una publicación que falla justo
+ * después, una fila borrada a mano—. Esto no intenta cubrir cada caso, sino
+ * preguntar lo contrario una vez por hora: qué hay en los buckets que nadie
+ * reclama. La consulta deja fuera lo subido hace menos de una hora para no
+ * borrarle la foto a quien todavía está escribiendo el pie.
+ */
+async function barrerSueltos(): Promise<number> {
+  const { data, error } = await supabase.rpc('archivos_huerfanos')
+  if (error || !data?.length) return 0
+
+  const porBucket = new Map<string, string[]>()
+  for (const f of data as { bucket: string; ruta: string }[]) {
+    porBucket.set(f.bucket, [...(porBucket.get(f.bucket) ?? []), f.ruta])
+  }
+
+  let borrados = 0
+  for (const [bucket, rutas] of porBucket) {
+    const { error: fallo } = await supabase.storage.from(bucket).remove(rutas)
+    if (fallo) console.error('no se pudo barrer', bucket, fallo.message)
+    else borrados += rutas.length
+  }
+  return borrados
+}
+
 Deno.serve(async () => {
   try {
     const { data: caducadas } = await supabase
@@ -38,7 +66,7 @@ Deno.serve(async () => {
       .lte('expira_at', new Date().toISOString())
 
     if (!caducadas?.length) {
-      return Response.json({ borradas: 0 })
+      return Response.json({ borradas: 0, sueltos: await barrerSueltos() })
     }
 
     // ------------------------------------------------------------- las fotos
@@ -81,6 +109,7 @@ Deno.serve(async () => {
       borradas: caducadas.length,
       fotos: rutas.length,
       videos: videos.length,
+      sueltos: await barrerSueltos(),
     })
   } catch (error) {
     console.error('error limpiando historias', error)
