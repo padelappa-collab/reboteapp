@@ -17,11 +17,22 @@ export interface PublicacionConDatos extends BoardPostRow {
 }
 
 /**
- * Publicaciones de hoy en adelante. Las pasadas dejan de tener sentido.
+ * Publicaciones vigentes, con seis horas de gracia.
+ *
+ * El corte estaba en la hora exacta del partido, y eso hacía que una
+ * publicación desapareciera del tablón justo cuando la gente estaba llegando a
+ * la cancha. Desde fuera se veía como si se hubiera borrado sola: nadie la
+ * había tocado y ya no estaba.
+ *
+ * Nunca se borró nada —siguen todas en la base—, solo dejaban de mostrarse. Con
+ * seis horas de margen, un partido de las siete de la tarde sigue a la vista
+ * toda la noche, que es cuando todavía tiene sentido mirarlo: para saber quién
+ * fue, o para volver a la ficha y registrar el resultado.
  *
  * Los acompañantes se guardan como un arreglo de ids, no como una relación, así
  * que sus nombres se traen en una segunda consulta.
  */
+const GRACIA_HORAS = 6
 export async function publicacionesAbiertas(
   ciudad?: string,
 ): Promise<PublicacionConDatos[]> {
@@ -33,7 +44,10 @@ export async function publicacionesAbiertas(
        cancha:courts (id, nombre),
        signups:board_post_signups (user:users (id, nombre))`,
     )
-    .gte('fecha_partido', new Date().toISOString())
+    .gte(
+      'fecha_partido',
+      new Date(Date.now() - GRACIA_HORAS * 3600_000).toISOString(),
+    )
     .order('fecha_partido')
 
   if (error) throw new Error(error.message)

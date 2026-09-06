@@ -110,6 +110,12 @@ export function PostCard({
           <p className="flex items-center gap-2">
             <CalendarDays className="size-4 shrink-0" />
             {fechaLarga(publicacion.fecha_partido)}
+            {/* que la hora ya pasó se dice, no se deja adivinar por la fecha */}
+            {new Date(publicacion.fecha_partido) < new Date() && (
+              <span className="rounded-full bg-elevated px-2 py-0.5 text-xs">
+                Ya empezó
+              </span>
+            )}
           </p>
           {publicacion.cancha && (
             <p className="flex items-center gap-2">
