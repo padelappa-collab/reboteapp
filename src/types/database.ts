@@ -76,6 +76,20 @@ export type HistoriaAutorRow = {
   soy_yo: boolean
 }
 
+/** Lo que devuelve `estadisticas_de`, calculado al vuelo sobre los partidos. */
+export type EstadisticasRow = {
+  jugados: number
+  ganados: number
+  perdidos: number
+  /** Positiva si son victorias seguidas, negativa si son derrotas. */
+  racha: number
+  elo_movido: number
+  companero_id: string | null
+  companero_nombre: string | null
+  companero_jugados: number | null
+  companero_ganados: number | null
+}
+
 export type HistoriaRow = {
   id: string
   imagen_url: string
@@ -623,6 +637,10 @@ export type Database = {
       likes_de_historia: {
         Args: { p_story: string }
         Returns: LikeHistoriaRow[]
+      }
+      estadisticas_de: {
+        Args: { p_usuario: string }
+        Returns: EstadisticasRow[]
       }
       historias_activas: {
         Args: Record<string, never>

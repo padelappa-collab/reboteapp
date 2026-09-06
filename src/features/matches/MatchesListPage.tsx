@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react'
 import { CalendarPlus, Swords } from 'lucide-react'
 import { EmptyState, NextStepCard } from '@/components/EmptyState'
+import { MatchStats } from './MatchStats'
 import { Link } from 'react-router-dom'
 import { MatchCard } from '@/components/MatchCard'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,10 @@ export default function MatchesListPage() {
       )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {/* el resumen va arriba: es lo que se viene a mirar cuando ya hay
+          historial, y con la lista debajo se lee como su encabezado */}
+      {!cargando && partidos.length > 0 && <MatchStats userId={perfil!.id} />}
 
       {!cargando && partidos.length === 0 && (
         <EmptyState
