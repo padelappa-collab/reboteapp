@@ -110,20 +110,13 @@ export default function SignUpPage() {
               )}
             </div>
 
-            {/*
-              El aviso de no reutilizar la contraseña del correo.
- 
-              Va aquí y no en un enlace de ayuda porque es el único momento en
-              que sirve: cuando la persona está a punto de escribirla. Y es real:
-              quien usa la del correo y pierde esta cuenta, pierde también la vía
-              para recuperarla.
-            */}
+            {/* Va aquí y no en un enlace de ayuda porque es el único momento en
+                que sirve: cuando está a punto de escribirla. Corto a propósito:
+                un párrafo explicando el porqué se salta igual que no ponerlo. */}
             <div className="flex items-start gap-2 rounded-[var(--radius)] bg-elevated p-3">
               <ShieldAlert className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <p className="text-xs text-muted-foreground">
-                No uses la misma contraseña de tu correo. Si alguien la
-                descubriera aquí, entraría también a tu correo, que es por donde
-                se recupera todo lo demás.
+                No uses la misma contraseña que tu correo.
               </p>
             </div>
             <Button

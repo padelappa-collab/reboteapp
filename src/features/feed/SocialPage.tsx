@@ -1,5 +1,5 @@
 import { MessageCircle, Plus } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { mensajesSinLeer } from '@/features/messages/messages.api'
@@ -9,7 +9,7 @@ import { useAuth } from '@/features/auth/useAuth'
 import { StoriesBar } from '@/features/stories/StoriesBar'
 import { UserSearch } from './UserSearch'
 import { FeedPostCard } from './FeedPostCard'
-import { publicaciones, type Publicacion } from './feed.api'
+import { POR_PAGINA, publicaciones, type Publicacion } from './feed.api'
 
 type Pestana = 'siguiendo' | 'descubrir'
 
@@ -21,19 +21,72 @@ export default function SocialPage() {
   const [lista, setLista] = useState<Publicacion[]>([])
   const [cargando, setCargando] = useState(true)
   const [sinLeer, setSinLeer] = useState(0)
+  const [hayMas, setHayMas] = useState(true)
+  const [trayendo, setTrayendo] = useState(false)
+
+  const pie = useRef<HTMLDivElement>(null)
 
   const recargar = useCallback(async () => {
     if (!perfil) return
     setCargando(true)
+    setHayMas(true)
     try {
-      setLista(await publicaciones(perfil.id, pestana, perfil.ciudad))
+      const primeras = await publicaciones(perfil.id, pestana, perfil.ciudad)
+      setLista(primeras)
+      setHayMas(primeras.length === POR_PAGINA)
     } catch (error) {
       console.error('No se pudo cargar el feed', error)
       setLista([])
+      setHayMas(false)
     } finally {
       setCargando(false)
     }
   }, [perfil, pestana])
+
+  /**
+   * La tanda siguiente.
+   *
+   * Se pide por la posición de lo que ya hay, no por página: si alguien publica
+   * mientras lees, contar páginas te haría saltarte una o repetirla.
+   */
+  const traerMas = useCallback(async () => {
+    if (!perfil || trayendo || !hayMas || cargando) return
+    setTrayendo(true)
+    try {
+      const mas = await publicaciones(perfil.id, pestana, perfil.ciudad, lista.length)
+      // por si dos publicaciones cruzaron la frontera de la tanda
+      setLista((prev) => {
+        const vistas = new Set(prev.map((p) => p.id))
+        return [...prev, ...mas.filter((p) => !vistas.has(p.id))]
+      })
+      setHayMas(mas.length === POR_PAGINA)
+    } catch (error) {
+      console.error('No se pudo cargar más', error)
+      setHayMas(false)
+    } finally {
+      setTrayendo(false)
+    }
+  }, [perfil, pestana, lista.length, trayendo, hayMas, cargando])
+
+  /*
+   * El detector del pie.
+   *
+   * Se dispara un poco antes de llegar al final —200 px— para que la tanda
+   * siguiente esté cargada cuando el dedo llegue abajo, en vez de frenar el
+   * scroll con un hueco vacío.
+   */
+  useEffect(() => {
+    const nodo = pie.current
+    if (!nodo) return
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        if (entradas[0]?.isIntersecting) traerMas()
+      },
+      { rootMargin: '200px' },
+    )
+    observador.observe(nodo)
+    return () => observador.disconnect()
+  }, [traerMas])
 
   useEffect(() => {
     recargar()
@@ -122,6 +175,16 @@ export default function SocialPage() {
             onCambio={recargar}
           />
         ))}
+      </div>
+
+      {/* el pie que dispara la tanda siguiente al acercarse */}
+      <div ref={pie} className="py-4">
+        {trayendo && <Skeleton className="h-64 w-full" />}
+        {!hayMas && !cargando && lista.length > POR_PAGINA && (
+          <p className="text-center text-xs text-muted-foreground">
+            Ya viste todo lo que hay por aquí.
+          </p>
+        )}
       </div>
     </div>
   )

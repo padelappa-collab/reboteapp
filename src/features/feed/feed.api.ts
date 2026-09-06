@@ -1,5 +1,10 @@
 import { supabase } from '@/lib/supabase'
-import type { FeedPostRow, FollowEstado, MatchRow } from '@/types/database'
+import type {
+  FeedPostRow,
+  FollowEstado,
+  LikeHistoriaRow,
+  MatchRow,
+} from '@/types/database'
 
 export interface AutorResumen {
   id: string
@@ -14,61 +19,73 @@ export interface Publicacion extends FeedPostRow {
   meGusta: number
   yaDiMeGusta: boolean
   comentarios: number
-  /** Alguien que dio me gusta, para poder decir "a X y N más les gusta". */
-  unoQueDioMeGusta: string | null
 }
 
+/*
+ * Los me gusta y los comentarios se piden CONTADOS, no en filas.
+ *
+ * Antes se traía cada fila de me gusta con el nombre de quien lo dio, y cada
+ * identificador de comentario, solo para pintar dos números. Con dos me gusta da
+ * igual; con una publicación que se hace popular, esa sola fila baja cientos de
+ * registros, y el feed trae ocho publicaciones a la vez.
+ *
+ * `mio` es el único que sigue trayendo filas, y como mucho una: la tuya, para
+ * saber si el corazón va relleno.
+ */
 const SELECT_PUBLICACION = `
   *,
   autor:users!feed_posts_user_id_fkey (id, nombre, foto_url, cuenta_privada),
   partido:matches (id, sets, ganador, pareja_a, pareja_b, match_type),
-  likes:post_likes (user_id, usuario:users (nombre, username)),
-  comentarios:comments (id)
+  likes:post_likes (count),
+  comentarios:comments (count),
+  mio:post_likes (user_id)
 `
+
+type Conteo = Array<{ count: number }> | null
 
 type FilaCruda = FeedPostRow & {
   autor: AutorResumen | null
   partido: Publicacion['partido']
-  likes: Array<{
-    user_id: string
-    usuario: { nombre: string; username: string | null } | null
-  }> | null
-  comentarios: Array<{ id: string }> | null
+  likes: Conteo
+  comentarios: Conteo
+  mio: Array<{ user_id: string }> | null
 }
 
-function aPublicacion(fila: FilaCruda, yo: string): Publicacion {
-  const likes = fila.likes ?? []
-  // se prefiere a otra persona antes que a uno mismo: "a ti y 3 más les gusta"
-  // se lee raro, y el dato interesante es quién más lo vio
-  const otro = likes.find((l) => l.user_id !== yo) ?? likes[0]
-  const quien = otro?.usuario
+function cuantos(c: Conteo): number {
+  return c?.[0]?.count ?? 0
+}
 
+function aPublicacion(fila: FilaCruda): Publicacion {
   return {
     ...fila,
-    meGusta: likes.length,
-    yaDiMeGusta: likes.some((l) => l.user_id === yo),
-    comentarios: (fila.comentarios ?? []).length,
-    unoQueDioMeGusta: quien ? (quien.username ?? quien.nombre) : null,
+    meGusta: cuantos(fila.likes),
+    yaDiMeGusta: (fila.mio ?? []).length > 0,
+    comentarios: cuantos(fila.comentarios),
   }
 }
 
+/** Cuántas publicaciones trae cada tanda. */
+export const POR_PAGINA = 8
+
 /**
- * El muro.
+ * El muro, por tandas.
  *
- * En "siguiendo" salen solo quienes el jugador sigue; en "descubrir", todo lo
- * que las políticas de la base le dejan ver, que son las cuentas públicas y las
- * privadas que ya lo aceptaron. Filtrar por privacidad no es tarea del cliente.
+ * En "siguiendo" salen solo quienes el jugador sigue; en "descubrir", lo que las
+ * políticas le dejan ver dentro de su ciudad. Filtrar por privacidad no es tarea
+ * del cliente: eso ya lo hace la base.
+ *
+ * La ciudad se resuelve ANTES de pedir las publicaciones, no después. Filtrando
+ * al final, una tanda de ocho podía quedarse en dos tras descartar las de fuera,
+ * y el scroll infinito se llenaba de tandas medio vacías sin que se notara por
+ * qué.
  */
 export async function publicaciones(
   yo: string,
   pestana: 'siguiendo' | 'descubrir',
   ciudad?: string,
+  desde = 0,
 ): Promise<Publicacion[]> {
-  let consulta = supabase
-    .from('feed_posts')
-    .select(SELECT_PUBLICACION)
-    .order('created_at', { ascending: false })
-    .limit(50)
+  let deQuienes: string[] | null = null
 
   if (pestana === 'siguiendo') {
     const { data: seguidos } = await supabase
@@ -77,22 +94,26 @@ export async function publicaciones(
       .eq('follower_id', yo)
       .eq('estado', 'aceptado')
 
-    const ids = [...(seguidos ?? []).map((s) => s.followed_id), yo]
-    consulta = consulta.in('user_id', ids)
+    deQuienes = [...(seguidos ?? []).map((s) => s.followed_id), yo]
+  } else if (ciudad) {
+    const { data: locales } = await supabase.from('users').select('id').eq('ciudad', ciudad)
+    deQuienes = (locales ?? []).map((u) => u.id)
   }
+
+  let consulta = supabase
+    .from('feed_posts')
+    .select(SELECT_PUBLICACION)
+    // el me gusta propio: de todas las filas de la publicación, solo la tuya
+    .eq('mio.user_id', yo)
+    .order('created_at', { ascending: false })
+    .range(desde, desde + POR_PAGINA - 1)
+
+  if (deQuienes) consulta = consulta.in('user_id', deQuienes)
 
   const { data, error } = await consulta
   if (error) throw new Error(error.message)
 
-  const filas = (data as unknown as FilaCruda[]) ?? []
-
-  if (pestana === 'descubrir' && ciudad) {
-    const { data: locales } = await supabase.from('users').select('id').eq('ciudad', ciudad)
-    const deLaCiudad = new Set((locales ?? []).map((u) => u.id))
-    return filas.filter((f) => deLaCiudad.has(f.user_id)).map((f) => aPublicacion(f, yo))
-  }
-
-  return filas.map((f) => aPublicacion(f, yo))
+  return ((data as unknown as FilaCruda[]) ?? []).map(aPublicacion)
 }
 
 /** Una publicación suelta, para su propia pantalla. */
@@ -104,11 +125,12 @@ export async function publicacionPorId(
     .from('feed_posts')
     .select(SELECT_PUBLICACION)
     .eq('id', id)
+    .eq('mio.user_id', yo)
     .maybeSingle()
 
   if (error) throw new Error(error.message)
   if (!data) return null
-  return aPublicacion(data as unknown as FilaCruda, yo)
+  return aPublicacion(data as unknown as FilaCruda)
 }
 
 export async function publicacionesDe(userId: string, yo: string): Promise<Publicacion[]> {
@@ -116,10 +138,11 @@ export async function publicacionesDe(userId: string, yo: string): Promise<Publi
     .from('feed_posts')
     .select(SELECT_PUBLICACION)
     .eq('user_id', userId)
+    .eq('mio.user_id', yo)
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
-  return ((data as unknown as FilaCruda[]) ?? []).map((f) => aPublicacion(f, yo))
+  return ((data as unknown as FilaCruda[]) ?? []).map(aPublicacion)
 }
 
 export async function crearPublicacion(datos: {
@@ -391,4 +414,16 @@ export async function solicitudesPendientes(yo: string) {
     follower_id: string
     solicitante: { id: string; nombre: string } | null
   }>) ?? []
+}
+
+/**
+ * Quiénes le dieron me gusta a una publicación.
+ *
+ * La base solo se lo responde a quien publicó. En el feed nadie ve la lista: se
+ * ve el número, y punto.
+ */
+export async function likesDePost(postId: string): Promise<LikeHistoriaRow[]> {
+  const { data, error } = await supabase.rpc('likes_de_post', { p_post: postId })
+  if (error) throw new Error(error.message)
+  return data ?? []
 }

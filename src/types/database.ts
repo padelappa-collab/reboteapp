@@ -643,6 +643,10 @@ export type Database = {
         Args: Record<string, never>
         Returns: CandidatoRow[]
       }
+      likes_de_post: {
+        Args: { p_post: string }
+        Returns: LikeHistoriaRow[]
+      }
       likes_de_historia: {
         Args: { p_story: string }
         Returns: LikeHistoriaRow[]

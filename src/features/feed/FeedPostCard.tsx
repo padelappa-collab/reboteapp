@@ -232,21 +232,26 @@ export function FeedPostCard({
       </div>
 
       <div className="space-y-1 px-3 pb-3 pt-1.5">
-        {/* 4. cuántos me gusta */}
-        {cuantos > 0 && (
-          <p className="text-sm">
-            {publicacion.unoQueDioMeGusta && cuantos > 1 ? (
-              <>
-                A <span className="font-semibold">{publicacion.unoQueDioMeGusta}</span> y{' '}
-                <span className="font-semibold">{cuantos - 1} más</span> les gusta esto
-              </>
-            ) : (
-              <span className="font-semibold">
-                {cuantos === 1 ? '1 me gusta' : `${cuantos} me gusta`}
-              </span>
-            )}
-          </p>
-        )}
+        {/*
+          4. Cuántos me gusta, y nada más.
+ 
+          Los nombres de quienes lo dieron no salen aquí. Quien publicó puede
+          verlos tocando el número; para el resto es solo una cifra, que es lo
+          único que aporta al leer el feed.
+        */}
+        {cuantos > 0 &&
+          (esMio ? (
+            <Link
+              to={`/publicacion/${publicacion.id}/megusta`}
+              className="text-sm font-semibold hover:underline"
+            >
+              {cuantos === 1 ? '1 me gusta' : `${cuantos} me gusta`}
+            </Link>
+          ) : (
+            <p className="text-sm font-semibold">
+              {cuantos === 1 ? '1 me gusta' : `${cuantos} me gusta`}
+            </p>
+          ))}
 
         {/* 5. el pie, con el nombre pegado al texto */}
         {publicacion.contenido && (
