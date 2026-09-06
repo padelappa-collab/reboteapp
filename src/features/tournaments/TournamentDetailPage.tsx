@@ -40,6 +40,159 @@ function nombrePareja(p: Pareja | undefined) {
   return p.jugadores.map((j) => j?.nombre ?? '…').join(' y ')
 }
 
+/**
+ * Estos dos vivían dentro de la página.
+ *
+ * Un componente declarado dentro de otro nace de nuevo en cada render del
+ * padre, y React lo trata como un componente distinto: desmonta lo que había y
+ * lo vuelve a montar. Aquí eso se notaba al escribir un marcador, porque cada
+ * tecla actualiza el estado del padre: el campo se remontaba y perdía el foco
+ * después de cada dígito.
+ *
+ * Fuera, su identidad es estable y React ya puede reutilizar lo que hay.
+ */
+function CruceCard({
+  c,
+  parejaPorId,
+  registrando,
+  setRegistrando,
+  soyOrganizador,
+  sets,
+  setSets,
+  enviando,
+  accion,
+}: {
+  c: Cruce
+  parejaPorId: Map<string, Pareja>
+  registrando: string | null
+  setRegistrando: (v: string | null) => void
+  soyOrganizador: boolean
+  sets: SetMarcador[]
+  setSets: (v: SetMarcador[]) => void
+  enviando: boolean
+  accion: (fn: () => Promise<unknown>, exito: string) => Promise<void>
+}) {
+  const a = c.pareja_a_id ? parejaPorId.get(c.pareja_a_id) : undefined
+  const b = c.pareja_b_id ? parejaPorId.get(c.pareja_b_id) : undefined
+  const jugado = Boolean(c.ganador_id)
+  const editando = registrando === c.id
+
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="space-y-1 text-sm">
+        {([a, b] as const).map((p, i) => (
+          <div
+            key={i}
+            className={cn(
+              'flex justify-between gap-2',
+              jugado && c.ganador_id === p?.id && 'font-medium',
+            )}
+          >
+            <span className="truncate">{b ? nombrePareja(p) : nombrePareja(a)}</span>
+            {c.sets && (
+              <span className="shrink-0 tabular-nums">
+                {c.sets.map((s) => (i === 0 ? s.a : s.b)).join(' ')}
+              </span>
+            )}
+          </div>
+        ))}
+        {!b && (
+          <p className="text-xs text-muted-foreground">Pasa sin jugar</p>
+        )}
+      </div>
+
+      {soyOrganizador && !jugado && b && (
+        <div className="mt-3">
+          {editando ? (
+            <div className="space-y-3">
+              <SetsInput
+                sets={sets}
+                onChange={setSets}
+                etiquetaA={nombrePareja(a)}
+                etiquetaB={nombrePareja(b)}
+              />
+              {marcadorValido(sets) && (
+                <p className="text-sm text-destructive">{marcadorValido(sets)}</p>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  className="h-10 flex-1"
+                  disabled={enviando || Boolean(marcadorValido(sets))}
+                  onClick={() =>
+                    accion(async () => {
+                      await registrarResultado(c.id, sets)
+                      setRegistrando(null)
+                    }, 'Resultado registrado')
+                  }
+                >
+                  Guardar
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-10"
+                  onClick={() => setRegistrando(null)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 w-full"
+              onClick={() => {
+                setSets([{ a: 6, b: 4 }])
+                setRegistrando(c.id)
+              }}
+            >
+              Registrar resultado
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Tabla({
+  grupo,
+  parejas,
+  cruces,
+}: {
+  grupo?: number | null
+  parejas: Pareja[]
+  cruces: Cruce[]
+}) {
+  const filas = tablaDePosiciones(parejas, cruces, grupo)
+  if (filas.length === 0) return null
+
+  return (
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="text-xs text-muted-foreground">
+          <th className="py-1 text-left font-medium">Pareja</th>
+          <th className="w-10 py-1 text-center font-medium">PJ</th>
+          <th className="w-10 py-1 text-center font-medium">PG</th>
+          <th className="w-12 py-1 text-center font-medium">Sets</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filas.map((f, i) => (
+          <tr key={f.pareja.id} className={cn(i === 0 && 'font-medium')}>
+            <td className="truncate py-1">{nombrePareja(f.pareja)}</td>
+            <td className="py-1 text-center tabular-nums">{f.jugados}</td>
+            <td className="py-1 text-center tabular-nums">{f.ganados}</td>
+            <td className="py-1 text-center tabular-nums">
+              {f.setsAFavor}–{f.setsEnContra}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 export default function TournamentDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { perfil } = useAuth()
@@ -109,119 +262,6 @@ export default function TournamentDetailPage() {
     }
   }
 
-  function CruceCard({ c }: { c: Cruce }) {
-    const a = c.pareja_a_id ? parejaPorId.get(c.pareja_a_id) : undefined
-    const b = c.pareja_b_id ? parejaPorId.get(c.pareja_b_id) : undefined
-    const jugado = Boolean(c.ganador_id)
-    const editando = registrando === c.id
-
-    return (
-      <div className="rounded-lg border p-3">
-        <div className="space-y-1 text-sm">
-          {([a, b] as const).map((p, i) => (
-            <div
-              key={i}
-              className={cn(
-                'flex justify-between gap-2',
-                jugado && c.ganador_id === p?.id && 'font-medium',
-              )}
-            >
-              <span className="truncate">{b ? nombrePareja(p) : nombrePareja(a)}</span>
-              {c.sets && (
-                <span className="shrink-0 tabular-nums">
-                  {c.sets.map((s) => (i === 0 ? s.a : s.b)).join(' ')}
-                </span>
-              )}
-            </div>
-          ))}
-          {!b && (
-            <p className="text-xs text-muted-foreground">Pasa sin jugar</p>
-          )}
-        </div>
-
-        {soyOrganizador && !jugado && b && (
-          <div className="mt-3">
-            {editando ? (
-              <div className="space-y-3">
-                <SetsInput
-                  sets={sets}
-                  onChange={setSets}
-                  etiquetaA={nombrePareja(a)}
-                  etiquetaB={nombrePareja(b)}
-                />
-                {marcadorValido(sets) && (
-                  <p className="text-sm text-destructive">{marcadorValido(sets)}</p>
-                )}
-                <div className="flex gap-2">
-                  <Button
-                    className="h-10 flex-1"
-                    disabled={enviando || Boolean(marcadorValido(sets))}
-                    onClick={() =>
-                      accion(async () => {
-                        await registrarResultado(c.id, sets)
-                        setRegistrando(null)
-                      }, 'Resultado registrado')
-                    }
-                  >
-                    Guardar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-10"
-                    onClick={() => setRegistrando(null)}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-9 w-full"
-                onClick={() => {
-                  setSets([{ a: 6, b: 4 }])
-                  setRegistrando(c.id)
-                }}
-              >
-                Registrar resultado
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  function Tabla({ grupo }: { grupo?: number | null }) {
-    const filas = tablaDePosiciones(parejas, cruces, grupo)
-    if (filas.length === 0) return null
-
-    return (
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-xs text-muted-foreground">
-            <th className="py-1 text-left font-medium">Pareja</th>
-            <th className="w-10 py-1 text-center font-medium">PJ</th>
-            <th className="w-10 py-1 text-center font-medium">PG</th>
-            <th className="w-12 py-1 text-center font-medium">Sets</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filas.map((f, i) => (
-            <tr key={f.pareja.id} className={cn(i === 0 && 'font-medium')}>
-              <td className="truncate py-1">{nombrePareja(f.pareja)}</td>
-              <td className="py-1 text-center tabular-nums">{f.jugados}</td>
-              <td className="py-1 text-center tabular-nums">{f.ganados}</td>
-              <td className="py-1 text-center tabular-nums">
-                {f.setsAFavor}–{f.setsEnContra}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    )
-  }
 
   return (
     <div className="space-y-4 pb-4">
@@ -463,24 +503,46 @@ export default function TournamentDetailPage() {
               grupos.map((g) => (
                 <div key={g} className="space-y-3">
                   <p className="text-sm font-medium">Grupo {g}</p>
-                  <Tabla grupo={g} />
+                  <Tabla grupo={g} parejas={parejas} cruces={cruces} />
                   <div className="space-y-2">
                     {cruces
                       .filter((c) => c.grupo === g)
                       .map((c) => (
-                        <CruceCard key={c.id} c={c} />
+                        <CruceCard
+                          key={c.id}
+                          c={c}
+                          parejaPorId={parejaPorId}
+                          registrando={registrando}
+                          setRegistrando={setRegistrando}
+                          soyOrganizador={soyOrganizador}
+                          sets={sets}
+                          setSets={setSets}
+                          enviando={enviando}
+                          accion={accion}
+                        />
                       ))}
                   </div>
                 </div>
               ))
             ) : (
               <>
-                <Tabla />
+                <Tabla parejas={parejas} cruces={cruces} />
                 <div className="space-y-2">
                   {cruces
                     .filter((c) => c.fase === 'grupos')
                     .map((c) => (
-                      <CruceCard key={c.id} c={c} />
+                      <CruceCard
+                          key={c.id}
+                          c={c}
+                          parejaPorId={parejaPorId}
+                          registrando={registrando}
+                          setRegistrando={setRegistrando}
+                          soyOrganizador={soyOrganizador}
+                          sets={sets}
+                          setSets={setSets}
+                          enviando={enviando}
+                          accion={accion}
+                        />
                     ))}
                 </div>
               </>
@@ -492,7 +554,18 @@ export default function TournamentDetailPage() {
                 {cruces
                   .filter((c) => c.fase === 'final')
                   .map((c) => (
-                    <CruceCard key={c.id} c={c} />
+                    <CruceCard
+                          key={c.id}
+                          c={c}
+                          parejaPorId={parejaPorId}
+                          registrando={registrando}
+                          setRegistrando={setRegistrando}
+                          soyOrganizador={soyOrganizador}
+                          sets={sets}
+                          setSets={setSets}
+                          enviando={enviando}
+                          accion={accion}
+                        />
                   ))}
               </div>
             )}

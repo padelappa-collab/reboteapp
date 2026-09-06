@@ -93,7 +93,11 @@
 
   /* El #D6284A de la paleta clara se apaga sobre oscuro; este mantiene la
      alarma sin quemar. */
-  --destructive: #FF4D6A;
+  /* Aclarado desde #FF4D6A: como texto se quedaba en 4.44 sobre el fondo y
+     3.29 sobre las hojas, por debajo del minimo legible. Solo se usa como
+     texto y como fondo de la insignia de avisos, que lleva texto oscuro
+     encima: subirle luz mejora los dos casos. */
+  --destructive: #FF8A9B;
   --destructive-foreground: #1A1A1D;
 
   --border: #4A4A52;

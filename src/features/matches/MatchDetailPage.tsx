@@ -22,6 +22,7 @@ import { useCourts } from '@/features/courts/useCourts'
 import { ETIQUETA_RANKING } from '@/lib/matchType'
 import { cn } from '@/lib/utils'
 import type { MatchEstado, MatchRow, RankingTipo, SetMarcador } from '@/types/database'
+import { colorDeAvatar } from '@/components/UserAvatar'
 import {
   cancelarPartido,
   confirmarPartido,
@@ -75,7 +76,12 @@ function FilaJugador({
   return (
     <div className="flex items-center gap-3">
       <Avatar className="size-9">
-        <AvatarFallback className="text-xs">{iniciales(jugador.nombre)}</AvatarFallback>
+        <AvatarFallback
+          className="text-xs font-medium text-white"
+          style={{ backgroundColor: colorDeAvatar(jugador.id) }}
+        >
+          {iniciales(jugador.nombre)}
+        </AvatarFallback>
       </Avatar>
 
       <div className="min-w-0 flex-1">

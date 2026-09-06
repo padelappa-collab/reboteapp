@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
 import { sinLeer } from '@/features/notifications/notifications.api'
+import { colorDeAvatar } from '@/components/UserAvatar'
 
 function iniciales(nombre: string) {
   return nombre
@@ -93,7 +94,10 @@ export function AppShell() {
               <Link to="/perfil" aria-label="Tu perfil">
                 <Avatar className="size-9">
                   {perfil.foto_url && <AvatarImage src={perfil.foto_url} alt="" />}
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback
+                    className="text-xs font-medium text-white"
+                    style={{ backgroundColor: colorDeAvatar(perfil.id) }}
+                  >
                     {iniciales(perfil.nombre)}
                   </AvatarFallback>
                 </Avatar>

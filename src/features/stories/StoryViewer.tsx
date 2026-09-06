@@ -18,6 +18,7 @@ import {
   type Historia,
 } from './stories.api'
 import type { LikeHistoriaRow } from '@/types/database'
+import { colorDeAvatar } from '@/components/UserAvatar'
 
 /** Lo que dura una FOTO en pantalla si nadie la toca. Un vídeo dura lo suyo. */
 const DURACION = 5000
@@ -325,7 +326,12 @@ export function StoryViewer({
       <div className="relative z-10 flex items-center gap-2 bg-gradient-to-b from-black/50 to-transparent px-3 pb-4 pt-1">
         <Avatar className="size-8">
           {autor.foto_url && <AvatarImage src={autor.foto_url} alt="" />}
-          <AvatarFallback className="text-xs">{iniciales(autor.nombre)}</AvatarFallback>
+          <AvatarFallback
+            className="text-xs font-medium text-white"
+            style={{ backgroundColor: colorDeAvatar(autor.user_id) }}
+          >
+            {iniciales(autor.nombre)}
+          </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-white">
@@ -387,7 +393,10 @@ export function StoryViewer({
             <div key={q.user_id} className="flex items-center gap-2">
               <Avatar className="size-7">
                 {q.foto_url && <AvatarImage src={q.foto_url} alt="" />}
-                <AvatarFallback className="text-[10px]">
+                <AvatarFallback
+                  className="text-[10px] font-medium text-white"
+                  style={{ backgroundColor: colorDeAvatar(q.user_id) }}
+                >
                   {iniciales(q.nombre)}
                 </AvatarFallback>
               </Avatar>

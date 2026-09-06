@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/features/auth/useAuth'
 import { supabase } from '@/lib/supabase'
+import { colorDeAvatar } from '@/components/UserAvatar'
 
 /** El bucket rechaza cualquier cosa más grande, mejor decirlo antes de subir. */
 const MAXIMO = 2 * 1024 * 1024
@@ -92,7 +93,12 @@ export function AvatarUploader() {
     >
       <Avatar className="size-16">
         {perfil.foto_url && <AvatarImage src={perfil.foto_url} alt="" />}
-        <AvatarFallback>{iniciales(perfil.nombre)}</AvatarFallback>
+        <AvatarFallback
+          className="font-medium text-white"
+          style={{ backgroundColor: colorDeAvatar(perfil.id) }}
+        >
+          {iniciales(perfil.nombre)}
+        </AvatarFallback>
       </Avatar>
 
       <span

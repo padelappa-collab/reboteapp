@@ -4,8 +4,18 @@ import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * El área que responde al dedo nunca baja de 44px, aunque el botón se dibuje
+ * más pequeño.
+ *
+ * Las medidas de shadcn están pensadas para un ratón: 36px el botón normal y
+ * 24px el más pequeño. En un teléfono eso es fallar el toque y volver a
+ * intentarlo. Subir el tamaño real reventaría los diseños que ya están
+ * aprobados, así que se estira solo la zona sensible con un pseudo-elemento
+ * centrado: el botón se ve igual y el dedo tiene dónde caer.
+ */
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "relative inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 after:absolute after:left-1/2 after:top-1/2 after:h-[max(100%,44px)] after:w-[max(100%,44px)] after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
   {
     variants: {
       variant: {

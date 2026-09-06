@@ -29,6 +29,16 @@ const VACIO: Record<Lado, string> = {
  *
  * Publicaciones no abre nada: la rejilla está justo debajo.
  */
+/** Un número con su etiqueta debajo. Fuera del componente para no remontarlo. */
+function Cifra({ n, etiqueta }: { n: number; etiqueta: string }) {
+  return (
+    <>
+      <span className="numero text-lg leading-none">{n}</span>
+      <span className="text-xs text-muted-foreground">{etiqueta}</span>
+    </>
+  )
+}
+
 export function ProfileStats({ userId }: { userId: string }) {
   const [seguidores, setSeguidores] = useState<JugadorBreve[] | null>(null)
   const [siguiendo, setSiguiendo] = useState<JugadorBreve[] | null>(null)
@@ -66,14 +76,6 @@ export function ProfileStats({ userId }: { userId: string }) {
 
   const lista = abierto === 'siguiendo' ? siguiendo : seguidores
 
-  function Cifra({ n, etiqueta }: { n: number; etiqueta: string }) {
-    return (
-      <>
-        <span className="numero text-lg leading-none">{n}</span>
-        <span className="text-xs text-muted-foreground">{etiqueta}</span>
-      </>
-    )
-  }
 
   return (
     <Sheet open={abierto !== null} onOpenChange={(o) => !o && setAbierto(null)}>

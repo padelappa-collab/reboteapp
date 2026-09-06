@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/useAuth'
+import { colorDeAvatar } from '@/components/UserAvatar'
 import { obtenerPublicacion, type PublicacionConDatos } from './board.api'
 import { PostCard, quienesVan } from './PostCard'
 
@@ -88,7 +89,12 @@ export default function BoardPostPage() {
           {van.map((j) => (
             <div key={j.id} className="flex items-center gap-3">
               <Avatar className="size-9">
-                <AvatarFallback className="text-xs">{iniciales(j.nombre)}</AvatarFallback>
+                <AvatarFallback
+                  className="text-xs font-medium text-white"
+                  style={{ backgroundColor: colorDeAvatar(j.id) }}
+                >
+                  {iniciales(j.nombre)}
+                </AvatarFallback>
               </Avatar>
               <span className="min-w-0 flex-1 truncate text-sm font-medium">
                 {j.nombre}

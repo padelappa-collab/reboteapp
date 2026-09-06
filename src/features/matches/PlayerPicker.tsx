@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { colorDeAvatar } from '@/components/UserAvatar'
 import { buscarJugadores, type JugadorResumen } from './matches.api'
 
 function iniciales(nombre: string) {
@@ -81,7 +82,12 @@ export function PlayerPicker({
             className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2"
           >
             <Avatar className="size-8">
-              <AvatarFallback className="text-xs">{iniciales(j.nombre)}</AvatarFallback>
+              <AvatarFallback
+                className="text-xs font-medium text-white"
+                style={{ backgroundColor: colorDeAvatar(j.id) }}
+              >
+                {iniciales(j.nombre)}
+              </AvatarFallback>
             </Avatar>
             <span className="flex-1 truncate text-sm">
               {j.username ? `@${j.username}` : j.nombre}
@@ -144,7 +150,10 @@ export function PlayerPicker({
                   }}
                 >
                   <Avatar className="size-8">
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback
+                      className="text-xs font-medium text-white"
+                      style={{ backgroundColor: colorDeAvatar(j.id) }}
+                    >
                       {iniciales(j.nombre)}
                     </AvatarFallback>
                   </Avatar>
