@@ -64,8 +64,18 @@ function aPublicacion(fila: FilaCruda): Publicacion {
   }
 }
 
-/** Cuántas publicaciones trae cada tanda. */
-export const POR_PAGINA = 8
+/** Cuántas trae la primera carga, la única que la persona espera. */
+export const PRIMERA_TANDA = 8
+
+/**
+ * Cuántas se piden en cada recarga posterior.
+ *
+ * Pequeñas y frecuentes en vez de grandes y espaciadas: así cada petición
+ * termina rápido y el colchón se rellena sin que se note. De una en una sería
+ * un viaje de red por publicación, que con mala cobertura es justo lo contrario
+ * de lo que se busca.
+ */
+export const TANDA = 4
 
 /**
  * El muro, por tandas.
@@ -84,6 +94,7 @@ export async function publicaciones(
   pestana: 'siguiendo' | 'descubrir',
   ciudad?: string,
   desde = 0,
+  cuantas = PRIMERA_TANDA,
 ): Promise<Publicacion[]> {
   let deQuienes: string[] | null = null
 
@@ -106,7 +117,7 @@ export async function publicaciones(
     // el me gusta propio: de todas las filas de la publicación, solo la tuya
     .eq('mio.user_id', yo)
     .order('created_at', { ascending: false })
-    .range(desde, desde + POR_PAGINA - 1)
+    .range(desde, desde + cuantas - 1)
 
   if (deQuienes) consulta = consulta.in('user_id', deQuienes)
 

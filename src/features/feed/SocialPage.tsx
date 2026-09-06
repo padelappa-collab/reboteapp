@@ -9,9 +9,22 @@ import { useAuth } from '@/features/auth/useAuth'
 import { StoriesBar } from '@/features/stories/StoriesBar'
 import { UserSearch } from './UserSearch'
 import { FeedPostCard } from './FeedPostCard'
-import { POR_PAGINA, publicaciones, type Publicacion } from './feed.api'
+import {
+  PRIMERA_TANDA,
+  TANDA,
+  publicaciones,
+  type Publicacion,
+} from './feed.api'
 
 type Pestana = 'siguiendo' | 'descubrir'
+
+/**
+ * Cuántas publicaciones se dejan por delante antes de pedir más.
+ *
+ * Es el margen que separa "va fluido" de "se nota que carga": con cinco por
+ * leer, la tanda siguiente llega mucho antes de que la persona llegue al fondo.
+ */
+const COLCHON = 5
 
 export default function SocialPage() {
   const { perfil } = useAuth()
@@ -33,7 +46,7 @@ export default function SocialPage() {
     try {
       const primeras = await publicaciones(perfil.id, pestana, perfil.ciudad)
       setLista(primeras)
-      setHayMas(primeras.length === POR_PAGINA)
+      setHayMas(primeras.length === PRIMERA_TANDA)
     } catch (error) {
       console.error('No se pudo cargar el feed', error)
       setLista([])
@@ -53,13 +66,19 @@ export default function SocialPage() {
     if (!perfil || trayendo || !hayMas || cargando) return
     setTrayendo(true)
     try {
-      const mas = await publicaciones(perfil.id, pestana, perfil.ciudad, lista.length)
+      const mas = await publicaciones(
+        perfil.id,
+        pestana,
+        perfil.ciudad,
+        lista.length,
+        TANDA,
+      )
       // por si dos publicaciones cruzaron la frontera de la tanda
       setLista((prev) => {
         const vistas = new Set(prev.map((p) => p.id))
         return [...prev, ...mas.filter((p) => !vistas.has(p.id))]
       })
-      setHayMas(mas.length === POR_PAGINA)
+      setHayMas(mas.length === TANDA)
     } catch (error) {
       console.error('No se pudo cargar más', error)
       setHayMas(false)
@@ -69,11 +88,15 @@ export default function SocialPage() {
   }, [perfil, pestana, lista.length, trayendo, hayMas, cargando])
 
   /*
-   * El detector del pie.
+   * El detector va DENTRO de la lista, no al final.
    *
-   * Se dispara un poco antes de llegar al final —200 px— para que la tanda
-   * siguiente esté cargada cuando el dedo llegue abajo, en vez de frenar el
-   * scroll con un hueco vacío.
+   * Se coloca cinco publicaciones antes del fondo, así que se dispara cuando
+   * todavía queda un colchón por leer y la tanda siguiente llega mientras la
+   * persona sigue bajando. Puesto al final, cada recarga se notaba: llegabas
+   * abajo, esperabas, y entonces aparecía más.
+   *
+   * La idea es que nunca se espere. Solo se nota si la red falla, y para eso
+   * está el aviso de abajo.
    */
   useEffect(() => {
     const nodo = pie.current
@@ -167,25 +190,27 @@ export default function SocialPage() {
       )}
 
       <div className="space-y-4">
-        {lista.map((p) => (
-          <FeedPostCard
-            key={p.id}
-            publicacion={p}
-            usuarioId={perfil!.id}
-            onCambio={recargar}
-          />
+        {lista.map((p, i) => (
+          <div key={p.id}>
+            {/* el disparador, cinco publicaciones antes del fondo: para cuando
+                se llega hasta aquí, lo siguiente ya viene en camino */}
+            {i === lista.length - COLCHON && <div ref={pie} className="h-px" />}
+            <FeedPostCard
+              publicacion={p}
+              usuarioId={perfil!.id}
+              onCambio={recargar}
+            />
+          </div>
         ))}
       </div>
 
-      {/* el pie que dispara la tanda siguiente al acercarse */}
-      <div ref={pie} className="py-4">
-        {trayendo && <Skeleton className="h-64 w-full" />}
-        {!hayMas && !cargando && lista.length > POR_PAGINA && (
-          <p className="text-center text-xs text-muted-foreground">
-            Ya viste todo lo que hay por aquí.
-          </p>
-        )}
-      </div>
+      {/* Sin esqueleto de carga: si todo va bien, nadie tiene que enterarse de
+          que se está trayendo nada. Aquí solo se dice cuando ya no queda más. */}
+      {!hayMas && !cargando && lista.length > PRIMERA_TANDA && (
+        <p className="py-4 text-center text-xs text-muted-foreground">
+          Ya viste todo lo que hay por aquí.
+        </p>
+      )}
     </div>
   )
 }
