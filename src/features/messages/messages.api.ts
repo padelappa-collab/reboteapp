@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import type { CandidatoMensajeRow } from '@/types/database'
 import type {
   CandidatoRow,
   ConversacionRow,
@@ -112,4 +113,17 @@ export async function compartirPost(
   })
   if (error) throw new Error(error.message)
   return (data as number) ?? 0
+}
+
+/**
+ * A quién se le puede escribir, filtrado por texto.
+ *
+ * La lista la decide la base con la misma regla que `conversacionCon`: a quien
+ * sigues, o a cualquier cuenta pública. Así no aparece nadie que vaya a fallar
+ * al tocarlo.
+ */
+export async function buscarParaMensaje(texto: string): Promise<CandidatoMensajeRow[]> {
+  const { data, error } = await supabase.rpc('buscar_para_mensaje', { p_texto: texto })
+  if (error) throw new Error(error.message)
+  return data ?? []
 }

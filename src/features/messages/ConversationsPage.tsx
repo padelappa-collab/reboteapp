@@ -1,12 +1,20 @@
-import { ArrowLeft, MessagesSquare } from 'lucide-react'
+import { ArrowLeft, MessagesSquare, Search } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/ui/button'
 import { UserAvatar } from '@/components/UserAvatar'
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { misConversaciones, type Conversacion } from './messages.api'
+import {
+  buscarParaMensaje,
+  conversacionCon,
+  misConversaciones,
+  type Conversacion,
+} from './messages.api'
+import type { CandidatoMensajeRow } from '@/types/database'
 
 function hace(iso: string) {
   const minutos = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
@@ -27,7 +35,49 @@ function resumen(c: Conversacion) {
 }
 
 export default function ConversationsPage() {
+  const navegar = useNavigate()
   const [lista, setLista] = useState<Conversacion[] | null>(null)
+  const [texto, setTexto] = useState('')
+  const [gente, setGente] = useState<CandidatoMensajeRow[]>([])
+  const [abriendo, setAbriendo] = useState<string | null>(null)
+
+  /*
+   * El buscador solo aparece al escribir.
+   *
+   * Con la bandeja delante, lo normal es seguir una conversación que ya existe;
+   * empezar una nueva es lo excepcional. Una lista de gente permanente
+   * empujaría las conversaciones hacia abajo para servir al caso raro.
+   */
+  useEffect(() => {
+    const limpio = texto.trim()
+    if (!limpio) {
+      setGente([])
+      return
+    }
+    let vigente = true
+    const t = setTimeout(() => {
+      buscarParaMensaje(limpio)
+        .then((g) => vigente && setGente(g))
+        .catch(() => vigente && setGente([]))
+    }, 250)
+    return () => {
+      vigente = false
+      clearTimeout(t)
+    }
+  }, [texto])
+
+  /** Abre la conversación con alguien, creándola si todavía no existía. */
+  async function escribirle(id: string) {
+    if (abriendo) return
+    setAbriendo(id)
+    try {
+      navegar(`/mensajes/${await conversacionCon(id)}`)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo abrir el chat')
+    } finally {
+      setAbriendo(null)
+    }
+  }
 
   const cargar = useCallback(async () => {
     try {
@@ -54,6 +104,53 @@ export default function ConversationsPage() {
         </Link>
         <h1 className="text-xl font-semibold">Mensajes</h1>
       </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="h-11 pl-9"
+          placeholder="Buscar a quién escribirle"
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+        />
+      </div>
+
+      {texto.trim() && (
+        <div className="divide-y overflow-hidden rounded-[var(--radius)] bg-card">
+          {gente.length === 0 ? (
+            <p className="p-3 text-sm text-muted-foreground">
+              Nadie con ese nombre. Solo puedes escribirle a quien sigues o a
+              cuentas públicas.
+            </p>
+          ) : (
+            gente.map((g) => (
+              <button
+                key={g.user_id}
+                type="button"
+                className="flex w-full items-center gap-3 p-3 text-left disabled:opacity-50"
+                disabled={abriendo !== null}
+                onClick={() => escribirle(g.user_id)}
+              >
+                <UserAvatar
+                  id={g.user_id}
+                  nombre={g.nombre}
+                  fotoUrl={g.foto_url}
+                  className="size-10"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">
+                    {g.username ?? g.nombre}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {g.nombre}
+                    {g.lo_sigo ? ' · lo sigues' : ' · cuenta pública'}
+                  </span>
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
 
       {lista === null && (
         <div className="space-y-2">

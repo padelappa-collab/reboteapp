@@ -76,6 +76,15 @@ export type HistoriaAutorRow = {
   soy_yo: boolean
 }
 
+/** Alguien a quien se le puede escribir. */
+export type CandidatoMensajeRow = {
+  user_id: string
+  nombre: string
+  username: string | null
+  foto_url: string | null
+  lo_sigo: boolean
+}
+
 /** Lo que devuelve `estadisticas_de`, calculado al vuelo sobre los partidos. */
 export type EstadisticasRow = {
   jugados: number
@@ -637,6 +646,10 @@ export type Database = {
       likes_de_historia: {
         Args: { p_story: string }
         Returns: LikeHistoriaRow[]
+      }
+      buscar_para_mensaje: {
+        Args: { p_texto: string }
+        Returns: CandidatoMensajeRow[]
       }
       estadisticas_de: {
         Args: { p_usuario: string }
