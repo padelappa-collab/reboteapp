@@ -50,9 +50,12 @@
   /*
    * Paleta oscura.
    *
-   * Gris oscuro, no casi-negro. Se subió desde #121212 porque a esa altura la
-   * pantalla se leía como un agujero: con gris se nota que hay una superficie
-   * debajo del contenido, y los tres niveles se distinguen sin forzar la vista.
+   * Gris de verdad, no casi-negro. Se subió en dos pasos desde el #121212 de
+   * Instagram porque a esa altura la pantalla se leía como un agujero: con gris
+   * se nota que hay una superficie debajo del contenido.
+   *
+   * El texto sobre el neón baja a #1A1A1D. Ya no puede ser el color del fondo:
+   * con el fondo en gris medio, ese tono sobre el amarillo pierde contraste.
    *
    * Los saltos entre niveles son de unos diez puntos de claridad. Menos y las
    * tarjetas se funden con el fondo; más y vuelven las cajas marcadas que
@@ -63,12 +66,12 @@
    * jerarquía es una escala: fondo, tarjeta, y elevado para lo que tenga que
    * destacar de verdad.
    */
-  --background: #1C1C1F;
-  --card: #26262A;
+  --background: #2A2A2E;
+  --card: #34343A;
   --card-foreground: #F5F5F0;
-  --popover: #26262A;
+  --popover: #34343A;
   --popover-foreground: #F5F5F0;
-  --elevated: #2E2E33;
+  --elevated: #3E3E45;
 
   /* Blanco roto, no blanco puro: sobre oscuro el #FFF vibra y cansa. */
   --foreground: #F5F5F0;
@@ -79,22 +82,22 @@
    * fondo, no blanco: es lo único que se lee sobre este amarillo.
    */
   --primary: #E8FF3D;
-  --primary-foreground: #1C1C1F;
+  --primary-foreground: #1A1A1D;
 
-  --secondary: #2E2E33;
+  --secondary: #3E3E45;
   --secondary-foreground: #F5F5F0;
-  --muted: #2E2E33;
-  --muted-foreground: #A8A8AE;
-  --accent: #2E2E33;
+  --muted: #3E3E45;
+  --muted-foreground: #B4B4BA;
+  --accent: #3E3E45;
   --accent-foreground: #F5F5F0;
 
   /* El #D6284A de la paleta clara se apaga sobre oscuro; este mantiene la
      alarma sin quemar. */
   --destructive: #FF4D6A;
-  --destructive-foreground: #1C1C1F;
+  --destructive-foreground: #1A1A1D;
 
-  --border: #3A3A3F;
-  --input: #3A3A3F;
+  --border: #4A4A52;
+  --input: #4A4A52;
   --ring: #E8FF3D;
 
   /*
@@ -106,7 +109,7 @@
   --court: #8FD4B4;
 
   /* El anillo de las historias sin ver, ajustado al fondo nuevo. */
-  --anillo: #7A7A80;
+  --anillo: #8E8E96;
 }
 
 
