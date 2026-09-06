@@ -58,7 +58,7 @@ export default function CreateStoryPage() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem-4rem)] flex-col gap-3">
+    <div className="flex h-[calc(100dvh-var(--cabecera)-4rem)] flex-col gap-3">
       <div className="flex items-center gap-2">
         <button
           type="button"

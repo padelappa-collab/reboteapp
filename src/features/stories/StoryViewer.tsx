@@ -248,6 +248,10 @@ export function StoryViewer({
     <div
       className="fixed inset-0 z-50 flex flex-col bg-black touch-none select-none"
       style={{
+        // el visor tapa la pantalla entera: sus controles también tienen que
+        // esquivar el notch y la barra de gestos
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
         transform: `translateY(${arrastre}px)`,
         opacity: 1 - Math.min(arrastre / 300, 0.6),
         transition: arrastre === 0 ? 'transform .2s, opacity .2s' : undefined,

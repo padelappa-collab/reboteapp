@@ -38,8 +38,22 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-md items-center justify-between px-4">
+      {/*
+        La cabecera reserva el hueco de la barra de estado.
+ 
+        Instalada en la pantalla de inicio, la app ocupa la pantalla entera y el
+        reloj y la batería del iPhone se dibujan ENCIMA del contenido. Sin este
+        relleno, el logo y la campana quedaban debajo del notch: se veían
+        cortados y no había forma de tocarlos.
+ 
+        `env(safe-area-inset-top)` vale cero en el navegador y en Android, así
+        que no sobra espacio donde no hace falta.
+      */}
+      <header
+        className="sticky top-0 z-10 border-b bg-background/85 backdrop-blur"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
+        <div className="mx-auto flex h-16 max-w-md items-center justify-between px-4">
           <Link to="/social" className="flex items-center gap-2">
             {/* el PNG y no el SVG: el trazado del logo pesa 54 KB comprimido y
                 aqui se ve a 28 px, donde no se nota. Los dos salen del mismo

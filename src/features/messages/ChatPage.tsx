@@ -177,7 +177,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem-4rem)] flex-col">
+    <div className="flex h-[calc(100dvh-var(--cabecera)-4rem)] flex-col">
       <div className="flex items-center gap-2.5 border-b pb-3">
         <Link
           to="/mensajes"

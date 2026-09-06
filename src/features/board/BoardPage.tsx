@@ -69,7 +69,7 @@ export default function BoardPage() {
       : 'No estás en ninguna publicación. Apúntate a alguna o crea la tuya.'
 
   return (
-    <div className="flex min-h-[calc(100dvh-3.5rem-5rem)] flex-col space-y-4 pb-4">
+    <div className="flex min-h-[calc(100dvh-var(--cabecera)-5rem)] flex-col space-y-4 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Tablón</h1>
         <div className="flex gap-2">

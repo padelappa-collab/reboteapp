@@ -108,6 +108,15 @@
    */
   --court: #8FD4B4;
 
+  /*
+   * El alto de la cabecera, con el hueco de la barra de estado incluido.
+   *
+   * Varias pantallas calculan su alto restándoselo al de la ventana. Con el
+   * número escrito a mano en cada una, cambiar la cabecera las descuadraba todas
+   * y el fallo solo se veía en un iPhone instalado. Aquí se cambia una vez.
+   */
+  --cabecera: calc(4rem + env(safe-area-inset-top));
+
   /* El anillo de las historias sin ver, ajustado al fondo nuevo. */
   --anillo: #8E8E96;
 }
