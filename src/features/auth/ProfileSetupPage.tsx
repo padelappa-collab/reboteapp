@@ -1,4 +1,5 @@
 import { AtSign } from 'lucide-react'
+import { Wordmark } from '@/components/Wordmark'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -90,7 +91,9 @@ export default function ProfileSetupPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center p-4">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 p-4">
+      <Wordmark />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Tu perfil</CardTitle>

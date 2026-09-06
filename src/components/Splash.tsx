@@ -2,10 +2,19 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/features/auth/useAuth'
 import { cn } from '@/lib/utils'
 
-/** Lo máximo que se queda en pantalla, pase lo que pase. */
+/**
+ * Lo mínimo que se queda en pantalla.
+ *
+ * La sesión suele contestar en decenas de milisegundos, así que sin este suelo
+ * la pantalla aparecía y desaparecía de golpe: un parpadeo negro que se lee como
+ * un fallo, no como una entrada. Con algo más de un segundo se ve el logo, se
+ * entiende que la app está arrancando, y la salida parece decidida.
+ */
+const MINIMO = 1400
+/** Lo máximo que se queda, pase lo que pase. */
 const TOPE = 7000
-/** Lo que tarda en desvanecerse una vez que ya no hace falta. */
-const SALIDA = 350
+/** Lo que tarda en desvanecerse. Corto: una salida lenta también parece un fallo. */
+const SALIDA = 220
 
 /**
  * La pantalla de arranque.
@@ -26,21 +35,27 @@ export function Splash() {
   const [montado, setMontado] = useState(true)
   const [saliendo, setSaliendo] = useState(false)
   const [vencido, setVencido] = useState(false)
+  const [cumplioMinimo, setCumplioMinimo] = useState(false)
 
   useEffect(() => {
-    const t = setTimeout(() => setVencido(true), TOPE)
-    return () => clearTimeout(t)
+    const corto = setTimeout(() => setCumplioMinimo(true), MINIMO)
+    const largo = setTimeout(() => setVencido(true), TOPE)
+    return () => {
+      clearTimeout(corto)
+      clearTimeout(largo)
+    }
   }, [])
 
   useEffect(() => {
-    if (cargando && !vencido) return
+    // se va cuando ya cargó Y se cumplió el mínimo, o cuando se acabó el tiempo
+    if ((cargando || !cumplioMinimo) && !vencido) return
 
     setSaliendo(true)
     // se desmonta al terminar la transición para no dejar una capa invisible
     // por encima de todo interceptando toques
     const t = setTimeout(() => setMontado(false), SALIDA)
     return () => clearTimeout(t)
-  }, [cargando, vencido])
+  }, [cargando, cumplioMinimo, vencido])
 
   if (!montado) return null
 
@@ -48,7 +63,7 @@ export function Splash() {
     <div
       className={cn(
         'fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-black',
-        'transition-opacity duration-300',
+        'transition-opacity duration-200',
         saliendo ? 'pointer-events-none opacity-0' : 'opacity-100',
       )}
       // decorativa: quien use lector de pantalla no gana nada oyéndola

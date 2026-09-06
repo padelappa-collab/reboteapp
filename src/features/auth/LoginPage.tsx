@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Wordmark } from '@/components/Wordmark'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -26,7 +27,9 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center p-4">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 p-4">
+      <Wordmark />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Entrar</CardTitle>
