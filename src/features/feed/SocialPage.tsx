@@ -1,4 +1,4 @@
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Plus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -6,7 +6,6 @@ import { mensajesSinLeer } from '@/features/messages/messages.api'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/useAuth'
-import { CreatePostSheet } from './CreatePostSheet'
 import { StoriesBar } from '@/features/stories/StoriesBar'
 import { UserSearch } from './UserSearch'
 import { FeedPostCard } from './FeedPostCard'
@@ -71,7 +70,12 @@ export default function SocialPage() {
             </Link>
           </Button>
 
-          <CreatePostSheet onCreada={recargar} />
+          <Button asChild size="sm">
+            <Link to="/publicar">
+              <Plus className="size-4" />
+              Publicar
+            </Link>
+          </Button>
         </div>
       </div>
 
