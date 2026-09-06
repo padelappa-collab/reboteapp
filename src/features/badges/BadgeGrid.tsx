@@ -4,18 +4,41 @@ import { cn } from '@/lib/utils'
 import { BadgeGlyph } from './BadgeGlyph'
 import { useBadges, type Insignia } from './useBadges'
 
+/**
+ * Un color por familia de insignia.
+ *
+ * Con todas en neón, treinta casillas idénticas se leían como una textura y
+ * ninguna destacaba. El color agrupa: de un vistazo se ve qué es participación y
+ * qué es progresión, sin leer los encabezados.
+ *
+ * Son los mismos tonos de la paleta secundaria de los avatares, así que la app
+ * no gana una paleta nueva. Y ninguno es el neón: ese se queda para los botones,
+ * que es donde significa "toca aquí".
+ */
+const COLOR_FAMILIA: Record<string, string> = {
+  'Participación': '#3E9B80',
+  Racha: '#DE7A52',
+  'Progresión': '#C9A03A',
+  Social: '#5490B8',
+  Especial: '#8B7BC0',
+}
+
 function BadgeItem({ insignia }: { insignia: Insignia }) {
   const ganada = insignia.obtenida !== null
+  const color = COLOR_FAMILIA[insignia.categoria] ?? '#5490B8'
 
   return (
     <div
       className={cn(
         'flex flex-col items-center gap-1.5 rounded-[var(--radius)] p-3 text-center',
-        // ganada: el dibujo en neón sobre su propio tinte. Bloqueada: el mismo
-        // dibujo en gris, para que se vea qué falta por conseguir en vez de un
-        // hueco vacío
-        ganada ? 'bg-primary/15 text-primary' : 'bg-elevated text-muted-foreground',
+        // ganada: el dibujo con el color de su familia sobre un tinte del mismo
+        // color. Bloqueada: el mismo dibujo en gris, para que se vea qué falta
+        // por conseguir en vez de un hueco vacío
+        !ganada && 'bg-elevated text-muted-foreground',
       )}
+      style={
+        ganada ? { color, backgroundColor: `${color}26` } : undefined
+      }
       title={
         ganada
           ? `${insignia.descripcion} · ${new Date(insignia.obtenida!).toLocaleDateString('es-CO')}`

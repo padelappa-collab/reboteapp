@@ -25,15 +25,21 @@ import { cn } from '@/lib/utils'
  * Es temporal. Se borra junto con su ruta cuando el rediseño esté aprobado.
  */
 
-const TODAS_LAS_INSIGNIAS = [
-  'primer_partido', '10_partidos', '50_partidos', '100_partidos', 'primer_torneo',
-  'racha_3', 'racha_5', 'racha_10', 'cazador', 'invicto_torneo',
-  'maraton_semanal', 'mes_intenso',
-  'subio_categoria_masc', 'subio_categoria_fem', 'subio_categoria_mixto',
-  'top_10_masc', 'top_10_fem', 'top_10_mixto', 'numero_1_categoria',
-  'primer_post', 'conecta_4', 'casamentero', 'racha_semanal', 'comentarista',
-  'anfitrion', 'tablon_activo',
-  'todoterreno', 'fundador', 'veterano', 'rey_de_la_cancha',
+const TODAS_LAS_INSIGNIAS: Array<[string, string]> = [
+  ['primer_partido', '#3E9B80'], ['10_partidos', '#3E9B80'], ['50_partidos', '#3E9B80'],
+  ['100_partidos', '#3E9B80'], ['primer_torneo', '#3E9B80'],
+  ['racha_3', '#DE7A52'], ['racha_5', '#DE7A52'], ['racha_10', '#DE7A52'],
+  ['cazador', '#DE7A52'], ['invicto_torneo', '#DE7A52'],
+  ['maraton_semanal', '#DE7A52'], ['mes_intenso', '#DE7A52'],
+  ['subio_categoria_masc', '#C9A03A'], ['subio_categoria_fem', '#C9A03A'],
+  ['subio_categoria_mixto', '#C9A03A'], ['top_10_masc', '#C9A03A'],
+  ['top_10_fem', '#C9A03A'], ['top_10_mixto', '#C9A03A'],
+  ['numero_1_categoria', '#C9A03A'],
+  ['primer_post', '#5490B8'], ['conecta_4', '#5490B8'], ['casamentero', '#5490B8'],
+  ['racha_semanal', '#5490B8'], ['comentarista', '#5490B8'], ['anfitrion', '#5490B8'],
+  ['tablon_activo', '#5490B8'],
+  ['todoterreno', '#8B7BC0'], ['fundador', '#8B7BC0'], ['veterano', '#8B7BC0'],
+  ['rey_de_la_cancha', '#8B7BC0'],
 ]
 
 const JUGADORES = [
@@ -396,18 +402,17 @@ export default function DesignPreviewPage() {
 
       <Seccion
         titulo="Las 30 insignias"
-        nota="Glifos propios, mismo trazo y mismo vocabulario. En neón las ganadas, en gris las que faltan."
+        nota="Un color por familia: participación, racha, progresión, social y especial. En gris, las que faltan."
       >
         <div className="grid grid-cols-5 gap-2">
-          {TODAS_LAS_INSIGNIAS.map((id, i) => (
+          {TODAS_LAS_INSIGNIAS.map(([id, color], i) => (
             <div
               key={id}
               className={cn(
                 'flex flex-col items-center gap-1.5 rounded-[var(--radius)] p-2 text-center',
-                i % 3 === 0
-                  ? 'bg-primary/15 text-primary'
-                  : 'bg-elevated text-muted-foreground',
+                i % 4 === 3 && 'bg-elevated text-muted-foreground',
               )}
+              style={i % 4 !== 3 ? { color, backgroundColor: `${color}26` } : undefined}
             >
               <BadgeGlyph id={id} />
               <span className="text-[9px] leading-tight">{id}</span>
