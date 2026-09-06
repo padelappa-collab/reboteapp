@@ -133,10 +133,21 @@ export function FeedPostCard({
         )}
       </div>
 
-      {/* 2. la foto, a lo ancho y cuadrada: nunca forzada a apaisado */}
+      {/*
+        2. La foto, con la forma que tenga.
+ 
+        Sin recorte: la caja se adapta a la imagen y no al revés. Forzar un
+        cuadrado obliga a encuadrar pensando en dónde va a cortar la app, y en
+        una foto de cancha —que casi siempre es vertical o muy apaisada— eso
+        significa perder media pista o los pies de la gente.
+ 
+        El tope de alto es la única concesión: una foto muy alargada llenaría la
+        pantalla entera y habría que hacer scroll para pasar de una publicación.
+        Solo en ese caso se encaja dentro, sin cortar nada.
+      */}
       {publicacion.imagen_url && (
         <div
-          className="relative aspect-square w-full overflow-hidden bg-muted"
+          className="relative w-full overflow-hidden bg-muted"
           onPointerUp={tocarImagen}
         >
           <img
@@ -144,7 +155,7 @@ export function FeedPostCard({
             alt=""
             loading="lazy"
             draggable={false}
-            className="size-full object-cover"
+            className="mx-auto block max-h-[80dvh] w-full object-contain"
           />
 
           {latido && (

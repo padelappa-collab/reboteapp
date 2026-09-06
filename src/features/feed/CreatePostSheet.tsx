@@ -124,7 +124,7 @@ export function CreatePostSheet({
               <img
                 src={vistaPrevia}
                 alt=""
-                className="max-h-72 w-full rounded-lg object-cover"
+                className="max-h-72 w-full rounded-[var(--radius)] object-contain"
               />
               <Button
                 type="button"
