@@ -33,7 +33,7 @@ import { marcadorValido, SetsInput } from './SetsInput'
 import { usePartido } from './useMatches'
 
 const ESTADO: Record<MatchEstado, { texto: string; clase: string }> = {
-  pendiente: { texto: 'Pendiente de confirmar', clase: 'bg-amber-100 text-amber-900' },
+  pendiente: { texto: 'Pendiente de confirmar', clase: 'bg-primary/15 text-primary' },
   confirmado: { texto: 'Confirmado', clase: 'bg-primary/10 text-court' },
   disputado: { texto: 'En disputa', clase: 'bg-destructive/10 text-destructive' },
   cancelado: { texto: 'Cancelado', clase: 'bg-muted text-muted-foreground' },

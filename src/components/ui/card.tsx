@@ -7,10 +7,10 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        // Sombra y no borde. El salto entre el blanco de la tarjeta y el blanco
-      // cálido del fondo ya separa las dos superficies; añadirle un borde
-      // encima las endurece y hace que la pantalla parezca una tabla.
-      "flex flex-col gap-6 rounded-xl bg-card py-6 text-card-foreground shadow-sm",
+        // Ni borde ni sombra: sobre fondo oscuro la sombra no se ve y el borde
+      // endurece. Lo que separa la tarjeta del fondo es que es más clara, y
+      // esa diferencia de claridad es toda la jerarquía que hace falta.
+      "flex flex-col gap-6 rounded-xl bg-card py-6 text-card-foreground",
         className
       )}
       {...props}

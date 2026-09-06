@@ -115,7 +115,7 @@ export function StoriesBar() {
 
             <span
               className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center
-                         rounded-full border-2 border-background bg-primary text-court"
+                         rounded-full border-2 border-background bg-primary text-primary-foreground"
               onClick={(e) => {
                 // el "+" siempre sube, aunque ya tengas historias que mirar
                 e.stopPropagation()

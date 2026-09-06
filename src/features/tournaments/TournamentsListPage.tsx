@@ -24,8 +24,8 @@ import {
 } from './tournaments.api'
 
 const COLOR_ESTADO: Record<Torneo['estado'], string> = {
-  inscripciones: 'bg-primary/10 text-court',
-  en_curso: 'bg-amber-100 text-amber-900',
+  inscripciones: 'bg-primary/15 text-primary',
+  en_curso: 'bg-court/20 text-court',
   finalizado: 'bg-muted text-muted-foreground',
   cancelado: 'bg-muted text-muted-foreground',
 }

@@ -25,7 +25,10 @@ const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services'
 
 const VISTAS = {
   satelite: `${ESRI}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
-  mapa: `${ESRI}/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+  // El plano va en su versión oscura. Con las teselas claras, la vista "Mapa"
+  // era un rectángulo blanco en medio de una app oscura y deslumbraba de noche,
+  // que es justo cuando se busca cancha.
+  mapa: `${ESRI}/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
 } as const
 
 const ETIQUETAS = `${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}`
@@ -49,7 +52,6 @@ type Vista = keyof typeof VISTAS
  */
 const NEON = '#E8FF3D'
 const CANCHA = '#1D4D3E'
-const TINTA = '#131A14'
 
 /** Pin de gota con una pelota de pádel dentro, dibujado en SVG. */
 function pin(activo: boolean, nombre: string) {
@@ -72,8 +74,8 @@ function pin(activo: boolean, nombre: string) {
                 stroke="${NEON}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
         </svg>
         <span style="
-          margin-top:-4px;white-space:nowrap;background:white;color:${TINTA};
-          border:1px solid #E5E5E0;border-radius:10px;padding:2px 7px;
+          margin-top:-4px;white-space:nowrap;background:#1C1C1E;color:#F5F5F0;
+          border:1px solid #2C2C2E;border-radius:10px;padding:2px 7px;
           font-size:11px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.2);
         ">${nombre}</span>
       </div>`,

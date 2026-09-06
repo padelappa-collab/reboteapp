@@ -27,6 +27,7 @@
   --color-ring: var(--ring);
   --color-court: var(--court);
   --color-anillo: var(--anillo);
+  --color-elevated: var(--elevated);
 
   /* Un solo radio en toda la app. Las variantes existen porque shadcn las usa
      internamente, pero todas caen en el mismo valor: mezclar radios distintos
@@ -46,42 +47,63 @@
 :root {
   --radius: 10px;
 
-  /* Blanco cálido de fondo y blanco puro en las tarjetas: ese contraste tan
-     leve es lo que da profundidad sin necesidad de bordes gruesos. */
-  --background: #FAFAF7;
-  --foreground: #131A14;
-  --card: #FFFFFF;
-  --card-foreground: #131A14;
-  --popover: #FFFFFF;
-  --popover-foreground: #131A14;
+  /*
+   * Paleta oscura.
+   *
+   * Ni negro puro ni gris de oficina. #121212 es el gris que usa Instagram y
+   * hay una razón para no bajar a #000: sobre una pantalla OLED el negro puro
+   * apaga el píxel del todo y los bordes de las tarjetas quedan como cortes de
+   * cuchilla. Con #121212 la superficie sigue viva.
+   *
+   * La profundidad la da la claridad, no la sombra. En un fondo claro bastaba
+   * con blanco sobre blanco cálido; aquí las sombras no se ven, así que la
+   * jerarquía es una escala: fondo, tarjeta, y elevado para lo que tenga que
+   * destacar de verdad.
+   */
+  --background: #121212;
+  --card: #1C1C1E;
+  --card-foreground: #F5F5F0;
+  --popover: #1C1C1E;
+  --popover-foreground: #F5F5F0;
+  --elevated: #232326;
 
-  /* Verde neón. Es una señal, no una decoración: botón de acción principal,
-     insignia recién ganada, progreso hacia la siguiente categoría. Como máximo
-     en dos sitios por pantalla. El texto que va encima es casi negro, porque
-     blanco sobre este amarillo no se lee. */
+  /* Blanco roto, no blanco puro: sobre oscuro el #FFF vibra y cansa. */
+  --foreground: #F5F5F0;
+
+  /*
+   * El neón, por fin en su sitio. Sobre oscuro es donde este color funciona y
+   * es la razón de haber cambiado el fondo. Lo que va encima es el color del
+   * fondo, no blanco: es lo único que se lee sobre este amarillo.
+   */
   --primary: #E8FF3D;
-  --primary-foreground: #131A14;
+  --primary-foreground: #121212;
 
-  --secondary: #F2F2EE;
-  --secondary-foreground: #131A14;
-  --muted: #F2F2EE;
-  --muted-foreground: #6B7280;
-  --accent: #F2F2EE;
-  --accent-foreground: #131A14;
+  --secondary: #232326;
+  --secondary-foreground: #F5F5F0;
+  --muted: #232326;
+  --muted-foreground: #A1A1A6;
+  --accent: #232326;
+  --accent-foreground: #F5F5F0;
 
-  --destructive: #D6284A;
-  --destructive-foreground: #FFFFFF;
+  /* El #D6284A de la paleta clara se apaga sobre oscuro; este mantiene la
+     alarma sin quemar. */
+  --destructive: #FF4D6A;
+  --destructive-foreground: #121212;
 
-  --border: #E5E5E0;
-  --input: #E5E5E0;
-  --ring: #1D4D3E;
+  --border: #2C2C2E;
+  --input: #2C2C2E;
+  --ring: #E8FF3D;
 
-  /* Verde cancha: el contraste oscuro donde hace falta peso sin gritar. */
-  --court: #1D4D3E;
+  /*
+   * El verde cancha, aclarado. El #1D4D3E original es casi invisible sobre
+   * #121212, y se usa como color de texto y de iconos en veinte sitios. Este
+   * conserva el matiz y se lee. Para texto SOBRE el neón no se usa este, se usa
+   * el color del fondo.
+   */
+  --court: #8FD4B4;
 
-  /* El anillo de las historias sin ver. Gris neutro claro-medio: tiene que
-     avisar de que hay algo nuevo sin competir con el contenido. */
-  --anillo: #C4C4C0;
+  /* El anillo de las historias sin ver, ajustado al fondo nuevo. */
+  --anillo: #6E6E73;
 }
 
 

@@ -5,19 +5,22 @@ import { cn } from '@/lib/utils'
  * La paleta secundaria de los avatares.
  *
  * Ninguno es el verde neón de marca: si todos fueran variaciones del acento no
- * se distinguirían entre sí, que es justo lo que se quiere evitar. Son tonos
- * apagados que conviven con el fondo cálido sin pelearse con él, y todos llevan
- * texto claro encima porque están calculados para eso.
+ * se distinguirían entre sí, que es justo lo que se quiere evitar.
+ *
+ * Están calculados para el fondo oscuro. Los tonos apagados que funcionaban
+ * sobre blanco se hunden en #121212 y todos los avatares acaban pareciendo el
+ * mismo círculo gris, que es exactamente el problema que este componente vino a
+ * resolver. Estos conservan el matiz y suben en luminosidad.
  */
 const COLORES = [
-  '#2F6F5E', // verde cancha claro
-  '#3B6E8F', // azul apagado
-  '#C4623D', // coral quemado
-  '#A8802A', // mostaza
-  '#6B5B95', // lavanda profunda
-  '#4E7A3A', // oliva
-  '#9C4F63', // vino suave
-  '#2E6E70', // verde azulado
+  '#3E9B80', // verde cancha
+  '#5490B8', // azul
+  '#DE7A52', // coral
+  '#C9A03A', // mostaza
+  '#8B7BC0', // lavanda
+  '#6EA34E', // oliva
+  '#C2687E', // vino
+  '#3E9497', // verde azulado
 ] as const
 
 /**

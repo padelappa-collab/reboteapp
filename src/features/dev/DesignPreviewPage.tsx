@@ -127,7 +127,7 @@ function BarraMuestra({ onAbrir }: { onAbrir: () => void }) {
               <AvatarFallback>{g.n.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             {g.propia && (
-              <span className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full border-2 border-background bg-primary text-court">
+              <span className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground">
                 <Plus className="size-3" />
               </span>
             )}

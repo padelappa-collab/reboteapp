@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import type { MatchEstado, MatchRow } from '@/types/database'
 
 const ESTILO_ESTADO: Record<MatchEstado, { texto: string; clase: string }> = {
-  pendiente: { texto: 'Pendiente', clase: 'bg-amber-100 text-amber-900 border-amber-200' },
+  pendiente: { texto: 'Pendiente', clase: 'border-primary/30 bg-primary/15 text-primary' },
   confirmado: { texto: 'Confirmado', clase: '' },
   disputado: { texto: 'En disputa', clase: 'bg-destructive/10 text-destructive border-destructive/20' },
   cancelado: { texto: 'Cancelado', clase: 'bg-muted text-muted-foreground' },

@@ -35,7 +35,7 @@ export function EmptyState({
         className,
       )}
     >
-      <span className="grid size-16 place-items-center rounded-full bg-muted">
+      <span className="grid size-16 place-items-center rounded-full bg-elevated">
         <Icono className="size-8 text-muted-foreground" strokeWidth={1.5} />
       </span>
 
