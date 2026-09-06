@@ -7,10 +7,10 @@ import { cn } from '@/lib/utils'
  *
  * La sesión suele contestar en decenas de milisegundos, así que sin este suelo
  * la pantalla aparecía y desaparecía de golpe: un parpadeo negro que se lee como
- * un fallo, no como una entrada. Con algo más de un segundo se ve el logo, se
- * entiende que la app está arrancando, y la salida parece decidida.
+ * un fallo, no como una entrada. Con tres segundos se ve el logo, se entiende
+ * que la app está arrancando, y la salida parece decidida.
  */
-const MINIMO = 1400
+const MINIMO = 3000
 /** Lo máximo que se queda, pase lo que pase. */
 const TOPE = 7000
 /** Lo que tarda en desvanecerse. Corto: una salida lenta también parece un fallo. */
@@ -36,6 +36,21 @@ export function Splash() {
   const [saliendo, setSaliendo] = useState(false)
   const [vencido, setVencido] = useState(false)
   const [cumplioMinimo, setCumplioMinimo] = useState(false)
+
+  /*
+   * El negro se pinta también en el documento, no solo en la capa.
+   *
+   * La capa cubre la ventana, pero por debajo quedaba asomando una franja del
+   * gris de la app: el hueco de la barra de gestos en el teléfono y lo que se ve
+   * al rebotar el scroll. Pintando de negro la raíz mientras dura, la pantalla
+   * es negra entera y sin costuras.
+   */
+  useEffect(() => {
+    if (!montado) return
+    const raiz = document.documentElement
+    raiz.classList.add('arrancando')
+    return () => raiz.classList.remove('arrancando')
+  }, [montado])
 
   useEffect(() => {
     const corto = setTimeout(() => setCumplioMinimo(true), MINIMO)
@@ -63,6 +78,8 @@ export function Splash() {
     <div
       className={cn(
         'fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 bg-black',
+        // por si el teclado o la barra del navegador cambian la altura visible
+        'min-h-dvh',
         'transition-opacity duration-200',
         saliendo ? 'pointer-events-none opacity-0' : 'opacity-100',
       )}
