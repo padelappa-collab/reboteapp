@@ -1,10 +1,11 @@
-import { Heart, Trash2, X } from 'lucide-react'
+import { Heart, Send, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/features/auth/useAuth'
 import { toast } from 'sonner'
+import { conversacionCon, enviarMensaje } from '@/features/messages/messages.api'
 import {
   alternarLikeHistoria,
   borrarHistoria,
@@ -75,6 +76,8 @@ export function StoryViewer({
   const [meGusta, setMeGusta] = useState(false)
   const [quienes, setQuienes] = useState<LikeHistoriaRow[] | null>(null)
   const [borrando, setBorrando] = useState(false)
+  const [respuesta, setRespuesta] = useState('')
+  const [mandando, setMandando] = useState(false)
 
   const { perfil } = useAuth()
 
@@ -195,6 +198,34 @@ export function StoryViewer({
     }
   }
 
+  /**
+   * Responder a una historia.
+   *
+   * Se manda como mensaje directo normal, que es lo que de verdad es: una
+   * conversación con quien la publicó. Si todavía no existe, se crea sola.
+   *
+   * El texto se limpia antes de que la red conteste. Esperar a la respuesta para
+   * vaciar el campo hace que parezca que el toque no registró y la gente lo
+   * pulsa dos veces.
+   */
+  async function responder() {
+    const texto = respuesta.trim()
+    if (!texto || !perfil || mandando) return
+
+    setMandando(true)
+    setRespuesta('')
+    try {
+      const conv = await conversacionCon(autor.user_id)
+      await enviarMensaje(conv, perfil.id, texto)
+      toast.success('Mensaje enviado')
+    } catch (error) {
+      setRespuesta(texto)
+      toast.error(error instanceof Error ? error.message : 'No se pudo enviar')
+    } finally {
+      setMandando(false)
+    }
+  }
+
   // ------------------------------------------------------ avance automático
   useEffect(() => {
     if (!actual || pausado) return
@@ -251,8 +282,31 @@ export function StoryViewer({
         }
       }}
     >
+      {/*
+        La foto es la pantalla, no un recuadro dentro de ella.
+ 
+        Va al fondo y en `cover`, como en cualquier app de historias: las que se
+        publican desde aquí ya vienen recortadas a 9:16, así que encaja exacta, y
+        una traída de otro sitio se recorta antes que dejar franjas negras.
+ 
+        No se puede seleccionar, ni arrastrar, ni mantener pulsado para guardar.
+        No es por proteger nada —quien quiera se hace una captura— sino porque el
+        gesto de mantener pulsado aquí significa "pausa", y si el sistema abre su
+        menú de guardar encima, la pausa deja de funcionar.
+      */}
+      {actual && (
+        <img
+          src={actual.imagen_url}
+          alt=""
+          draggable={false}
+          onContextMenu={(e) => e.preventDefault()}
+          className="pointer-events-none absolute inset-0 size-full select-none object-cover"
+          style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }}
+        />
+      )}
+
       {/* progreso: un segmento por historia de esta persona */}
-      <div className="flex gap-1 px-3 pt-3">
+      <div className="relative z-10 flex gap-1 bg-gradient-to-b from-black/60 to-transparent px-3 pb-1 pt-3">
         {historias.map((h, i) => (
           <div key={h.id} className="h-0.5 flex-1 overflow-hidden rounded-full bg-white/30">
             <div
@@ -266,7 +320,7 @@ export function StoryViewer({
         ))}
       </div>
 
-      <div className="flex items-center gap-2 px-3 py-2.5">
+      <div className="relative z-10 flex items-center gap-2 bg-gradient-to-b from-black/50 to-transparent px-3 pb-4 pt-1">
         <Avatar className="size-8">
           {autor.foto_url && <AvatarImage src={autor.foto_url} alt="" />}
           <AvatarFallback className="text-xs">{iniciales(autor.nombre)}</AvatarFallback>
@@ -310,21 +364,13 @@ export function StoryViewer({
             Esta persona ya no tiene historias activas.
           </p>
         )}
-        {actual && (
-          <img
-            src={actual.imagen_url}
-            alt=""
-            draggable={false}
-            className="max-h-full w-full object-contain"
-          />
-        )}
       </div>
 
       {/* Abajo cambia según de quién sea la historia: si es tuya, quién te la
           vio y le gustó; si es de otro, con qué responderle. */}
       {actual && autor.soy_yo && (
         <div
-          className="max-h-40 space-y-2 overflow-y-auto px-4 pb-5 pt-3"
+          className="relative z-10 max-h-40 space-y-2 overflow-y-auto bg-gradient-to-t from-black/70 to-transparent px-4 pb-5 pt-6"
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
         >
@@ -354,15 +400,32 @@ export function StoryViewer({
 
       {actual && !autor.soy_yo && (
         <div
-          className="flex items-center gap-2 px-3 pb-5 pt-3"
+          className="relative z-10 flex items-center gap-2 bg-gradient-to-t from-black/70 to-transparent px-3 pb-5 pt-6"
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
         >
           <Input
-            className="h-11 flex-1 border-white/30 bg-transparent text-white placeholder:text-white/50"
+            className="h-11 flex-1 rounded-full border-white/30 bg-transparent text-white placeholder:text-white/50"
             placeholder="Enviar mensaje"
-            disabled
+            value={respuesta}
+            disabled={mandando}
+            onChange={(e) => setRespuesta(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') responder()
+            }}
           />
+
+          {respuesta.trim() && (
+            <button
+              type="button"
+              aria-label="Enviar"
+              className="p-2 text-white disabled:opacity-40"
+              disabled={mandando}
+              onClick={responder}
+            >
+              <Send className="size-6" />
+            </button>
+          )}
           <button
             type="button"
             aria-label={meGusta ? 'Quitar me gusta' : 'Me gusta'}
