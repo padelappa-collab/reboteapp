@@ -50,22 +50,25 @@
   /*
    * Paleta oscura.
    *
-   * Ni negro puro ni gris de oficina. #121212 es el gris que usa Instagram y
-   * hay una razón para no bajar a #000: sobre una pantalla OLED el negro puro
-   * apaga el píxel del todo y los bordes de las tarjetas quedan como cortes de
-   * cuchilla. Con #121212 la superficie sigue viva.
+   * Gris oscuro, no casi-negro. Se subió desde #121212 porque a esa altura la
+   * pantalla se leía como un agujero: con gris se nota que hay una superficie
+   * debajo del contenido, y los tres niveles se distinguen sin forzar la vista.
+   *
+   * Los saltos entre niveles son de unos diez puntos de claridad. Menos y las
+   * tarjetas se funden con el fondo; más y vuelven las cajas marcadas que
+   * queríamos evitar.
    *
    * La profundidad la da la claridad, no la sombra. En un fondo claro bastaba
    * con blanco sobre blanco cálido; aquí las sombras no se ven, así que la
    * jerarquía es una escala: fondo, tarjeta, y elevado para lo que tenga que
    * destacar de verdad.
    */
-  --background: #121212;
-  --card: #1C1C1E;
+  --background: #1C1C1F;
+  --card: #26262A;
   --card-foreground: #F5F5F0;
-  --popover: #1C1C1E;
+  --popover: #26262A;
   --popover-foreground: #F5F5F0;
-  --elevated: #232326;
+  --elevated: #2E2E33;
 
   /* Blanco roto, no blanco puro: sobre oscuro el #FFF vibra y cansa. */
   --foreground: #F5F5F0;
@@ -76,22 +79,22 @@
    * fondo, no blanco: es lo único que se lee sobre este amarillo.
    */
   --primary: #E8FF3D;
-  --primary-foreground: #121212;
+  --primary-foreground: #1C1C1F;
 
-  --secondary: #232326;
+  --secondary: #2E2E33;
   --secondary-foreground: #F5F5F0;
-  --muted: #232326;
-  --muted-foreground: #A1A1A6;
-  --accent: #232326;
+  --muted: #2E2E33;
+  --muted-foreground: #A8A8AE;
+  --accent: #2E2E33;
   --accent-foreground: #F5F5F0;
 
   /* El #D6284A de la paleta clara se apaga sobre oscuro; este mantiene la
      alarma sin quemar. */
   --destructive: #FF4D6A;
-  --destructive-foreground: #121212;
+  --destructive-foreground: #1C1C1F;
 
-  --border: #2C2C2E;
-  --input: #2C2C2E;
+  --border: #3A3A3F;
+  --input: #3A3A3F;
   --ring: #E8FF3D;
 
   /*
@@ -103,7 +106,7 @@
   --court: #8FD4B4;
 
   /* El anillo de las historias sin ver, ajustado al fondo nuevo. */
-  --anillo: #6E6E73;
+  --anillo: #7A7A80;
 }
 
 

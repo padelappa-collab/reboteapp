@@ -74,8 +74,8 @@ function pin(activo: boolean, nombre: string) {
                 stroke="${NEON}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
         </svg>
         <span style="
-          margin-top:-4px;white-space:nowrap;background:#1C1C1E;color:#F5F5F0;
-          border:1px solid #2C2C2E;border-radius:10px;padding:2px 7px;
+          margin-top:-4px;white-space:nowrap;background:#26262A;color:#F5F5F0;
+          border:1px solid #3A3A3F;border-radius:10px;padding:2px 7px;
           font-size:11px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.2);
         ">${nombre}</span>
       </div>`,

@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
  * se distinguirían entre sí, que es justo lo que se quiere evitar.
  *
  * Están calculados para el fondo oscuro. Los tonos apagados que funcionaban
- * sobre blanco se hunden en #121212 y todos los avatares acaban pareciendo el
+ * sobre blanco se hunden en el gris oscuro y todos los avatares acaban pareciendo el
  * mismo círculo gris, que es exactamente el problema que este componente vino a
  * resolver. Estos conservan el matiz y suben en luminosidad.
  */
