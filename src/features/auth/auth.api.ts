@@ -48,6 +48,16 @@ export async function crearPerfil(datos: {
 
   const { data, error } = await supabase.from('users').insert(fila).select().single()
   if (error) {
+    // 23503 es la clave foránea contra auth.users: hay sesión en el teléfono
+    // pero la cuenta ya no existe. Pasa si la borraste desde otro sitio. El
+    // mensaje de Postgres no le dice nada a nadie; esto sí.
+    if (error.code === '23503') {
+      await supabase.auth.signOut()
+      throw new Error(
+        'Tu sesión ya no es válida porque la cuenta no existe. Vuelve a entrar.',
+      )
+    }
+
     // el índice único del usuario devuelve un error que no dice nada
     throw new Error(
       error.code === '23505'

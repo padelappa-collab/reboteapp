@@ -27,6 +27,26 @@ async function traerPerfil(userId: string): Promise<UserRow | null | undefined> 
 }
 
 /**
+ * ¿La cuenta de esta sesión sigue existiendo?
+ *
+ * `getSession` lee el token del almacenamiento del teléfono y no pregunta a
+ * nadie, así que una cuenta borrada sigue pareciendo válida hasta que el token
+ * caduca. La app cree que hay alguien dentro, lo manda a crear su perfil, y el
+ * insert revienta contra la clave foránea con un mensaje que no dice nada.
+ *
+ * Pasa de verdad: quien borra su cuenta desde otro teléfono deja este en ese
+ * estado. `getUser` sí va al servidor y responde que no existe.
+ *
+ * Solo se comprueba cuando hay sesión y no hay perfil, que es el único caso
+ * ambiguo: si el perfil está, la cuenta está. Así no se paga una ida y vuelta
+ * de red en cada arranque normal.
+ */
+async function laCuentaSigueViva(): Promise<boolean> {
+  const { error } = await supabase.auth.getUser()
+  return !error
+}
+
+/**
  * Mantiene sesión y perfil sincronizados.
  *
  * Son dos cosas distintas a propósito: tener sesión (auth.users) no significa
@@ -47,6 +67,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.session) {
         const encontrado = await traerPerfil(data.session.user.id)
         if (vigente && encontrado !== undefined) setPerfil(encontrado)
+
+        // sesión sin perfil: o falta el onboarding, o la cuenta ya no está
+        if (vigente && encontrado === null && !(await laCuentaSigueViva())) {
+          await supabase.auth.signOut()
+          if (vigente) {
+            setSession(null)
+            setPerfil(null)
+            setCargando(false)
+          }
+          return
+        }
       }
       if (vigente) setCargando(false)
     })
