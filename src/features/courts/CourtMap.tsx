@@ -33,12 +33,16 @@ const ETIQUETAS = `${ESRI}/Reference/World_Boundaries_and_Places/MapServer/tile/
 type Vista = keyof typeof VISTAS
 
 /*
- * Los colores del mapa salen de la paleta de marca, no de un verde suelto.
+ * Todos los pines en neón.
  *
- * La cancha seleccionada va en neón y el resto en verde cancha. Es uno de los
- * pocos sitios donde el neón se gana su sitio: sobre una foto de satélite —con
- * tejados, agua y vegetación— cualquier verde oscuro se pierde, y lo que se
- * busca es justo que salte a la vista cuál estás mirando.
+ * El mapa es el sitio donde encontrar una cancha de un vistazo es lo único que
+ * importa, y sobre una foto de satélite —tejados, agua, vegetación— cualquier
+ * verde oscuro se confunde con el terreno. El neón no se confunde con nada de
+ * lo que hay en una foto aérea de Cartagena.
+ *
+ * El verde cancha se queda solo para el contorno y el dibujo de la pelota, que
+ * es lo que le da forma al pin: relleno neón sin borde oscuro se deshace sobre
+ * las zonas claras del mapa. Es contraste, no decoración.
  *
  * Van como texto y no como clases de Tailwind porque Leaflet monta el pin
  * inyectando HTML, fuera del árbol de React.
@@ -51,10 +55,10 @@ const TINTA = '#131A14'
 function pin(activo: boolean, nombre: string) {
   const alto = activo ? 50 : 40
   const ancho = Math.round(alto * 0.72)
-  const relleno = activo ? NEON : CANCHA
-  // el detalle de la pelota tiene que contrastar con su propio relleno
-  const detalle = activo ? CANCHA : '#FFFFFF'
-  const borde = activo ? CANCHA : '#FFFFFF'
+  // la seleccionada se distingue por tamaño y por un contorno más marcado, no
+  // por otro color: dos verdes distintos en el mismo mapa se leen como dos
+  // clases de sitio, y todas son canchas
+  const grosorBorde = activo ? 2.4 : 1.6
 
   return L.divIcon({
     className: '',
@@ -62,10 +66,10 @@ function pin(activo: boolean, nombre: string) {
       <div style="display:flex;flex-direction:column;align-items:center">
         <svg width="${ancho}" height="${alto}" viewBox="0 0 24 34" fill="none">
           <path d="M12 0C5.4 0 0 5.3 0 11.9 0 20.6 12 34 12 34s12-13.4 12-22.1C24 5.3 18.6 0 12 0z"
-                fill="${relleno}" stroke="${borde}" stroke-width="1.6"/>
-          <circle cx="12" cy="11.6" r="5.4" fill="${detalle}"/>
+                fill="${NEON}" stroke="${CANCHA}" stroke-width="${grosorBorde}"/>
+          <circle cx="12" cy="11.6" r="5.4" fill="${CANCHA}"/>
           <path d="M12 6.2c1.5 1.5 1.5 9.3 0 10.8M6.6 11.6c1.9-1.4 8.9-1.4 10.8 0"
-                stroke="${relleno}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+                stroke="${NEON}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
         </svg>
         <span style="
           margin-top:-4px;white-space:nowrap;background:white;color:${TINTA};
