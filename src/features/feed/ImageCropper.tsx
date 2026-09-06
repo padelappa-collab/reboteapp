@@ -112,27 +112,27 @@ export const ImageCropper = forwardRef<
       const s = escalaBase() * zoom
 
       /*
-       * El alto del recorte se deduce de la proporción, no del marco.
-       *
-       * El marco se dibuja con `aspect-ratio`, pero cuando además lo estira un
-       * `flex-1` —como en la pantalla de historias— su proporción real acaba
-       * desviándose unos píxeles de la pedida. Midiendo alto y ancho por
-       * separado, el trozo recortado tenía una proporción y el lienzo otra, y
-       * `drawImage` estiraba la imagen para encajarla: por eso lo publicado no
-       * salía igual que la vista previa.
-       *
-       * Tomando solo el ancho y derivando el alto, el recorte y el lienzo
-       * comparten proporción por construcción y no hay deformación posible.
+       * Todo sale del marco que la persona tiene delante: el trozo visible y
+       * también la forma del archivo. Es la única manera de que lo encuadrado y
+       * lo publicado sean lo mismo.
        */
       const anchoVisible = caja.clientWidth / s
-      const altoVisible = anchoVisible / proporcion
+      const altoVisible = caja.clientHeight / s
 
       // esquina superior izquierda del trozo visible, en píxeles del original
       const sx = (medidas.nw - anchoVisible) / 2 - pos.x / s
       const sy = (medidas.nh - altoVisible) / 2 - pos.y / s
 
-      const salidaAncho = proporcion >= 1 ? SALIDA : Math.round(SALIDA * proporcion)
-      const salidaAlto = proporcion >= 1 ? Math.round(SALIDA / proporcion) : SALIDA
+      // La forma del archivo sale del marco medido, no de la proporción pedida.
+      // El marco se dibuja con `aspect-ratio` pero su tamaño real se redondea a
+      // píxeles enteros, así que su forma se desvía una pizca. Mezclando las dos
+      // —previa con el marco medido, recorte con la proporción nominal— lo
+      // publicado salía recortado respecto a lo encuadrado. Que el archivo mida
+      // 0.5624 en vez de 0.5625 no lo nota nadie; que le falte un dedo a la
+      // foto, sí.
+      const real = caja.clientWidth / caja.clientHeight
+      const salidaAncho = real >= 1 ? SALIDA : Math.round(SALIDA * real)
+      const salidaAlto = real >= 1 ? Math.round(SALIDA / real) : SALIDA
 
       const lienzo = document.createElement('canvas')
       lienzo.width = salidaAncho
