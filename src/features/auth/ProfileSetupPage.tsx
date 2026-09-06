@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { Categoria, Genero } from '@/lib/categories'
+import { marcarRecienCreado } from '@/features/notifications/WelcomeSheet'
 import { crearPerfil, usuarioLibre } from './auth.api'
 import { GenderCategorySelect } from './GenderCategorySelect'
 import { useAuth } from './useAuth'
@@ -77,6 +78,8 @@ export default function ProfileSetupPage() {
         categoriaInicial: categoria,
       })
       await refrescarPerfil()
+      // para que al entrar se ofrezca encender los avisos, una sola vez
+      marcarRecienCreado()
       toast.success('Listo, ya puedes registrar partidos')
       navegar('/', { replace: true })
     } catch (error) {

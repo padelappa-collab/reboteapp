@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { BottomNav } from '@/components/BottomNav'
 import { InstallBanner } from '@/features/install/InstallBanner'
+import { WelcomeSheet } from '@/features/notifications/WelcomeSheet'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
@@ -106,6 +107,7 @@ export function AppShell() {
         <Outlet />
       </div>
 
+      <WelcomeSheet />
       <InstallBanner />
       <BottomNav />
     </div>
