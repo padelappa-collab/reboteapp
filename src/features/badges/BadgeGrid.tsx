@@ -1,6 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { BadgeGlyph } from './BadgeGlyph'
 import { useBadges, type Insignia } from './useBadges'
 
 function BadgeItem({ insignia }: { insignia: Insignia }) {
@@ -9,8 +10,11 @@ function BadgeItem({ insignia }: { insignia: Insignia }) {
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-1 rounded-lg border p-3 text-center',
-        ganada ? 'border-primary/30 bg-primary/5' : 'opacity-45',
+        'flex flex-col items-center gap-1.5 rounded-[var(--radius)] p-3 text-center',
+        // ganada: el dibujo en neón sobre su propio tinte. Bloqueada: el mismo
+        // dibujo en gris, para que se vea qué falta por conseguir en vez de un
+        // hueco vacío
+        ganada ? 'bg-primary/15 text-primary' : 'bg-elevated text-muted-foreground',
       )}
       title={
         ganada
@@ -18,8 +22,15 @@ function BadgeItem({ insignia }: { insignia: Insignia }) {
           : insignia.descripcion
       }
     >
-      <span className={cn('text-2xl', !ganada && 'grayscale')}>{insignia.icono}</span>
-      <span className="text-[11px] font-medium leading-tight">{insignia.nombre}</span>
+      <BadgeGlyph id={insignia.id} />
+      <span
+        className={cn(
+          'text-[11px] font-medium leading-tight',
+          !ganada && 'text-muted-foreground',
+        )}
+      >
+        {insignia.nombre}
+      </span>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { SetsInput } from '@/features/matches/SetsInput'
 import { EloCard } from '@/features/profile/EloCard'
 import { FeedPostCard } from '@/features/feed/FeedPostCard'
+import { BadgeGlyph } from '@/features/badges/BadgeGlyph'
 import { RankingRow } from '@/features/ranking/RankingRow'
 import { StoryViewer } from '@/features/stories/StoryViewer'
 import type { MatchRow, SetMarcador } from '@/types/database'
@@ -23,6 +24,17 @@ import { cn } from '@/lib/utils'
  *
  * Es temporal. Se borra junto con su ruta cuando el rediseño esté aprobado.
  */
+
+const TODAS_LAS_INSIGNIAS = [
+  'primer_partido', '10_partidos', '50_partidos', '100_partidos', 'primer_torneo',
+  'racha_3', 'racha_5', 'racha_10', 'cazador', 'invicto_torneo',
+  'maraton_semanal', 'mes_intenso',
+  'subio_categoria_masc', 'subio_categoria_fem', 'subio_categoria_mixto',
+  'top_10_masc', 'top_10_fem', 'top_10_mixto', 'numero_1_categoria',
+  'primer_post', 'conecta_4', 'casamentero', 'racha_semanal', 'comentarista',
+  'anfitrion', 'tablon_activo',
+  'todoterreno', 'fundador', 'veterano', 'rey_de_la_cancha',
+]
 
 const JUGADORES = [
   { id: '1', nombre: 'Felipe Nule', elo: 1842, peak: 1901 },
@@ -380,6 +392,28 @@ export default function DesignPreviewPage() {
             <Button className="h-11 w-full">Guardar partido</Button>
           </CardContent>
         </Card>
+      </Seccion>
+
+      <Seccion
+        titulo="Las 30 insignias"
+        nota="Glifos propios, mismo trazo y mismo vocabulario. En neón las ganadas, en gris las que faltan."
+      >
+        <div className="grid grid-cols-5 gap-2">
+          {TODAS_LAS_INSIGNIAS.map((id, i) => (
+            <div
+              key={id}
+              className={cn(
+                'flex flex-col items-center gap-1.5 rounded-[var(--radius)] p-2 text-center',
+                i % 3 === 0
+                  ? 'bg-primary/15 text-primary'
+                  : 'bg-elevated text-muted-foreground',
+              )}
+            >
+              <BadgeGlyph id={id} />
+              <span className="text-[9px] leading-tight">{id}</span>
+            </div>
+          ))}
+        </div>
       </Seccion>
 
       <Seccion titulo="Piezas sueltas" nota="Categorías, botones y estados.">
