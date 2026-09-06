@@ -54,8 +54,19 @@ Deno.serve(async (peticion) => {
 
       const datos = await r.json()
       if (!datos.success) {
+        // El motivo de Cloudflare viaja hasta aquí. Sin él, un token mal
+        // pegado y una cuenta sin Stream dan el mismo mensaje vacío, y no
+        // hay forma de distinguirlos sin entrar a los registros.
+        const motivo = datos.errors?.[0]
         console.error('cloudflare rechazó la subida', datos.errors)
-        return json({ error: 'No se pudo preparar la subida' }, 502)
+        return json(
+          {
+            error: 'No se pudo preparar la subida',
+            codigo: motivo?.code,
+            detalle: motivo?.message,
+          },
+          502,
+        )
       }
 
       return json({

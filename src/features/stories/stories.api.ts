@@ -126,7 +126,16 @@ export async function publicarVideo(userId: string, archivo: File) {
   const { data, error } = await supabase.functions.invoke('video', {
     body: { accion: 'crear' },
   })
-  if (error) throw new Error('No se pudo preparar la subida')
+
+  // El motivo que manda el servidor se enseña tal cual. Aplastar todo bajo
+  // un mismo mensaje hacía indistinguibles un token mal pegado, una cuenta
+  // sin Stream y una función sin desplegar: los tres decían lo mismo.
+  if (error) {
+    const detalle = (data as { detalle?: string } | null)?.detalle
+    throw new Error(
+      detalle ? `No se pudo preparar la subida: ${detalle}` : 'No se pudo preparar la subida',
+    )
+  }
 
   const { subidaUrl, uid } = data as { subidaUrl: string; uid: string }
 
