@@ -95,7 +95,7 @@ export default function CreateStoryPage() {
         <>
           {/* a pantalla completa: el marco es del tamaño y la forma con la que
               se va a ver, no una miniatura de la que hay que fiarse */}
-          <div className="min-h-0 flex-1">
+          <div className="flex min-h-0 flex-1 flex-col">
             <ImageCropper
               ref={recorte}
               archivo={archivo}

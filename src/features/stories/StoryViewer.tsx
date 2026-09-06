@@ -289,9 +289,13 @@ export function StoryViewer({
       {/*
         La foto es la pantalla, no un recuadro dentro de ella.
  
-        Va al fondo y en `cover`, como en cualquier app de historias: las que se
-        publican desde aquí ya vienen recortadas a 9:16, así que encaja exacta, y
-        una traída de otro sitio se recorta antes que dejar franjas negras.
+        Va en `contain` y no en `cover`, que es lo contrario de lo que hace
+        Instagram, y a propósito: una historia se recorta aquí a 9:16, pero un
+        iPhone moderno es bastante más alto que 16:9. Con `cover`, la foto se
+        ampliaba para tapar la pantalla y se comía los lados —lo que la persona
+        acababa de encuadrar dejaba de verse—. Con `contain` se ve exactamente lo
+        que se encuadró, a cambio de dos franjas finas arriba y abajo en los
+        teléfonos más alargados.
  
         No se puede seleccionar, ni arrastrar, ni mantener pulsado para guardar.
         No es por proteger nada —quien quiera se hace una captura— sino porque el
@@ -304,7 +308,7 @@ export function StoryViewer({
           alt=""
           draggable={false}
           onContextMenu={(e) => e.preventDefault()}
-          className="pointer-events-none absolute inset-0 size-full select-none object-cover"
+          className="pointer-events-none absolute inset-0 size-full select-none object-contain"
           style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none' }}
         />
       )}

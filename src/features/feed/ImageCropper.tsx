@@ -110,8 +110,22 @@ export const ImageCropper = forwardRef<
       if (!caja || !img || !medidas) throw new Error('La foto todavía no cargó')
 
       const s = escalaBase() * zoom
+
+      /*
+       * El alto del recorte se deduce de la proporción, no del marco.
+       *
+       * El marco se dibuja con `aspect-ratio`, pero cuando además lo estira un
+       * `flex-1` —como en la pantalla de historias— su proporción real acaba
+       * desviándose unos píxeles de la pedida. Midiendo alto y ancho por
+       * separado, el trozo recortado tenía una proporción y el lienzo otra, y
+       * `drawImage` estiraba la imagen para encajarla: por eso lo publicado no
+       * salía igual que la vista previa.
+       *
+       * Tomando solo el ancho y derivando el alto, el recorte y el lienzo
+       * comparten proporción por construcción y no hay deformación posible.
+       */
       const anchoVisible = caja.clientWidth / s
-      const altoVisible = caja.clientHeight / s
+      const altoVisible = anchoVisible / proporcion
 
       // esquina superior izquierda del trozo visible, en píxeles del original
       const sx = (medidas.nw - anchoVisible) / 2 - pos.x / s
@@ -150,13 +164,16 @@ export const ImageCropper = forwardRef<
   }))
 
   return (
-    <div className={llenarAlto ? 'flex h-full flex-col gap-3' : 'space-y-3'}>
+    <div className={llenarAlto ? 'flex h-full min-h-0 flex-col gap-3' : 'space-y-3'}>
       <div
         ref={marco}
         className={cn(
           'relative touch-none select-none overflow-hidden bg-black',
+          // `h-full w-auto` deja que mande el alto disponible y que el ancho
+          // salga de la proporción. Con `flex-1` el marco se estiraba para
+          // llenar el hueco y su forma real dejaba de ser la pedida.
           llenarAlto
-            ? 'mx-auto min-h-0 flex-1 rounded-[var(--radius)]'
+            ? 'mx-auto h-full w-auto rounded-[var(--radius)]'
             : 'w-full rounded-[var(--radius)]',
         )}
         style={{ aspectRatio: String(proporcion) }}
