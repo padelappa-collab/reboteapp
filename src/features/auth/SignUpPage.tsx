@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { ShieldAlert } from 'lucide-react'
 import { Wordmark } from '@/components/Wordmark'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -6,19 +7,25 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PasswordInput } from './PasswordInput'
 import { registrarConEmail } from './auth.api'
 import { OAuthButtons } from './OAuthButtons'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [password2, setPassword2] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [enviado, setEnviado] = useState(false)
+
+  // vacías no cuentan como iguales: si no, el botón se habilitaría al entrar
+  const coinciden = password.length > 0 && password === password2
 
   async function enviar(e: FormEvent) {
     e.preventDefault()
     setEnviando(true)
     try {
+      if (!coinciden) throw new Error('Las contraseñas no coinciden')
       await registrarConEmail(email, password)
       setEnviado(true)
     } catch (error) {
@@ -76,18 +83,54 @@ export default function SignUpPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="new-password"
-                minLength={6}
+                minLength={8}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <p className="text-xs text-muted-foreground">Mínimo 6 caracteres.</p>
+              <p className="text-xs text-muted-foreground">Mínimo 8 caracteres.</p>
             </div>
-            <Button type="submit" className="h-11 w-full" disabled={enviando}>
+
+            <div className="grid gap-2">
+              <Label htmlFor="password2">Repite la contraseña</Label>
+              <PasswordInput
+                id="password2"
+                autoComplete="new-password"
+                required
+                value={password2}
+                onChange={(e) => setPassword2(e.target.value)}
+              />
+              {/* el aviso solo cuando ya escribió algo: señalar un error antes
+                  de que exista es regañar por adelantado */}
+              {password2 && !coinciden && (
+                <p className="text-xs text-destructive">Las dos no coinciden.</p>
+              )}
+            </div>
+
+            {/*
+              El aviso de no reutilizar la contraseña del correo.
+ 
+              Va aquí y no en un enlace de ayuda porque es el único momento en
+              que sirve: cuando la persona está a punto de escribirla. Y es real:
+              quien usa la del correo y pierde esta cuenta, pierde también la vía
+              para recuperarla.
+            */}
+            <div className="flex items-start gap-2 rounded-[var(--radius)] bg-elevated p-3">
+              <ShieldAlert className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">
+                No uses la misma contraseña de tu correo. Si alguien la
+                descubriera aquí, entraría también a tu correo, que es por donde
+                se recupera todo lo demás.
+              </p>
+            </div>
+            <Button
+              type="submit"
+              className="h-11 w-full"
+              disabled={enviando || !coinciden || password.length < 8}
+            >
               {enviando ? 'Creando…' : 'Crear cuenta'}
             </Button>
           </form>

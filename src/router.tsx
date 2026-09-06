@@ -12,7 +12,6 @@ import CreateStoryPage from '@/features/stories/CreateStoryPage'
 import PostPage from '@/features/feed/PostPage'
 import BoardPostPage from '@/features/board/BoardPostPage'
 import CourtsPage from '@/features/courts/CourtsPage'
-import DesignPreviewPage from '@/features/dev/DesignPreviewPage'
 import CreateMatchPage from '@/features/matches/CreateMatchPage'
 import MatchDetailPage from '@/features/matches/MatchDetailPage'
 import MatchesListPage from '@/features/matches/MatchesListPage'
@@ -30,9 +29,6 @@ import TournamentsListPage from '@/features/tournaments/TournamentsListPage'
 export const router = createBrowserRouter([
   // públicas: Google y las tiendas las exigen accesibles sin sesión
   { path: '/privacidad', element: <PrivacyPage /> },
-  // temporal: vista del rediseño con datos inventados, sin sesión. Se borra
-  // junto con su archivo cuando el sistema de diseño esté aprobado.
-  { path: '/vista-diseno', element: <DesignPreviewPage /> },
   { path: '/terminos', element: <TermsPage /> },
   {
     element: <GuestRoute />,

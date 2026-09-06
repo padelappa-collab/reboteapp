@@ -5,7 +5,6 @@ export interface Insignia {
   id: string
   nombre: string
   descripcion: string
-  icono: string
   categoria: string
   orden: number
   /** Fecha en que la ganó, o null si todavía no la tiene. */

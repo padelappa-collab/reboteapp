@@ -54,18 +54,10 @@ export function StoryViewer({
   autores,
   indiceInicial,
   onCerrar,
-  historiasFijas,
 }: {
   autores: AutorConHistorias[]
   indiceInicial: number
   onCerrar: () => void
-  /**
-   * Historias ya resueltas, en vez de pedirlas a la base.
-   *
-   * Existe para poder mirar el visor sin sesión desde la vista de diseño. En la
-   * app siempre va sin esto y las trae de la base.
-   */
-  historiasFijas?: Historia[]
 }) {
   const [iAutor, setIAutor] = useState(indiceInicial)
   const [iHistoria, setIHistoria] = useState(0)
@@ -116,13 +108,6 @@ export function StoryViewer({
 
   // ------------------------------------------------------------- carga
   useEffect(() => {
-    if (historiasFijas) {
-      setHistorias(historiasFijas)
-      setIHistoria(0)
-      setCargando(false)
-      return
-    }
-
     let vigente = true
     setCargando(true)
     historiasDe(autor.user_id)
@@ -140,16 +125,16 @@ export function StoryViewer({
     return () => {
       vigente = false
     }
-  }, [autor.user_id, historiasFijas])
+  }, [autor.user_id])
 
   // --------------------------------------------------- marcar como vista
   useEffect(() => {
-    if (actual && !actual.visto && !historiasFijas) verHistoria(actual.id)
-  }, [actual, historiasFijas])
+    if (actual && !actual.visto) verHistoria(actual.id)
+  }, [actual])
 
   // -------------------------------------------- me gusta y quiénes lo dieron
   useEffect(() => {
-    if (!actual || !perfil || historiasFijas) {
+    if (!actual || !perfil) {
       setMeGusta(false)
       setQuienes(null)
       return
@@ -172,7 +157,7 @@ export function StoryViewer({
     return () => {
       vigente = false
     }
-  }, [actual, perfil, autor.soy_yo, historiasFijas])
+  }, [actual, perfil, autor.soy_yo])
 
   /**
    * Quitar la historia que se está viendo.
@@ -341,7 +326,7 @@ export function StoryViewer({
         </div>
         {/* borrar solo lo tuyo, y solo desde el visor: es donde estás viendo
             exactamente la historia que vas a quitar */}
-        {autor.soy_yo && actual && !historiasFijas && (
+        {autor.soy_yo && actual && (
           <button
             type="button"
             aria-label="Borrar esta historia"
