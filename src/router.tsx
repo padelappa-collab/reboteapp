@@ -8,6 +8,7 @@ import BoardPage from '@/features/board/BoardPage'
 import SocialPage from '@/features/feed/SocialPage'
 import PlayerPage from '@/features/feed/PlayerPage'
 import CreatePostPage from '@/features/feed/CreatePostPage'
+import CreateStoryPage from '@/features/stories/CreateStoryPage'
 import PostPage from '@/features/feed/PostPage'
 import BoardPostPage from '@/features/board/BoardPostPage'
 import CourtsPage from '@/features/courts/CourtsPage'
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
           { path: '/jugador/:id', element: <PlayerPage /> },
           { path: '/publicacion/:id', element: <PostPage /> },
           { path: '/publicar', element: <CreatePostPage /> },
+          { path: '/historia/nueva', element: <CreateStoryPage /> },
           { path: '/partidos', element: <MatchesListPage /> },
           { path: '/partidos/nuevo', element: <CreateMatchPage /> },
           { path: '/partidos/:id', element: <MatchDetailPage /> },

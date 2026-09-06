@@ -1,15 +1,13 @@
 import { Plus } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { useCallback, useEffect, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { colorDeAvatar, iniciales } from '@/components/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/useAuth'
 import { cn } from '@/lib/utils'
-import { historiasActivas, publicarHistoria, type AutorConHistorias } from './stories.api'
+import { historiasActivas, type AutorConHistorias } from './stories.api'
 import { StoryViewer } from './StoryViewer'
-
-const MAXIMO = 5 * 1024 * 1024
 
 /**
  * La fila de historias, arriba del feed.
@@ -23,9 +21,8 @@ const MAXIMO = 5 * 1024 * 1024
  */
 export function StoriesBar() {
   const { perfil } = useAuth()
-  const entrada = useRef<HTMLInputElement>(null)
+  const navegar = useNavigate()
   const [autores, setAutores] = useState<AutorConHistorias[] | null>(null)
-  const [subiendo, setSubiendo] = useState(false)
   const [viendo, setViendo] = useState<number | null>(null)
 
   const cargar = useCallback(async () => {
@@ -47,28 +44,6 @@ export function StoriesBar() {
   // el resto de la fila, sin ti: tu círculo se pinta aparte y siempre primero
   const otros = (autores ?? []).filter((a) => !a.soy_yo)
 
-  async function elegida(archivo: File) {
-    if (!archivo.type.startsWith('image/')) {
-      toast.error('Tiene que ser una imagen')
-      return
-    }
-    if (archivo.size > MAXIMO) {
-      toast.error('La foto pesa más de 5 MB')
-      return
-    }
-
-    setSubiendo(true)
-    try {
-      await publicarHistoria(perfil!.id, archivo)
-      toast.success('Historia publicada. Dura 24 horas.')
-      await cargar()
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo publicar')
-    } finally {
-      setSubiendo(false)
-    }
-  }
-
   if (autores === null) {
     return (
       <div className="flex gap-3 overflow-hidden py-1">
@@ -89,10 +64,9 @@ export function StoriesBar() {
         <button
           type="button"
           className="flex w-16 shrink-0 flex-col items-center gap-1"
-          disabled={subiendo}
           onClick={() => {
             if (mias) setViendo(0)
-            else entrada.current?.click()
+            else navegar('/historia/nueva')
           }}
         >
           <span className="relative">
@@ -101,7 +75,6 @@ export function StoriesBar() {
                 'size-16',
                 mias && mias.sin_ver > 0 && 'ring-2 ring-offset-2 ring-anillo',
                 mias && mias.sin_ver === 0 && 'ring-2 ring-offset-2 ring-border',
-                subiendo && 'opacity-50',
               )}
             >
               {perfil.foto_url && <AvatarImage src={perfil.foto_url} alt="" />}
@@ -117,9 +90,10 @@ export function StoriesBar() {
               className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center
                          rounded-full border-2 border-background bg-primary text-primary-foreground"
               onClick={(e) => {
-                // el "+" siempre sube, aunque ya tengas historias que mirar
+                // el "+" siempre lleva a publicar, aunque ya tengas historias
+                // que mirar
                 e.stopPropagation()
-                entrada.current?.click()
+                navegar('/historia/nueva')
               }}
             >
               <Plus className="size-3" />
@@ -164,18 +138,6 @@ export function StoriesBar() {
           </button>
         ))}
       </div>
-
-      <input
-        ref={entrada}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        className="hidden"
-        onChange={(e) => {
-          const archivo = e.target.files?.[0]
-          e.target.value = ''
-          if (archivo) elegida(archivo)
-        }}
-      />
 
       {viendo !== null && fila.length > 0 && (
         <StoryViewer
