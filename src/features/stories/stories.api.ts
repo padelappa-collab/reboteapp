@@ -1,3 +1,4 @@
+import { borrarArchivo } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
 import type { HistoriaAutorRow, HistoriaRow, LikeHistoriaRow } from '@/types/database'
 
@@ -58,8 +59,23 @@ export async function publicarHistoria(userId: string, archivo: File) {
 }
 
 export async function borrarHistoria(id: string) {
+  // Hay que leer antes de borrar: la fila es la única pista de dónde viven la
+  // foto y el vídeo, y una vez borrada no hay forma de encontrarlos.
+  const { data } = await supabase
+    .from('stories')
+    .select('imagen_url, video_uid')
+    .eq('id', id)
+    .maybeSingle()
+
   const { error } = await supabase.from('stories').delete().eq('id', id)
   if (error) throw new Error(error.message)
+
+  await borrarArchivo(data?.imagen_url)
+  if (data?.video_uid) {
+    void supabase.functions.invoke('video', {
+      body: { accion: 'borrar', uid: data.video_uid },
+    })
+  }
 }
 
 /** ¿Ya le di me gusta a esta historia? */

@@ -153,11 +153,23 @@ export const ImageCropper = forwardRef<
         salidaAlto,
       )
 
+      // WebP en vez de JPEG, y 0.82 en vez de 0.9. En una pantalla de teléfono
+      // no se distingue, y el archivo baja de medio mega a algo más de cien
+      // kilobytes. Como cada foto se descarga una vez por cada persona que pasa
+      // por el feed, ese factor de cuatro es lo que decide si el tráfico del mes
+      // cabe en el plan gratuito o se acaba a mitad.
+      //
+      // Si el navegador no supiera WebP devolvería un PNG enorme sin avisar, así
+      // que se comprueba antes en vez de confiar.
+      const tipo = lienzo.toDataURL('image/webp').startsWith('data:image/webp')
+        ? 'image/webp'
+        : 'image/jpeg'
+
       return new Promise<Blob>((resolver, fallar) => {
         lienzo.toBlob(
           (b) => (b ? resolver(b) : fallar(new Error('No se pudo recortar la foto'))),
-          'image/jpeg',
-          0.9,
+          tipo,
+          0.82,
         )
       })
     },

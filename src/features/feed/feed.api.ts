@@ -1,3 +1,4 @@
+import { borrarArchivo } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
 import type {
   FeedPostRow,
@@ -181,8 +182,18 @@ export async function editarPublicacion(id: string, contenido: string | null) {
 }
 
 export async function borrarPublicacion(id: string) {
+  // La foto primero: si se borra la fila antes, se pierde la URL y el archivo
+  // se queda en el bucket sin que nadie sepa ya a qué pertenecía.
+  const { data } = await supabase
+    .from('feed_posts')
+    .select('imagen_url')
+    .eq('id', id)
+    .maybeSingle()
+
   const { error } = await supabase.from('feed_posts').delete().eq('id', id)
   if (error) throw new Error(error.message)
+
+  await borrarArchivo(data?.imagen_url)
 }
 
 /** Sube la foto a la carpeta del jugador y devuelve su URL pública. */

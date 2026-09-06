@@ -54,7 +54,11 @@ export default function CreatePostPage() {
     setEnviando(true)
     try {
       const recortada = await recorte.current!.recortar()
-      const listo = new File([recortada], 'publicacion.jpg', { type: 'image/jpeg' })
+      const listo = new File(
+        [recortada],
+        `publicacion.${recortada.type === 'image/webp' ? 'webp' : 'jpg'}`,
+        { type: recortada.type },
+      )
       const url = await subirImagen(perfil!.id, listo)
 
       await crearPublicacion({

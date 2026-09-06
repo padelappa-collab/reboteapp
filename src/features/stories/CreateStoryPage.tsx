@@ -86,7 +86,11 @@ export default function CreateStoryPage() {
         await publicarVideo(perfil!.id, video)
       } else {
         const recortada = await recorte.current!.recortar()
-        const listo = new File([recortada], 'historia.jpg', { type: 'image/jpeg' })
+        const listo = new File(
+        [recortada],
+        `historia.${recortada.type === 'image/webp' ? 'webp' : 'jpg'}`,
+        { type: recortada.type },
+      )
         await publicarHistoria(perfil!.id, listo)
       }
       toast.success('Historia publicada. Dura 24 horas.')
