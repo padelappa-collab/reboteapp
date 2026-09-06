@@ -49,7 +49,14 @@ export function AvatarUploader() {
 
       const { error: fallo } = await supabase.storage
         .from('avatars')
-        .upload(ruta, archivo, { cacheControl: '3600', upsert: false })
+        .upload(ruta, archivo, {
+      // Un año. Los archivos llevan un nombre único e irrepetible, así que una
+      // foto nunca cambia de contenido: volver a pedirla al servidor es tráfico
+      // tirado. Con la hora que había por defecto, la misma persona se
+      // descargaba el mismo feed varias veces al día.
+      cacheControl: '31536000',
+      upsert: false,
+    })
       if (fallo) throw new Error(fallo.message)
 
       const url = supabase.storage.from('avatars').getPublicUrl(ruta).data.publicUrl
