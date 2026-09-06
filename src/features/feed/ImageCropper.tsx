@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 /**
@@ -38,8 +39,19 @@ export interface RecorteRef {
  */
 export const ImageCropper = forwardRef<
   RecorteRef,
-  { archivo: File; proporcion: number }
->(function ImageCropper({ archivo, proporcion }, ref) {
+  {
+    archivo: File
+    proporcion: number
+    /**
+     * Encajar por alto en vez de por ancho.
+     *
+     * Para una historia el marco tiene que ocupar la pantalla entera, y en una
+     * pantalla de teléfono lo que sobra es alto, no ancho: con `w-full` el
+     * marco 9:16 se saldría por abajo.
+     */
+    llenarAlto?: boolean
+  }
+>(function ImageCropper({ archivo, proporcion, llenarAlto }, ref) {
   const marco = useRef<HTMLDivElement>(null)
   const imagen = useRef<HTMLImageElement | null>(null)
 
@@ -138,10 +150,15 @@ export const ImageCropper = forwardRef<
   }))
 
   return (
-    <div className="space-y-3">
+    <div className={llenarAlto ? 'flex h-full flex-col gap-3' : 'space-y-3'}>
       <div
         ref={marco}
-        className="relative w-full touch-none select-none overflow-hidden rounded-[var(--radius)] bg-black"
+        className={cn(
+          'relative touch-none select-none overflow-hidden bg-black',
+          llenarAlto
+            ? 'mx-auto min-h-0 flex-1 rounded-[var(--radius)]'
+            : 'w-full rounded-[var(--radius)]',
+        )}
         style={{ aspectRatio: String(proporcion) }}
         onPointerDown={(e) => {
           arrastre.current = { x: e.clientX - pos.x, y: e.clientY - pos.y }
@@ -192,9 +209,11 @@ export const ImageCropper = forwardRef<
         />
       </label>
 
-      <p className="text-xs text-muted-foreground">
-        Arrastra la foto para elegir qué queda dentro del marco.
-      </p>
+      {!llenarAlto && (
+        <p className="text-xs text-muted-foreground">
+          Arrastra la foto para elegir qué queda dentro del marco.
+        </p>
+      )}
     </div>
   )
 })

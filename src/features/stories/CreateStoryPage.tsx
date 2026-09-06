@@ -58,7 +58,7 @@ export default function CreateStoryPage() {
   }
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="flex h-[calc(100dvh-3.5rem-4rem)] flex-col gap-3">
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -80,7 +80,7 @@ export default function CreateStoryPage() {
         <button
           type="button"
           onClick={() => entrada.current?.click()}
-          className="flex min-h-72 w-full flex-col items-center justify-center gap-3
+          className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-3
                      rounded-[var(--radius)] border border-dashed px-8 text-center"
         >
           <span className="grid size-16 place-items-center rounded-full bg-elevated">
@@ -93,15 +93,20 @@ export default function CreateStoryPage() {
         </button>
       ) : (
         <>
-          {/* el marco es el mismo que verá quien la abra, así que lo que se
-              encuadra aquí es literalmente lo que se va a publicar */}
-          <div className="mx-auto max-w-64">
-            <ImageCropper ref={recorte} archivo={archivo} proporcion={VERTICAL} />
+          {/* a pantalla completa: el marco es del tamaño y la forma con la que
+              se va a ver, no una miniatura de la que hay que fiarse */}
+          <div className="min-h-0 flex-1">
+            <ImageCropper
+              ref={recorte}
+              archivo={archivo}
+              proporcion={VERTICAL}
+              llenarAlto
+            />
           </div>
 
           <Button
             variant="outline"
-            className="h-11 w-full"
+            className="h-11 w-full shrink-0"
             onClick={() => entrada.current?.click()}
           >
             Cambiar de foto

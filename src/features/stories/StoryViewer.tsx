@@ -1,11 +1,13 @@
-import { Heart, X } from 'lucide-react'
+import { Heart, Trash2, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/features/auth/useAuth'
+import { toast } from 'sonner'
 import {
   alternarLikeHistoria,
+  borrarHistoria,
   historiasDe,
   likesDeHistoria,
   verHistoria,
@@ -72,6 +74,7 @@ export function StoryViewer({
   const [arrastre, setArrastre] = useState(0)
   const [meGusta, setMeGusta] = useState(false)
   const [quienes, setQuienes] = useState<LikeHistoriaRow[] | null>(null)
+  const [borrando, setBorrando] = useState(false)
 
   const { perfil } = useAuth()
 
@@ -168,6 +171,30 @@ export function StoryViewer({
     }
   }, [actual, perfil, autor.soy_yo, historiasFijas])
 
+  /**
+   * Quitar la historia que se está viendo.
+   *
+   * Después no se vuelve al principio: se pasa a la siguiente si queda alguna, y
+   * si era la última se cierra el visor. Quedarse en una pantalla vacía después
+   * de borrar es la forma más rápida de que alguien crea que no funcionó.
+   */
+  async function quitar() {
+    if (!actual || borrando) return
+    setBorrando(true)
+    try {
+      await borrarHistoria(actual.id)
+      const quedan = historias.filter((h) => h.id !== actual.id)
+      setHistorias(quedan)
+      if (quedan.length === 0) onCerrar()
+      else setIHistoria((i) => Math.min(i, quedan.length - 1))
+      toast.success('Historia borrada')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo borrar')
+    } finally {
+      setBorrando(false)
+    }
+  }
+
   // ------------------------------------------------------ avance automático
   useEffect(() => {
     if (!actual || pausado) return
@@ -250,6 +277,21 @@ export function StoryViewer({
           </p>
           {actual && <p className="text-xs text-white/60">{hace(actual.created_at)}</p>}
         </div>
+        {/* borrar solo lo tuyo, y solo desde el visor: es donde estás viendo
+            exactamente la historia que vas a quitar */}
+        {autor.soy_yo && actual && !historiasFijas && (
+          <button
+            type="button"
+            aria-label="Borrar esta historia"
+            className="p-1 text-white/80 disabled:opacity-40"
+            disabled={borrando}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={quitar}
+          >
+            <Trash2 className="size-5" />
+          </button>
+        )}
+
         <button
           type="button"
           aria-label="Cerrar"
