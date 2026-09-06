@@ -15,6 +15,11 @@
 --   2. Borrar las cuentas en Authentication > Users (instrucciones aparte).
 --   3. Vaciar el almacenamiento: al final de este archivo.
 --
+-- El paso 2 exige tener aplicada la migracion
+-- 20260906150000_avisar_tolera_cuentas_borradas.sql. Sin ella el panel falla
+-- con "Database error deleting user": la cascada despierta a los disparadores
+-- que anuncian una salida y estos intentan citar a alguien que ya no existe.
+--
 -- Los pasos 1 y 2 se pueden hacer en cualquier orden. `public.users.id` apunta
 -- a `auth.users` con borrado en cascada, así que borrar las cuentas del panel
 -- se lleva por delante casi todo esto por su cuenta. Se hace igualmente aquí
