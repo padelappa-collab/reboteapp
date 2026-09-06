@@ -3,12 +3,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { CategoryBadge } from '@/components/CategoryBadge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/useAuth'
 import { BadgeGrid } from '@/features/badges/BadgeGrid'
+import { EloCard } from '@/features/profile/EloCard'
+import { ProfileStats } from '@/features/profile/ProfileStats'
+import { UserAvatar } from '@/components/UserAvatar'
+import { StoryViewer } from '@/features/stories/StoryViewer'
+import { historiasDe, type Historia } from '@/features/stories/stories.api'
+import { cn } from '@/lib/utils'
 import { conversacionCon } from '@/features/messages/messages.api'
 import { supabase } from '@/lib/supabase'
 import type { UserRow } from '@/types/database'
@@ -23,14 +28,6 @@ import {
 } from './feed.api'
 import { FeedPostCard } from './FeedPostCard'
 
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
-
 /** Perfil público de otro jugador: su nivel, sus insignias y su feed. */
 export default function PlayerPage() {
   const { id } = useParams<{ id: string }>()
@@ -42,6 +39,8 @@ export default function PlayerPage() {
   const [posts, setPosts] = useState<Publicacion[]>([])
   const [cargando, setCargando] = useState(true)
   const [enviando, setEnviando] = useState(false)
+  const [historias, setHistorias] = useState<Historia[]>([])
+  const [viendo, setViendo] = useState(false)
 
   const cargar = useCallback(async () => {
     if (!id || !perfil) return
@@ -63,6 +62,18 @@ export default function PlayerPage() {
   useEffect(() => {
     cargar()
   }, [cargar])
+
+  // sus historias activas: solo las devuelve la base si puedes verlas
+  useEffect(() => {
+    if (!id) return
+    let vigente = true
+    historiasDe(id)
+      .then((h) => vigente && setHistorias(h))
+      .catch(() => vigente && setHistorias([]))
+    return () => {
+      vigente = false
+    }
+  }, [id])
 
   if (cargando) return <Skeleton className="h-96 w-full" />
   if (!jugador) return <p className="text-sm text-muted-foreground">Jugador no encontrado.</p>
@@ -126,30 +137,55 @@ export default function PlayerPage() {
         Volver
       </Link>
 
+      {/* mismo orden que tu propio perfil: quién es, sus números, y lo que
+          publica. Que la ficha de otro se lea distinta a la tuya obliga a
+          reaprender la pantalla cada vez que cambias de una a otra. */}
       <div className="flex items-center gap-3">
-        <Avatar className="size-16">
-          {jugador.foto_url && <AvatarImage src={jugador.foto_url} alt="" />}
-          <AvatarFallback>{iniciales(jugador.nombre)}</AvatarFallback>
-        </Avatar>
+        {/*
+          La foto abre sus historias, como en cualquier app social. El anillo
+          solo aparece si de verdad tiene alguna activa: un anillo permanente
+          deja de significar nada y la gente toca en vano.
+        */}
+        {historias.length > 0 ? (
+          <button
+            type="button"
+            aria-label={`Ver las historias de ${jugador.nombre}`}
+            className="shrink-0 rounded-full"
+            onClick={() => setViendo(true)}
+          >
+            <UserAvatar
+              id={jugador.id}
+              nombre={jugador.nombre}
+              fotoUrl={jugador.foto_url}
+              className={cn(
+                'size-16 ring-2 ring-offset-2 ring-offset-background',
+                historias.some((h) => !h.visto) ? 'ring-anillo' : 'ring-border',
+              )}
+            />
+          </button>
+        ) : (
+          <UserAvatar
+            id={jugador.id}
+            nombre={jugador.nombre}
+            fotoUrl={jugador.foto_url}
+            className="size-16"
+          />
+        )}
 
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-semibold">{jugador.nombre}</h1>
-          {jugador.username && (
-            <p className="truncate text-sm text-muted-foreground">@{jugador.username}</p>
-          )}
-          <p className="text-sm text-muted-foreground">
-            {jugador.ciudad} · {relacion?.seguidores ?? 0} seguidores
-          </p>
-          {eloBase !== null && peakBase !== null && (
-            <CategoryBadge
-              elo={eloBase}
-              ranking={jugador.genero}
-              peakElo={peakBase}
-              className="mt-1"
-            />
-          )}
+          <p className="truncate text-sm text-muted-foreground">@{jugador.username}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {eloBase !== null && peakBase !== null && (
+              <CategoryBadge elo={eloBase} ranking={jugador.genero} peakElo={peakBase} />
+            )}
+            <span className="numero text-sm">{eloBase ?? jugador.elo_mixto}</span>
+            <span className="text-xs text-muted-foreground">· {jugador.ciudad}</span>
+          </div>
         </div>
       </div>
+
+      <ProfileStats userId={jugador.id} />
 
       {!soyYo && (
         <div className="flex gap-2">
@@ -228,10 +264,8 @@ export default function PlayerPage() {
         </Card>
       ) : (
         <>
-          <BadgeGrid userId={jugador.id} />
-
           {posts.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-8 text-center">
+            <div className="rounded-[var(--radius)] border border-dashed p-8 text-center">
               <p className="text-sm text-muted-foreground">
                 {soyYo ? 'Todavía no has publicado nada.' : 'Todavía no ha publicado nada.'}
               </p>
@@ -248,7 +282,46 @@ export default function PlayerPage() {
               ))}
             </div>
           )}
+
+          <div className="h-px bg-border" />
+
+          {/* el ELO y las insignias cierran, igual que en tu perfil */}
+          <div className="space-y-3">
+            {eloBase !== null && peakBase !== null && (
+              <EloCard ranking={jugador.genero} elo={eloBase} peakElo={peakBase} />
+            )}
+            <EloCard
+              ranking="mixto"
+              elo={jugador.elo_mixto}
+              peakElo={jugador.peak_elo_mixto}
+            />
+          </div>
+
+          <BadgeGrid userId={jugador.id} />
         </>
+      )}
+
+      {viendo && jugador && (
+        <StoryViewer
+          autores={[
+            {
+              user_id: jugador.id,
+              nombre: jugador.nombre,
+              username: jugador.username,
+              foto_url: jugador.foto_url,
+              total: historias.length,
+              sin_ver: historias.filter((h) => !h.visto).length,
+              ultima: historias[historias.length - 1]?.created_at ?? '',
+              soy_yo: soyYo,
+            },
+          ]}
+          indiceInicial={0}
+          onCerrar={() => {
+            setViendo(false)
+            // al volver, las que acabas de ver ya no llevan anillo
+            historiasDe(jugador.id).then(setHistorias).catch(() => {})
+          }}
+        />
       )}
     </div>
   )
