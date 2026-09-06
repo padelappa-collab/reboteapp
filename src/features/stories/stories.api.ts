@@ -131,9 +131,17 @@ export async function publicarVideo(userId: string, archivo: File) {
   // un mismo mensaje hacía indistinguibles un token mal pegado, una cuenta
   // sin Stream y una función sin desplegar: los tres decían lo mismo.
   if (error) {
-    const detalle = (data as { detalle?: string } | null)?.detalle
+    // En un fallo HTTP la librería deja `data` en null y guarda el cuerpo de
+    // la respuesta dentro del error. Buscar el motivo en `data` no encontraba
+    // nada, y por eso el mensaje seguía saliendo pelado.
+    const cuerpo = await (error as { context?: Response }).context
+      ?.json()
+      .catch(() => null)
+    const detalle = (cuerpo as { detalle?: string } | null)?.detalle
     throw new Error(
-      detalle ? `No se pudo preparar la subida: ${detalle}` : 'No se pudo preparar la subida',
+      detalle
+        ? `No se pudo preparar la subida: ${detalle}`
+        : 'No se pudo preparar la subida',
     )
   }
 

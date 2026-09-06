@@ -26,14 +26,33 @@ const SEGUNDOS_MAX = 30
 
 const API = `https://api.cloudflare.com/client/v4/accounts/${CUENTA}/stream`
 
+/**
+ * Los permisos para el navegador.
+ *
+ * Esta es la única función que se llama desde el teléfono; las otras dos las
+ * llama la base de datos, servidor contra servidor, y por eso nunca hicieron
+ * falta. El navegador pregunta antes con un OPTIONS si tiene permiso, y si no
+ * se le contesta no llega a mandar la petición de verdad: el fallo aparece
+ * como si la función no existiera.
+ */
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
 function json(cuerpo: unknown, estado = 200) {
   return new Response(JSON.stringify(cuerpo), {
     status: estado,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { ...CORS, 'Content-Type': 'application/json' },
   })
 }
 
 Deno.serve(async (peticion) => {
+  if (peticion.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: CORS })
+  }
+
   try {
     const { accion, uid } = await peticion.json()
 
