@@ -1,8 +1,8 @@
 import { Lock, Search, X } from 'lucide-react'
+import { UserAvatar } from '@/components/UserAvatar'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/features/auth/useAuth'
@@ -12,14 +12,6 @@ import {
   seguir,
   type JugadorBuscado,
 } from './feed.api'
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 /** Buscar jugadores y seguirlos sin salir de la pantalla. */
 export function UserSearch() {
@@ -135,12 +127,13 @@ export function UserSearch() {
           {resultados.map((j) => (
             <div key={j.id} className="flex items-center gap-3 p-2.5">
               <Link to={`/jugador/${j.id}`}>
-                <Avatar className="size-9">
-                  {j.foto_url && <AvatarImage src={j.foto_url} alt="" />}
-                  <AvatarFallback className="text-xs">
-                    {iniciales(j.nombre)}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  id={j.id}
+                  nombre={j.nombre}
+                  fotoUrl={j.foto_url}
+                  className="size-9"
+                  textoClassName="text-xs"
+                />
               </Link>
 
               <Link to={`/jugador/${j.id}`} className="min-w-0 flex-1">

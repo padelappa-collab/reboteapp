@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { UserAvatar } from '@/components/UserAvatar'
 import { Link } from 'react-router-dom'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Sheet,
   SheetContent,
@@ -15,14 +15,6 @@ import {
   siguiendoDe,
   type JugadorBreve,
 } from './feed.api'
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 type Lado = 'seguidores' | 'siguiendo'
 
@@ -116,10 +108,12 @@ export function FollowsCard({ userId }: { userId: string }) {
                 className="flex items-center gap-3 py-3"
                 onClick={() => setAbierto(null)}
               >
-                <Avatar className="size-10">
-                  {u.foto_url && <AvatarImage src={u.foto_url} alt="" />}
-                  <AvatarFallback>{iniciales(u.nombre)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  id={u.id}
+                  nombre={u.nombre}
+                  fotoUrl={u.foto_url}
+                  className="size-10"
+                />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{u.nombre}</p>
                   {u.username && (

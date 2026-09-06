@@ -132,8 +132,18 @@ describe('resumenCategoria', () => {
     expect(r.categoria).toBe('4ta')
     expect(r.estrellas).toBe(2)
     expect(r.elo).toBe(1925)
-    expect(r.progreso).toBeCloseTo(0.5)
+    // el avance va del suelo de la categoría (1750 - 75) al umbral siguiente
+    expect(r.progreso).toBeCloseTo((1925 - 1675) / (2100 - 1675))
     expect(r.faltaParaSubir).toBe(175)
+  })
+
+  it('avanza aunque la histéresis te tenga por debajo del umbral', () => {
+    // 698 en 7ma: bajó de los 700 de entrada pero sigue en su categoría. Antes
+    // daba cero y la barra se veía rota.
+    const r = resumenCategoria(698, 'masculino', 723)
+    expect(r.categoria).toBe('7ma')
+    expect(r.progreso).toBeGreaterThan(0)
+    expect(r.progreso).toBeLessThan(0.3)
   })
 
   it('no ofrece siguiente categoría en la cima de la escala', () => {

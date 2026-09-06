@@ -1,4 +1,6 @@
 import { Plus } from 'lucide-react'
+import { CalendarPlus, Swords } from 'lucide-react'
+import { EmptyState, NextStepCard } from '@/components/EmptyState'
 import { Link } from 'react-router-dom'
 import { MatchCard } from '@/components/MatchCard'
 import { Button } from '@/components/ui/button'
@@ -35,11 +37,27 @@ export default function MatchesListPage() {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!cargando && partidos.length === 0 && (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Todavía no has registrado partidos. El primero te da una insignia.
-          </p>
-        </div>
+        <EmptyState
+          icono={Swords}
+          titulo="Aún no has registrado partidos"
+          texto="El primero te da una insignia y arranca tu ELO."
+        >
+          <Button asChild className="h-10">
+            <Link to="/partidos/nuevo">Registrar partido</Link>
+          </Button>
+        </EmptyState>
+      )}
+
+      {!cargando && partidos.length > 0 && partidos.length < 3 && (
+        <NextStepCard
+          icono={CalendarPlus}
+          titulo="Registra tu próximo partido"
+          texto="Cada partido confirmado mueve tu ELO y te acerca a la siguiente categoría."
+        >
+          <Button asChild variant="outline" size="sm" className="mt-2 h-9">
+            <Link to="/partidos/nuevo">Registrar</Link>
+          </Button>
+        </NextStepCard>
       )}
 
       {pendientes.length > 0 && (

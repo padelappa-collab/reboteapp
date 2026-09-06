@@ -1,4 +1,6 @@
 import { Trophy } from 'lucide-react'
+import { ClipboardList, SearchX } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { enRango, ListFilters, type RangoFecha } from '@/components/ListFilters'
@@ -67,7 +69,7 @@ export default function BoardPage() {
       : 'No estás en ninguna publicación. Apúntate a alguna o crea la tuya.'
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="flex min-h-[calc(100dvh-3.5rem-5rem)] flex-col space-y-4 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Tablón</h1>
         <div className="flex gap-2">
@@ -128,9 +130,13 @@ export default function BoardPage() {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!cargando && lista.length === 0 && (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-sm text-muted-foreground">{vacio}</p>
-        </div>
+        <EmptyState
+          icono={filtrando ? SearchX : ClipboardList}
+          titulo={filtrando ? 'Nada con esos filtros' : 'El tablón está vacío'}
+          texto={vacio}
+        >
+          {!filtrando && <CreatePostSheet onCreada={recargar} />}
+        </EmptyState>
       )}
 
       <div className="space-y-3">

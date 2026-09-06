@@ -1,8 +1,8 @@
 import { ArrowLeft, Send } from 'lucide-react'
+import { UserAvatar } from '@/components/UserAvatar'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -18,14 +18,6 @@ import {
   type Conversacion,
   type Mensaje,
 } from './messages.api'
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 function hora(iso: string) {
   return new Date(iso).toLocaleTimeString('es-CO', {
@@ -67,12 +59,13 @@ function PostCompartido({ mensaje }: { mensaje: Mensaje }) {
 
       <span className="block p-2.5">
         <span className="flex items-center gap-1.5">
-          <Avatar className="size-5">
-            {post.autor?.foto_url && <AvatarImage src={post.autor.foto_url} alt="" />}
-            <AvatarFallback className="text-[9px]">
-              {iniciales(post.autor?.nombre ?? '?')}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            id={post.autor?.id ?? post.id}
+            nombre={post.autor?.nombre ?? '?'}
+            fotoUrl={post.autor?.foto_url}
+            className="size-5"
+            textoClassName="text-[9px]"
+          />
           <span className="truncate text-xs font-medium">
             {post.autor?.nombre ?? 'Publicación'}
           </span>
@@ -199,12 +192,13 @@ export default function ChatPage() {
             to={`/jugador/${otro.otro_id}`}
             className="flex min-w-0 items-center gap-2.5"
           >
-            <Avatar className="size-9">
-              {otro.otro_foto && <AvatarImage src={otro.otro_foto} alt="" />}
-              <AvatarFallback className="text-xs">
-                {iniciales(otro.otro_nombre)}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              id={otro.otro_id}
+              nombre={otro.otro_nombre}
+              fotoUrl={otro.otro_foto}
+              className="size-9"
+              textoClassName="text-xs"
+            />
             <span className="min-w-0">
               <span className="block truncate text-sm font-medium">
                 {otro.otro_username ?? otro.otro_nombre}

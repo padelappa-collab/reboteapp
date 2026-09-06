@@ -153,7 +153,7 @@ export default function TournamentsListPage() {
         }}
       >
         <Select value={formato} onValueChange={setFormato}>
-          <SelectTrigger className="h-10 flex-1">
+          <SelectTrigger className="h-11 flex-1">
             <SelectValue placeholder="Formato" />
           </SelectTrigger>
           <SelectContent>

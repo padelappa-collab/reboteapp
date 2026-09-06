@@ -101,17 +101,21 @@ export function ListFilters({
 }: FiltrosProps) {
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {ATAJOS.map((a) => (
           <button
             key={a.valor}
             type="button"
             onClick={() => onRango(a.valor)}
             className={cn(
-              'rounded-full border px-3 py-1.5 text-xs transition-colors',
+              // ancho mínimo y relleno iguales para todos: con solo padding, los
+              // chips salían de anchos dispares —"Hoy" contra "7 días"— y la fila
+              // se veía desalineada. El alto fijo los alinea con los campos.
+              'h-9 min-w-[4.5rem] rounded-full border px-4 text-xs font-medium',
+              'transition-colors',
               rango === a.valor
                 ? 'border-primary bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-muted',
+                : 'border-border text-muted-foreground hover:bg-muted',
             )}
           >
             {a.texto}
@@ -122,7 +126,7 @@ export function ListFilters({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 px-2 text-xs"
+            className="h-9 px-2 text-xs"
             onClick={onLimpiar}
           >
             <X className="size-3" />
@@ -134,7 +138,7 @@ export function ListFilters({
       {rango === 'exacta' && (
         <Input
           type="date"
-          className="h-10"
+          className="h-11"
           value={fecha}
           onChange={(e) => onFecha(e.target.value)}
         />
@@ -142,7 +146,7 @@ export function ListFilters({
 
       <div className="flex gap-2">
         <Select value={cancha} onValueChange={onCancha}>
-          <SelectTrigger className="h-10 flex-1">
+          <SelectTrigger className="h-11 flex-1">
             <SelectValue placeholder="Cancha" />
           </SelectTrigger>
           <SelectContent>

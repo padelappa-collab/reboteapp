@@ -1,18 +1,12 @@
-import { ArrowLeft, MessageCircle } from 'lucide-react'
+import { ArrowLeft, MessagesSquare } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
+import { Button } from '@/components/ui/button'
+import { UserAvatar } from '@/components/UserAvatar'
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { misConversaciones, type Conversacion } from './messages.api'
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 function hace(iso: string) {
   const minutos = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
@@ -69,13 +63,15 @@ export default function ConversationsPage() {
       )}
 
       {lista?.length === 0 && (
-        <div className="rounded-xl border border-dashed p-8 text-center">
-          <MessageCircle className="mx-auto mb-2 size-6 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Todavía no tienes conversaciones. Puedes escribirle a cualquiera que
-            sigas desde su perfil.
-          </p>
-        </div>
+        <EmptyState
+          icono={MessagesSquare}
+          titulo="Sin conversaciones"
+          texto="Escríbele a quien sigas desde su perfil, o comparte una publicación para empezar."
+        >
+          <Button asChild variant="outline" className="h-10">
+            <Link to="/social">Buscar jugadores</Link>
+          </Button>
+        </EmptyState>
       )}
 
       {lista && lista.length > 0 && (
@@ -86,12 +82,13 @@ export default function ConversationsPage() {
                 to={`/mensajes/${c.conversation_id}`}
                 className="flex items-center gap-3 p-3"
               >
-                <Avatar className="size-11">
-                  {c.otro_foto && <AvatarImage src={c.otro_foto} alt="" />}
-                  <AvatarFallback className="text-xs">
-                    {iniciales(c.otro_nombre)}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  id={c.otro_id}
+                  nombre={c.otro_nombre}
+                  fotoUrl={c.otro_foto}
+                  className="size-11"
+                  textoClassName="text-xs"
+                />
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">

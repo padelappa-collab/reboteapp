@@ -1,8 +1,8 @@
 import { Heart, MessageCircle, Send, Trash2 } from 'lucide-react'
+import { UserAvatar } from '@/components/UserAvatar'
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -11,14 +11,6 @@ import { cn } from '@/lib/utils'
 import { ShareSheet } from '@/features/messages/ShareSheet'
 import { alternarMeGusta, borrarPublicacion, type Publicacion } from './feed.api'
 import { CommentSheet } from './CommentSheet'
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 function hace(iso: string) {
   const minutos = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
@@ -100,10 +92,13 @@ export function FeedPostCard({
       {/* 1. quién y cuándo */}
       <div className="flex items-center gap-2.5 p-3">
         <Link to={`/jugador/${publicacion.user_id}`}>
-          <Avatar className="size-8">
-            {autor?.foto_url && <AvatarImage src={autor.foto_url} alt="" />}
-            <AvatarFallback className="text-xs">{iniciales(nombreAutor)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            id={publicacion.user_id}
+            nombre={nombreAutor}
+            fotoUrl={autor?.foto_url}
+            className="size-8"
+            textoClassName="text-xs"
+          />
         </Link>
 
         <Link

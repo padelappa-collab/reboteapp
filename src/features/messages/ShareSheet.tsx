@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react'
+import { UserAvatar } from '@/components/UserAvatar'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -13,14 +13,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { compartirPost, genteParaCompartir, type Candidato } from './messages.api'
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 /**
  * Compartir una publicación dentro de la app.
@@ -80,10 +72,13 @@ export function ShareSheet({
           )
         }
       >
-        <Avatar className="size-10">
-          {g.foto_url && <AvatarImage src={g.foto_url} alt="" />}
-          <AvatarFallback className="text-xs">{iniciales(g.nombre)}</AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          id={g.user_id}
+          nombre={g.nombre}
+          fotoUrl={g.foto_url}
+          className="size-10"
+          textoClassName="text-xs"
+        />
 
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium">

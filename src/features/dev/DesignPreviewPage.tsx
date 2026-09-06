@@ -121,13 +121,13 @@ function BarraMuestra({ onAbrir }: { onAbrir: () => void }) {
             <Avatar
               className={cn(
                 'size-16 ring-2 ring-offset-2',
-                g.sinVer ? 'ring-muted-foreground' : 'ring-border',
+                g.sinVer ? 'ring-anillo' : 'ring-border',
               )}
             >
               <AvatarFallback>{g.n.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             {g.propia && (
-              <span className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full border-2 border-background bg-court text-white">
+              <span className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full border-2 border-background bg-primary text-court">
                 <Plus className="size-3" />
               </span>
             )}

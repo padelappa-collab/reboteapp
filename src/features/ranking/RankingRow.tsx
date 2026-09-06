@@ -1,16 +1,8 @@
 import { Link } from 'react-router-dom'
+import { UserAvatar } from '@/components/UserAvatar'
 import { CategoryBadge } from '@/components/CategoryBadge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { Ranking } from '@/lib/categories'
 import { cn } from '@/lib/utils'
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 /**
  * Una fila del ranking.
@@ -50,10 +42,7 @@ export function RankingRow({
         {puesto}
       </span>
 
-      <Avatar className="size-9">
-        {fotoUrl && <AvatarImage src={fotoUrl} alt="" />}
-        <AvatarFallback className="text-xs">{iniciales(nombre)}</AvatarFallback>
-      </Avatar>
+      <UserAvatar id={id} nombre={nombre} fotoUrl={fotoUrl} className="size-9" />
 
       <div className="min-w-0 flex-1">
         <Link

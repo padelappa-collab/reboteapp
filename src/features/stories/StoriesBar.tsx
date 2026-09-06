@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { colorDeAvatar, iniciales } from '@/components/UserAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/useAuth'
 import { cn } from '@/lib/utils'
@@ -9,14 +10,6 @@ import { historiasActivas, publicarHistoria, type AutorConHistorias } from './st
 import { StoryViewer } from './StoryViewer'
 
 const MAXIMO = 5 * 1024 * 1024
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 /**
  * La fila de historias, arriba del feed.
@@ -106,18 +99,23 @@ export function StoriesBar() {
             <Avatar
               className={cn(
                 'size-16',
-                mias && mias.sin_ver > 0 && 'ring-2 ring-offset-2 ring-muted-foreground',
+                mias && mias.sin_ver > 0 && 'ring-2 ring-offset-2 ring-anillo',
                 mias && mias.sin_ver === 0 && 'ring-2 ring-offset-2 ring-border',
                 subiendo && 'opacity-50',
               )}
             >
               {perfil.foto_url && <AvatarImage src={perfil.foto_url} alt="" />}
-              <AvatarFallback>{iniciales(perfil.nombre)}</AvatarFallback>
+              <AvatarFallback
+                className="font-medium text-white"
+                style={{ backgroundColor: colorDeAvatar(perfil.id) }}
+              >
+                {iniciales(perfil.nombre)}
+              </AvatarFallback>
             </Avatar>
 
             <span
               className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center
-                         rounded-full border-2 border-background bg-court text-white"
+                         rounded-full border-2 border-background bg-primary text-court"
               onClick={(e) => {
                 // el "+" siempre sube, aunque ya tengas historias que mirar
                 e.stopPropagation()
@@ -144,11 +142,16 @@ export function StoriesBar() {
                 'size-16 ring-2 ring-offset-2',
                 // un solo tono, dos intensidades: lo único que hay que saber es
                 // si queda algo por ver
-                a.sin_ver > 0 ? 'ring-muted-foreground' : 'ring-border',
+                a.sin_ver > 0 ? 'ring-anillo' : 'ring-border',
               )}
             >
               {a.foto_url && <AvatarImage src={a.foto_url} alt="" />}
-              <AvatarFallback>{iniciales(a.nombre)}</AvatarFallback>
+              <AvatarFallback
+                className="font-medium text-white"
+                style={{ backgroundColor: colorDeAvatar(a.user_id) }}
+              >
+                {iniciales(a.nombre)}
+              </AvatarFallback>
             </Avatar>
             <span
               className={cn(

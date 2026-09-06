@@ -1,4 +1,6 @@
 import { Bell, CheckCheck, Trash2, X } from 'lucide-react'
+import { BellOff } from 'lucide-react'
+import { EmptyState } from '@/components/EmptyState'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -10,6 +12,7 @@ import { cn } from '@/lib/utils'
 import {
   borrarNovedad,
   ICONO_NOVEDAD,
+  ICONO_POR_DEFECTO,
   marcarLeida,
   marcarTodasLeidas,
   novedadesDe,
@@ -72,7 +75,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="flex min-h-[calc(100dvh-3.5rem-5rem)] flex-col space-y-4 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Novedades</h1>
         {sinLeer > 0 && (
@@ -146,12 +149,11 @@ export default function NotificationsPage() {
       )}
 
       {!cargando && lista.length === 0 && (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            No tienes novedades. Aquí te avisamos cuando alguien te agregue a un
-            partido, te siga, comente tus publicaciones o ganes una insignia.
-          </p>
-        </div>
+        <EmptyState
+          icono={BellOff}
+          titulo="Sin novedades"
+          texto="Aquí te avisamos cuando alguien te agregue a un partido, te siga, comente tus publicaciones o ganes una insignia."
+        />
       )}
 
       <div className="divide-y rounded-lg border">
@@ -163,9 +165,17 @@ export default function NotificationsPage() {
               !n.leida && 'bg-primary/5',
             )}
           >
-            <span className="text-lg leading-none">
-              {ICONO_NOVEDAD[n.tipo] ?? '🔔'}
-            </span>
+            {(() => {
+              const Icono = ICONO_NOVEDAD[n.tipo] ?? ICONO_POR_DEFECTO
+              return (
+                <Icono
+                  className={cn(
+                    'mt-0.5 size-5 shrink-0',
+                    n.leida ? 'text-muted-foreground' : 'text-court',
+                  )}
+                />
+              )
+            })()}
 
             <button
               type="button"

@@ -111,7 +111,19 @@ export function resumenCategoria(
     categoria,
     estrellas: nivelEstrella(elo, ranking, peakElo),
     elo,
-    progreso: Math.min(1, Math.max(0, (elo - inicio) / SALTO_CATEGORIA)),
+    // El avance se mide desde el suelo real de la categoría, no desde su
+    // umbral de entrada. La histéresis te mantiene en tu categoría hasta 75
+    // puntos por debajo de ese umbral, así que quien está en esa franja —muy
+    // común justo después de perder un par de partidos— daba un avance
+    // negativo que se recortaba a cero y dejaba la barra plana. Midiendo desde
+    // el suelo, la barra se mueve en todo el rango en el que de verdad puedes
+    // estar sin cambiar de categoría.
+    progreso: esUltima
+      ? Math.min(1, Math.max(0, (elo - inicio) / SALTO_CATEGORIA))
+      : (() => {
+          const suelo = inicio - COLCHON_HISTERESIS
+          return Math.min(1, Math.max(0, (elo - suelo) / (siguiente - suelo)))
+        })(),
     faltaParaSubir: esUltima ? null : Math.max(0, siguiente - elo),
   }
 }

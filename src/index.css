@@ -26,6 +26,7 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-court: var(--court);
+  --color-anillo: var(--anillo);
 
   /* Un solo radio en toda la app. Las variantes existen porque shadcn las usa
      internamente, pero todas caen en el mismo valor: mezclar radios distintos
@@ -77,6 +78,10 @@
 
   /* Verde cancha: el contraste oscuro donde hace falta peso sin gritar. */
   --court: #1D4D3E;
+
+  /* El anillo de las historias sin ver. Gris neutro claro-medio: tiene que
+     avisar de que hay algo nuevo sin competir con el contenido. */
+  --anillo: #C4C4C0;
 }
 
 

@@ -1,7 +1,7 @@
 import { Send } from 'lucide-react'
+import { UserAvatar } from '@/components/UserAvatar'
 import { useEffect, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -12,14 +12,6 @@ import {
 } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { comentar, comentariosDe, type Comentario } from './feed.api'
-
-function iniciales(nombre: string) {
-  return nombre
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? '')
-    .join('')
-}
 
 export function CommentSheet({
   postId,
@@ -89,11 +81,12 @@ export function CommentSheet({
 
           {lista.map((c) => (
             <div key={c.id} className="flex gap-3">
-              <Avatar className="size-8 shrink-0">
-                <AvatarFallback className="text-xs">
-                  {iniciales(c.autor?.nombre ?? '?')}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                id={c.autor?.id ?? c.id}
+                nombre={c.autor?.nombre ?? '?'}
+                className="size-8 shrink-0"
+                textoClassName="text-xs"
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-sm">
                   <span className="font-medium">{c.autor?.nombre ?? '…'}</span>{' '}

@@ -22,7 +22,13 @@ export function CategoryBadge({
   const estrellas = nivelEstrella(elo, ranking, peakElo)
 
   return (
-    <Badge variant="secondary" className={cn('gap-1 font-mono', className)}>
+    // Tinte del verde de marca al 15% en vez de gris neutro: la categoría es de
+    // lo que más se repite en la app, y ese poco de color hace que la marca esté
+    // presente sin que ninguna pantalla se llene de neón.
+    <Badge
+      variant="secondary"
+      className={cn('gap-1 border-primary/25 bg-primary/15 text-foreground', className)}
+    >
       {categoria}
       <StarLevel nivel={estrellas} />
     </Badge>
