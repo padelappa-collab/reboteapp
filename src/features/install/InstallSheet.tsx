@@ -165,6 +165,58 @@ function FlechaVerMas() {
 }
 
 
+/**
+ * La opción "Compartir" dentro del menú de los tres puntos.
+ *
+ * Es la parada intermedia que nadie se espera: el menú de los tres puntos no
+ * lleva a la instalación, lleva a otro menú. Sin dibujo, quien lo abre busca
+ * "Añadir a pantalla de inicio" ahí mismo, no lo ve, y se sale.
+ */
+function OpcionCompartir() {
+  return (
+    <svg
+      viewBox="0 0 240 64"
+      className="w-full"
+      role="img"
+      aria-label="Opción Compartir dentro del menú de los tres puntos"
+    >
+      <rect
+        x="1"
+        y="1"
+        width="238"
+        height="62"
+        rx="12"
+        className="fill-muted stroke-border"
+        strokeWidth="2"
+      />
+
+      <rect x="9" y="35" width="222" height="20" rx="6" className="fill-border/60" />
+
+      <rect x="9" y="8" width="222" height="22" rx="6" className="fill-primary/15" />
+      <text
+        x="20"
+        y="23"
+        className="fill-primary"
+        style={{ fontSize: '11px', fontWeight: 600 }}
+      >
+        Compartir
+      </text>
+      <g
+        className="stroke-primary"
+        strokeWidth="1.8"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M208 18h-2a1.6 1.6 0 0 0-1.6 1.6v4.8A1.6 1.6 0 0 0 206 26h9a1.6 1.6 0 0 0 1.6-1.6v-4.8A1.6 1.6 0 0 0 215 18h-2" />
+        <path d="M210.5 21v-9" />
+        <path d="m207.8 14.7 2.7-2.7 2.7 2.7" />
+      </g>
+    </svg>
+  )
+}
+
+
 /** La opción del menú que hay que buscar, con su icono y su texto. */
 function OpcionAnadir() {
   return (
@@ -339,7 +391,13 @@ function Contenido({ donde }: { donde: Plataforma }) {
             </p>
           </Paso>
 
-          <Paso numero={2} titulo="En el menú que se abre, elige “Compartir”" />
+          <Paso numero={2} titulo="En el menú que se abre, elige “Compartir”">
+            <OpcionCompartir />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Sale arriba del todo. Ojo: los tres puntos no llevan directo a la
+              instalación, llevan a este menú.
+            </p>
+          </Paso>
 
           <Paso numero={3} titulo="Toca la flecha hacia abajo para ver el resto">
             <FlechaVerMas />
