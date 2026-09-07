@@ -1,4 +1,5 @@
-import { LogOut, MapPin } from 'lucide-react'
+import { HelpCircle, LogOut, MapPin } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,7 @@ import { BadgeGrid } from '@/features/badges/BadgeGrid'
 import { MyPostsGrid } from '@/features/feed/MyPostsGrid'
 import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
 import { InstallCard } from '@/features/install/InstallCard'
+import { WelcomeTour } from '@/features/onboarding/WelcomeTour'
 import { PushCard } from '@/features/notifications/PushCard'
 import { CategoryBadge } from '@/components/CategoryBadge'
 import { AvatarUploader } from './AvatarUploader'
@@ -16,6 +18,9 @@ import { ProfileSettingsSheet } from './ProfileSettingsSheet'
 
 export default function ProfilePage() {
   const { perfil, cerrarSesion } = useAuth()
+  // antes del retorno temprano: los hooks no pueden ir detras de un return
+  const [tour, setTour] = useState(false)
+
   if (!perfil) return null
 
   const eloBase = perfil.genero === 'masculino' ? perfil.elo_masculino : perfil.elo_femenino
@@ -101,6 +106,17 @@ export default function ProfilePage() {
       <InstallCard />
 
       <PushCard />
+
+      <Button
+        variant="outline"
+        className="h-11 w-full"
+        onClick={() => setTour(true)}
+      >
+        <HelpCircle className="size-4" />
+        Cómo funciona REBOTEAPP
+      </Button>
+
+      <WelcomeTour abierto={tour} onCerrar={() => setTour(false)} />
 
       <Button
         variant="ghost"

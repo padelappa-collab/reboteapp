@@ -4,6 +4,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { BottomNav } from '@/components/BottomNav'
 import { InstallBanner } from '@/features/install/InstallBanner'
 import { WelcomeSheet } from '@/features/notifications/WelcomeSheet'
+import { WelcomeTour, tourPendiente } from '@/features/onboarding/WelcomeTour'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
@@ -22,7 +23,8 @@ function iniciales(nombre: string) {
 export function AppShell() {
   const { perfil } = useAuth()
   const ubicacion = useLocation()
-  const [pendientes, setPendientes] = useState(0)
+  const [pendientes, setPendientes] = useState(0)
+  const [tour, setTour] = useState(false)
 
   // se recuenta al cambiar de pantalla: sin realtime, es el momento natural
   const contar = useCallback(async () => {
@@ -38,6 +40,12 @@ export function AppShell() {
     contar()
   }, [contar, ubicacion.pathname])
 
+
+  // El recorrido sale una vez, en cuanto hay perfil. Va antes que el
+  // ofrecimiento de avisos para no apilar dos hojas encima de la otra.
+  useEffect(() => {
+    if (perfil && tourPendiente()) setTour(true)
+  }, [perfil])
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       {/*
@@ -111,7 +119,15 @@ export function AppShell() {
         <Outlet />
       </div>
 
-      <WelcomeSheet />
+      <WelcomeTour abierto={tour} onCerrar={() => setTour(false)} />
+
+      {/*
+        Mientras el recorrido esté abierto, el ofrecimiento de avisos ni se
+        monta: dos hojas apiladas se tapan, y la de abajo se queda esperando a
+        que alguien la vea. Al cerrarse el recorrido, esto monta de nuevo y su
+        efecto decide si toca preguntar.
+      */}
+      {!tour && <WelcomeSheet />}
       <InstallBanner />
       <BottomNav />
     </div>

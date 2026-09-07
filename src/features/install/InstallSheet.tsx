@@ -31,7 +31,7 @@ function BarraSafari() {
       viewBox="0 0 240 64"
       className="w-full"
       role="img"
-      aria-label="Barra inferior de Safari con el botón de compartir señalado"
+      aria-label="Barra de Safari con el botón de compartir señalado"
     >
       <rect
         x="1"
@@ -220,12 +220,25 @@ function Contenido({ donde }: { donde: Plataforma }) {
         </p>
 
         <ol className="space-y-4">
-          <Paso numero={1} titulo="Toca el botón de compartir, abajo en el centro">
+          <Paso numero={1} titulo="Toca el botón de compartir">
             <BarraSafari />
+            {/*
+              Safari deja mover la barra de direcciones arriba, y entonces el
+              botón de compartir se va con ella. Quien lo tenga así busca abajo,
+              no lo encuentra, y da por hecho que las instrucciones están
+              desfasadas. Se nombran los dos sitios en vez de suponer uno.
+            */}
+            <p className="mt-1 text-xs text-muted-foreground">
+              Está en la barra de abajo, en el centro. Si tienes la barra de
+              direcciones arriba, el botón está ahí mismo, a la derecha.
+            </p>
           </Paso>
 
           <Paso numero={2} titulo="Baja en el menú y elige “Añadir a pantalla de inicio”">
             <OpcionAnadir />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Hay que deslizar hacia arriba: no sale entre las primeras opciones.
+            </p>
           </Paso>
 
           <Paso numero={3} titulo="Confirma con “Añadir”, arriba a la derecha" />
