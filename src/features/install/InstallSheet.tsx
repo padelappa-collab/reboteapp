@@ -89,6 +89,82 @@ function BarraCompacta() {
   )
 }
 
+/** El icono de compartir, para reconocerlo si sale directo. */
+function IconoCompartir() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="inline-block size-5 align-text-bottom"
+      role="img"
+      aria-label="Botón de compartir"
+    >
+      <g
+        className="stroke-primary"
+        strokeWidth="1.8"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M8 11H6.5A1.5 1.5 0 0 0 5 12.5v7A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-7a1.5 1.5 0 0 0-1.5-1.5H16" />
+        <path d="M12 14V3" />
+        <path d="m8.5 6.5 3.5-3.5 3.5 3.5" />
+      </g>
+    </svg>
+  )
+}
+
+/**
+ * La flecha que despliega el resto del menú de compartir.
+ *
+ * El menú sale con unas pocas opciones y una flecha hacia abajo que enseña las
+ * demás. "Añadir a pantalla de inicio" está entre las escondidas, así que quien
+ * no toca esa flecha recorre la lista corta, no la ve, y concluye que su
+ * teléfono no puede instalar la app.
+ */
+function FlechaVerMas() {
+  return (
+    <svg
+      viewBox="0 0 240 64"
+      className="w-full"
+      role="img"
+      aria-label="Menú de compartir con la flecha hacia abajo señalada"
+    >
+      <rect
+        x="1"
+        y="1"
+        width="238"
+        height="62"
+        rx="12"
+        className="fill-muted stroke-border"
+        strokeWidth="2"
+      />
+
+      {/* dos opciones a la vista, y el resto debajo */}
+      <rect x="10" y="10" width="180" height="16" rx="5" className="fill-border/60" />
+      <rect x="10" y="32" width="150" height="16" rx="5" className="fill-border/60" />
+
+      {/* la flecha, resaltada */}
+      <circle
+        cx="211"
+        cy="20"
+        r="14"
+        className="fill-primary/15 stroke-primary"
+        strokeWidth="2"
+      />
+      <g
+        className="stroke-primary"
+        strokeWidth="2.2"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="m205 17 6 6 6-6" />
+      </g>
+    </svg>
+  )
+}
+
+
 /** La opción del menú que hay que buscar, con su icono y su texto. */
 function OpcionAnadir() {
   return (
@@ -245,7 +321,7 @@ function Contenido({ donde }: { donde: Plataforma }) {
       <div className="space-y-4 px-4 pb-6">
         <p className="text-sm text-muted-foreground">
           En iPhone hay que instalarla para recibir avisos: Apple no deja que una
-          página del navegador te notifique. Son cuatro toques.
+          página del navegador te notifique. Son cinco toques, pero se hace una sola vez.
         </p>
 
         <ol className="space-y-4">
@@ -258,21 +334,26 @@ function Contenido({ donde }: { donde: Plataforma }) {
               directo: se nombran los dos para que nadie se quede parado.
             */}
             <p className="mt-1 text-xs text-muted-foreground">
-              Si en vez de los tres puntos ves el botón de compartir —un cuadrado
-              con una flecha hacia arriba—, tócalo y salta al paso 3.
+              Si en vez de los tres puntos ves el botón de compartir{' '}
+              <IconoCompartir />, tócalo y salta al paso 3.
             </p>
           </Paso>
 
           <Paso numero={2} titulo="En el menú que se abre, elige “Compartir”" />
 
-          <Paso numero={3} titulo="Baja y elige “Añadir a pantalla de inicio”">
-            <OpcionAnadir />
+          <Paso numero={3} titulo="Toca la flecha hacia abajo para ver el resto">
+            <FlechaVerMas />
             <p className="mt-1 text-xs text-muted-foreground">
-              No sale entre las primeras opciones: hay que deslizar hacia arriba.
+              El menú se abre con solo unas pocas opciones. Esa flecha enseña las
+              demás, y “Añadir a pantalla de inicio” es una de las escondidas.
             </p>
           </Paso>
 
-          <Paso numero={4} titulo="Confirma con “Añadir”, arriba a la derecha" />
+          <Paso numero={4} titulo="Elige “Añadir a pantalla de inicio”">
+            <OpcionAnadir />
+          </Paso>
+
+          <Paso numero={5} titulo="Confirma con “Añadir”, arriba a la derecha" />
         </ol>
 
         <p className="text-xs text-muted-foreground">
