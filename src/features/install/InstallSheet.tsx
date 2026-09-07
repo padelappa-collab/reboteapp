@@ -28,21 +28,51 @@ import {
 function BarraSafari() {
   return (
     <svg
-      viewBox="0 0 240 64"
+      viewBox="0 0 240 92"
       className="w-full"
       role="img"
-      aria-label="Barra de Safari con el botón de compartir señalado"
+      aria-label="Parte de abajo de Safari: la barra de direcciones y, debajo, los botones, con el de compartir señalado"
     >
+      {/* la barra de direcciones vive abajo desde iOS 15 */}
       <rect
         x="1"
         y="1"
         width="238"
-        height="62"
-        rx="12"
+        height="90"
+        rx="14"
         className="fill-muted stroke-border"
         strokeWidth="2"
       />
 
+      <rect x="12" y="11" width="216" height="26" rx="13" className="fill-background" />
+      <text
+        x="34"
+        y="28"
+        className="fill-muted-foreground"
+        style={{ fontSize: '11px' }}
+      >
+        reboteapp.online
+      </text>
+      {/* la Aa de la izquierda y el recargar de la derecha, que sitúan la barra */}
+      <text
+        x="19"
+        y="28"
+        className="fill-muted-foreground"
+        style={{ fontSize: '10px', fontWeight: 600 }}
+      >
+        Aa
+      </text>
+      <g
+        className="stroke-muted-foreground"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      >
+        <path d="M212 20a6 6 0 1 0 2 4.6" />
+        <path d="M214 16v5h-5" />
+      </g>
+
+      {/* la fila de botones, debajo */}
       <g
         className="stroke-muted-foreground"
         strokeWidth="2"
@@ -50,15 +80,16 @@ function BarraSafari() {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M36 26l-7 6 7 6" />
-        <path d="M74 26l7 6-7 6" />
-        <rect x="158" y="24" width="16" height="16" rx="2" />
-        <rect x="198" y="24" width="13" height="13" rx="2" />
-        <rect x="203" y="29" width="13" height="13" rx="2" />
+        <path d="M36 58l-7 6 7 6" />
+        <path d="M74 58l7 6-7 6" />
+        <path d="M158 57h16v14h-16z" />
+        <path d="M166 57v14" />
+        <rect x="198" y="57" width="13" height="13" rx="2" />
+        <rect x="203" y="62" width="13" height="13" rx="2" />
       </g>
 
       {/* el de compartir, resaltado: es el único que importa */}
-      <circle cx="120" cy="32" r="19" className="fill-primary/15 stroke-primary" strokeWidth="2" />
+      <circle cx="120" cy="64" r="19" className="fill-primary/15 stroke-primary" strokeWidth="2" />
       <g
         className="stroke-primary"
         strokeWidth="2"
@@ -66,9 +97,9 @@ function BarraSafari() {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M114 31h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2" />
-        <path d="M120 35V23" />
-        <path d="m116 27 4-4 4 4" />
+        <path d="M114 63h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2" />
+        <path d="M120 67V55" />
+        <path d="m116 59 4-4 4 4" />
       </g>
     </svg>
   )

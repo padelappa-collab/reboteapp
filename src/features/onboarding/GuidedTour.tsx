@@ -119,6 +119,16 @@ const PASOS: Paso[] = [
 /** Dónde está el elemento y cuánto mide, en coordenadas de pantalla. */
 type Hueco = { top: number; left: number; width: number; height: number }
 
+/**
+ * Por encima de todo, incluido el mapa.
+ *
+ * Leaflet reparte sus capas hasta z-index 1000 (los controles del mapa). Con
+ * el 60 que llevaba, en el paso de Canchas el mapa tapaba el recorrido: quien
+ * llegaba ahí no veía dónde seguir y se quedaba encallado a mitad del
+ * tutorial, que es peor que no tenerlo.
+ */
+const CAPA = 2000
+
 const MARGEN = 8
 
 export function GuidedTour({
@@ -232,7 +242,12 @@ export function GuidedTour({
   const cabeAbajo = hueco ? alto - debajo > 230 : false
 
   return createPortal(
-    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true">
+    <div
+      className="fixed inset-0"
+      style={{ zIndex: CAPA }}
+      role="dialog"
+      aria-modal="true"
+    >
       {/*
         El foco es un recuadro transparente con una sombra enorme alrededor:
         oscurece toda la pantalla menos lo que se está explicando, sin recortar
