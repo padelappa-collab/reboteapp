@@ -8,7 +8,7 @@ import { BadgeGrid } from '@/features/badges/BadgeGrid'
 import { MyPostsGrid } from '@/features/feed/MyPostsGrid'
 import { SolicitudesCard } from '@/features/feed/SolicitudesCard'
 import { InstallCard } from '@/features/install/InstallCard'
-import { WelcomeTour } from '@/features/onboarding/WelcomeTour'
+import { GuidedTour } from '@/features/onboarding/GuidedTour'
 import { PushCard } from '@/features/notifications/PushCard'
 import { CategoryBadge } from '@/components/CategoryBadge'
 import { AvatarUploader } from './AvatarUploader'
@@ -116,7 +116,7 @@ export default function ProfilePage() {
         Cómo funciona REBOTEAPP
       </Button>
 
-      <WelcomeTour abierto={tour} onCerrar={() => setTour(false)} />
+      <GuidedTour abierto={tour} onCerrar={() => setTour(false)} />
 
       <Button
         variant="ghost"

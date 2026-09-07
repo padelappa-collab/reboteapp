@@ -73,7 +73,7 @@ export default function BoardPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Tablón</h1>
         <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" data-tour="torneos">
             <Link to="/torneos">
               <Trophy className="size-4" />
               Torneos
@@ -84,7 +84,7 @@ export default function BoardPage() {
       </div>
 
       <Tabs value={pestana} onValueChange={(v) => setPestana(v as Pestana)}>
-        <TabsList className="w-full">
+        <TabsList className="w-full" data-tour="tablon-pestanas">
           <TabsTrigger value="abiertas" className="flex-1">
             Abiertas
             {abiertas.length > 0 && (

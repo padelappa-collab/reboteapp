@@ -20,7 +20,7 @@ export default function MatchesListPage() {
     <div className="space-y-4 pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Mis partidos</h1>
-        <Button asChild size="sm">
+        <Button asChild size="sm" data-tour="registrar-partido">
           <Link to="/partidos/nuevo">
             <Plus className="size-4" />
             Registrar

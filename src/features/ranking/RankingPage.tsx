@@ -52,7 +52,7 @@ export default function RankingPage() {
       <h1 className="text-xl font-semibold">Ranking</h1>
 
       <Tabs value={tipo} onValueChange={(v) => setTipo(v as RankingTipo)}>
-        <TabsList className="w-full">
+        <TabsList className="w-full" data-tour="rankings">
           <TabsTrigger value="masculino" className="flex-1">
             Masculino
           </TabsTrigger>

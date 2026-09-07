@@ -59,7 +59,10 @@ export function StoriesBar() {
 
   return (
     <>
-      <div className="-mx-4 flex gap-3.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        data-tour="historias"
+        className="-mx-4 flex gap-3.5 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {/* tu círculo, siempre primero y siempre presente */}
         <button
           type="button"

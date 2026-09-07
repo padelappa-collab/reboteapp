@@ -138,7 +138,7 @@ export default function SocialPage() {
               sinLeer > 0 ? `Mensajes, ${sinLeer} sin leer` : 'Mensajes'
             }
           >
-            <Link to="/mensajes">
+            <Link data-tour="mensajes" to="/mensajes">
               <MessageCircle className="size-5" />
               {sinLeer > 0 && (
                 <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary ring-2 ring-background" />
@@ -146,7 +146,7 @@ export default function SocialPage() {
             </Link>
           </Button>
 
-          <Button asChild size="sm">
+          <Button asChild size="sm" data-tour="publicar">
             <Link to="/publicar">
               <Plus className="size-4" />
               Publicar

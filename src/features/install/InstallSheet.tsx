@@ -171,7 +171,21 @@ function Contenido({ donde }: { donde: Plataforma }) {
         ) : (
           <ol className="space-y-3">
             <Paso numero={1} titulo="Abre el menú de Chrome (los tres puntos, arriba a la derecha)" />
-            <Paso numero={2} titulo="Elige “Instalar aplicación” o “Añadir a pantalla de inicio”" />
+            <Paso
+              numero={2}
+              titulo="Elige “Instalar aplicación” o “Añadir a pantalla de inicio”"
+            >
+              {/*
+                El menú de Chrome en Android reparte las opciones entre las que se
+                ven y las que quedan detrás de “Ver más”, y cuál cae dónde depende
+                del teléfono. Quien no la encuentra a la primera concluye que su
+                móvil no puede, y se queda sin avisos.
+              */}
+              <p className="text-xs text-muted-foreground">
+                Si no la ves en la lista, baja del todo y toca “Ver más”: en muchos
+                teléfonos está ahí dentro.
+              </p>
+            </Paso>
           </ol>
         )}
       </div>
@@ -237,7 +251,8 @@ function Contenido({ donde }: { donde: Plataforma }) {
           <Paso numero={2} titulo="Baja en el menú y elige “Añadir a pantalla de inicio”">
             <OpcionAnadir />
             <p className="mt-1 text-xs text-muted-foreground">
-              Hay que deslizar hacia arriba: no sale entre las primeras opciones.
+              No sale entre las primeras: hay que deslizar hacia arriba. Si ves un
+              “Ver más” o “Más”, tócalo y aparece ahí.
             </p>
           </Paso>
 

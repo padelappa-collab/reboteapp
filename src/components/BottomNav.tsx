@@ -14,7 +14,10 @@ const ENLACES = [
 
 export function BottomNav() {
   return (
-    <nav className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
+    <nav
+      data-tour="nav"
+      className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur"
+    >
       <div
         className="mx-auto flex max-w-md"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -22,6 +25,7 @@ export function BottomNav() {
         {ENLACES.map(({ a, icono: Icono, texto }) => (
           <NavLink
             key={a}
+            data-tour={`nav-${a.slice(1)}`}
             to={a}
             className={({ isActive }) =>
               cn(

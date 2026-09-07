@@ -4,7 +4,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { BottomNav } from '@/components/BottomNav'
 import { InstallBanner } from '@/features/install/InstallBanner'
 import { WelcomeSheet } from '@/features/notifications/WelcomeSheet'
-import { WelcomeTour, tourPendiente } from '@/features/onboarding/WelcomeTour'
+import { GuidedTour, tourPendiente } from '@/features/onboarding/GuidedTour'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/features/auth/useAuth'
@@ -89,7 +89,7 @@ export function AppShell() {
                   pendientes > 0 ? `Novedades, ${pendientes} sin leer` : 'Novedades'
                 }
               >
-                <Link to="/novedades">
+                <Link data-tour="avisos" to="/novedades">
                   <Bell className="size-5" />
                   {pendientes > 0 && (
                     <span className="absolute right-1 top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-medium leading-4 text-destructive-foreground">
@@ -99,7 +99,7 @@ export function AppShell() {
                 </Link>
               </Button>
 
-              <Link to="/perfil" aria-label="Tu perfil">
+              <Link data-tour="perfil" to="/perfil" aria-label="Tu perfil">
                 <Avatar className="size-9">
                   {perfil.foto_url && <AvatarImage src={perfil.foto_url} alt="" />}
                   <AvatarFallback
@@ -119,7 +119,7 @@ export function AppShell() {
         <Outlet />
       </div>
 
-      <WelcomeTour abierto={tour} onCerrar={() => setTour(false)} />
+      <GuidedTour abierto={tour} onCerrar={() => setTour(false)} />
 
       {/*
         Mientras el recorrido esté abierto, el ofrecimiento de avisos ni se
