@@ -25,81 +25,65 @@ import {
  * cualquier pantalla, pesa unos pocos kilobytes, funciona igual en claro y en
  * oscuro, y no envejece cuando Apple cambia el color de una barra.
  */
-function BarraSafari() {
+/**
+ * La barra de Safari tal como sale de fábrica, con los tres puntos señalados.
+ *
+ * Desde iOS 26 el diseño por defecto es el "Compacto": una sola píldora abajo
+ * con el atrás, la dirección y un botón de tres puntos a la derecha. El de
+ * compartir dejó de estar a la vista y vive dentro de ese menú. Por eso las
+ * instrucciones de toda la vida --"toca compartir, abajo en el centro"-- ya no
+ * corresponden con lo que la mayoría ve, y quien las seguía no encontraba nada.
+ *
+ * Se dibuja y no se fotografía porque lo que se busca en la pantalla es la
+ * FORMA del botón, no una foto de un iPhone: así se ve nítido en cualquier
+ * pantalla, pesa unos kilobytes y no envejece cuando Apple cambia un color.
+ */
+function BarraCompacta() {
   return (
     <svg
-      viewBox="0 0 240 92"
+      viewBox="0 0 240 56"
       className="w-full"
       role="img"
-      aria-label="Parte de abajo de Safari: la barra de direcciones y, debajo, los botones, con el de compartir señalado"
+      aria-label="Barra de Safari con el botón de tres puntos señalado, a la derecha"
     >
-      {/* la barra de direcciones vive abajo desde iOS 15 */}
       <rect
         x="1"
         y="1"
         width="238"
-        height="90"
+        height="54"
         rx="14"
         className="fill-muted stroke-border"
         strokeWidth="2"
       />
 
-      <rect x="12" y="11" width="216" height="26" rx="13" className="fill-background" />
-      <text
-        x="34"
-        y="28"
-        className="fill-muted-foreground"
-        style={{ fontSize: '11px' }}
+      <rect x="12" y="13" width="216" height="30" rx="15" className="fill-background" />
+
+      <g
+        className="stroke-muted-foreground"
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
+        <path d="M31 24l-5 4 5 4" />
+      </g>
+
+      <text x="46" y="32" className="fill-muted-foreground" style={{ fontSize: '11px' }}>
         reboteapp.online
       </text>
-      {/* la Aa de la izquierda y el recargar de la derecha, que sitúan la barra */}
-      <text
-        x="19"
-        y="28"
-        className="fill-muted-foreground"
-        style={{ fontSize: '10px', fontWeight: 600 }}
-      >
-        Aa
-      </text>
-      <g
-        className="stroke-muted-foreground"
-        strokeWidth="1.6"
-        fill="none"
-        strokeLinecap="round"
-      >
-        <path d="M212 20a6 6 0 1 0 2 4.6" />
-        <path d="M214 16v5h-5" />
-      </g>
 
-      {/* la fila de botones, debajo */}
-      <g
-        className="stroke-muted-foreground"
+      {/* los tres puntos, resaltados: es lo único que hay que tocar */}
+      <circle
+        cx="207"
+        cy="28"
+        r="15"
+        className="fill-primary/15 stroke-primary"
         strokeWidth="2"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M36 58l-7 6 7 6" />
-        <path d="M74 58l7 6-7 6" />
-        <path d="M158 57h16v14h-16z" />
-        <path d="M166 57v14" />
-        <rect x="198" y="57" width="13" height="13" rx="2" />
-        <rect x="203" y="62" width="13" height="13" rx="2" />
-      </g>
-
-      {/* el de compartir, resaltado: es el único que importa */}
-      <circle cx="120" cy="64" r="19" className="fill-primary/15 stroke-primary" strokeWidth="2" />
-      <g
-        className="stroke-primary"
-        strokeWidth="2"
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M114 63h-2a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-2" />
-        <path d="M120 67V55" />
-        <path d="m116 59 4-4 4 4" />
+      />
+      <g className="fill-primary">
+        <circle cx="201" cy="28" r="1.9" />
+        <circle cx="207" cy="28" r="1.9" />
+        <circle cx="213" cy="28" r="1.9" />
       </g>
     </svg>
   )
@@ -261,33 +245,34 @@ function Contenido({ donde }: { donde: Plataforma }) {
       <div className="space-y-4 px-4 pb-6">
         <p className="text-sm text-muted-foreground">
           En iPhone hay que instalarla para recibir avisos: Apple no deja que una
-          página del navegador te notifique. Son dos toques.
+          página del navegador te notifique. Son cuatro toques.
         </p>
 
         <ol className="space-y-4">
-          <Paso numero={1} titulo="Toca el botón de compartir">
-            <BarraSafari />
+          <Paso numero={1} titulo="Toca los tres puntos, abajo a la derecha">
+            <BarraCompacta />
             {/*
-              Safari deja mover la barra de direcciones arriba, y entonces el
-              botón de compartir se va con ella. Quien lo tenga así busca abajo,
-              no lo encuentra, y da por hecho que las instrucciones están
-              desfasadas. Se nombran los dos sitios en vez de suponer uno.
+              Desde iOS 26 el diseño de fábrica esconde el compartir detrás de
+              este menú, y ese es el que tiene la mayoría. Pero quien siga en
+              iOS 18, o haya elegido otro diseño en Ajustes, ve el compartir
+              directo: se nombran los dos para que nadie se quede parado.
             */}
             <p className="mt-1 text-xs text-muted-foreground">
-              Está en la barra de abajo, en el centro. Si tienes la barra de
-              direcciones arriba, el botón está ahí mismo, a la derecha.
+              Si en vez de los tres puntos ves el botón de compartir —un cuadrado
+              con una flecha hacia arriba—, tócalo y salta al paso 3.
             </p>
           </Paso>
 
-          <Paso numero={2} titulo="Baja en el menú y elige “Añadir a pantalla de inicio”">
+          <Paso numero={2} titulo="En el menú que se abre, elige “Compartir”" />
+
+          <Paso numero={3} titulo="Baja y elige “Añadir a pantalla de inicio”">
             <OpcionAnadir />
             <p className="mt-1 text-xs text-muted-foreground">
-              No sale entre las primeras: hay que deslizar hacia arriba. Si ves un
-              “Ver más” o “Más”, tócalo y aparece ahí.
+              No sale entre las primeras opciones: hay que deslizar hacia arriba.
             </p>
           </Paso>
 
-          <Paso numero={3} titulo="Confirma con “Añadir”, arriba a la derecha" />
+          <Paso numero={4} titulo="Confirma con “Añadir”, arriba a la derecha" />
         </ol>
 
         <p className="text-xs text-muted-foreground">
