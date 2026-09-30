@@ -145,10 +145,17 @@ panel de Supabase y nunca en el repositorio.
 
 En piloto con jugadores reales en Cartagena.
 
-Este repositorio es la **web app**, que es lo que corre el piloto: se instala
-como PWA y no depende de las tiendas para actualizarse, que durante un piloto
-vale más que ser nativa. Existe además una **versión en React Native** para las
-tiendas, en un repositorio aparte y privado.
+Este repositorio es el **demo web**: la PWA con la que se probó el producto y
+con la que corre el piloto. Se instala desde el navegador y no depende de las
+tiendas para actualizarse, que mientras se está aprendiendo qué funciona vale
+más que ser nativa.
+
+La app para las tiendas está hecha en **React Native**, en un repositorio aparte
+y privado.
+
+En `package.json` quedan los paquetes de Capacitor, de cuando la idea era
+empaquetar esta misma web para las tiendas. Ese camino se descartó a favor de
+una app nativa de verdad, pero la configuración sigue aquí.
 
 Lo que sigue es abrir a más ciudades, una vez que el ranking de Cartagena tenga
 masa suficiente para ser representativo: un ELO con pocos jugadores mide el
