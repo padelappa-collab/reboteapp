@@ -72,7 +72,9 @@ inflarse solo.
   seguidos son un aviso, no tres.
 - **30 insignias** con glifos SVG dibujados a mano, sin emoji: cada sistema los
   pinta distinto y ninguno casa con el grosor de trazo del resto.
-- **PWA instalable**, que en iPhone es la única forma de recibir notificaciones.
+- **PWA instalable**, que en iPhone es la única forma de recibir notificaciones
+  y que durante el piloto permite corregir algo y tenerlo en todos los teléfonos
+  sin pasar por la revisión de una tienda.
 
 ---
 
@@ -141,6 +143,13 @@ panel de Supabase y nunca en el repositorio.
 
 ## Estado
 
-En piloto. Lo que sigue: apps nativas con Capacitor —ya configurado pero sin
-usar— y abrir a más ciudades una vez que el ranking de Cartagena tenga masa
-suficiente para ser representativo.
+En piloto con jugadores reales en Cartagena.
+
+Este repositorio es la **web app**, que es lo que corre el piloto: se instala
+como PWA y no depende de las tiendas para actualizarse, que durante un piloto
+vale más que ser nativa. Existe además una **versión en React Native** para las
+tiendas, en un repositorio aparte y privado.
+
+Lo que sigue es abrir a más ciudades, una vez que el ranking de Cartagena tenga
+masa suficiente para ser representativo: un ELO con pocos jugadores mide el
+grupo, no el nivel.
