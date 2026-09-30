@@ -32,7 +32,7 @@ alter sequence public.users_numero_registro_seq restart with 1;
 -- el que ya tenías; reiniciar la secuencia podría repetir números, por eso aquí
 -- se deja donde está.
 -- ---------------------------------------------------------------------------
--- delete from auth.users where email <> 'felipenule30@gmail.com';
+-- delete from auth.users where email <> 'tu-correo@ejemplo.com';
 --
 -- -- los partidos guardan a los otros jugadores en un arreglo sin llave foránea,
 -- -- así que hay que limpiar los que quedaron con gente borrada
